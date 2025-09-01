@@ -1,6 +1,10 @@
 import { createRoot } from 'react-dom/client';
-import { signal, derived, useSubscribe } from 'react-understate';
+import { state, derived, useSubscribe, setReact } from 'react-understate';
+import React from 'react';
 import styles from './styles.module.css';
+
+// Set React for state integration
+setReact(React);
 
 // Define the Todo type
 type Todo = {
@@ -10,9 +14,9 @@ type Todo = {
 };
 
 // State
-const todos = signal<Todo[]>([]);
-const filter = signal<'all' | 'active' | 'completed'>('all');
-const newTodo = signal('');
+const todos = state<Todo[]>([]);
+const filter = state<'all' | 'active' | 'completed'>('all');
+const newTodo = state('');
 
 // Computed values
 const filteredTodos = derived(() => {

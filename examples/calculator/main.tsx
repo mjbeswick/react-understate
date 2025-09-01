@@ -1,19 +1,19 @@
 import { createRoot } from 'react-dom/client';
-import { signal, useSubscribe, setReact } from 'react-understate';
+import { state, useSubscribe, setReact } from 'react-understate';
 import React, { useEffect } from 'react';
 import styles from './styles.module.css';
 import clsx from 'clsx';
 
-// Set React for signal integration
+// Set React for state integration
 setReact(React);
 
-// Calculator state using signals
-const displayValue = signal('0');
-const previousValue = signal<number | null>(null);
-const operation = signal<string | null>(null);
-const waitingForOperand = signal(false);
+// Calculator state using states
+const displayValue = state('0');
+const previousValue = state<number | null>(null);
+const operation = state<string | null>(null);
+const waitingForOperand = state(false);
 
-// Temporarily removed effect to debug signal update issues
+// Temporarily removed effect to debug state update issues
 
 // Helper function to input digit
 const inputDigit = (digit: string) => {
@@ -177,7 +177,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
 
 // Calculator component
 function Calculator() {
-  // Use useSubscribe hook to automatically subscribe to signal changes
+  // Use useSubscribe hook to automatically subscribe to state changes
   useSubscribe(displayValue);
   useSubscribe(previousValue);
   useSubscribe(operation);
