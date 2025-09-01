@@ -370,11 +370,7 @@ const activeCount = derived(
 );
 
 function TodoApp() {
-  useSubscribe(todos);
-  useSubscribe(filter);
-  useSubscribe(newTodo);
-  useSubscribe(filteredTodos);
-  useSubscribe(activeCount);
+  useSubscribe(todos, filter, newTodo, filteredTodos, activeCount);
 
   const addTodo = () => {
     if (newTodo.value.trim()) {
