@@ -33,8 +33,8 @@ type CalculatorState = {
   waitingForOperand: boolean;
 };
 
-const calculatorState = signal<CalculatorState>({
-  currentValue: '0',
+const calculatorState = state<CalculatorState>({
+  currentValue: "0",
   previousValue: null,
   operation: null,
   waitingForOperand: false,
@@ -52,7 +52,7 @@ const expression = computed(() => {
   if (state.previousValue && state.operation) {
     return `${state.previousValue} ${state.operation}`;
   }
-  return '';
+  return "";
 });
 ```
 

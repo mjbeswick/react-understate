@@ -17,9 +17,9 @@ This example demonstrates the React Understate library with a classic Todo appli
 ### 1. Signal State Management
 
 ```tsx
-const todos = signal<Todo[]>([]);
-const filter = signal<'all' | 'active' | 'completed'>('all');
-const newTodo = signal('');
+const todos = state<Todo[]>([]);
+const filter = state<"all" | "active" | "completed">("all");
+const newTodo = state("");
 ```
 
 ### 2. Computed Values
@@ -32,7 +32,7 @@ const filteredTodos = computed(() => {
 });
 
 const activeCount = computed(
-  () => todos.value.filter((todo) => !todo.completed).length
+  () => todos.value.filter((todo) => !todo.completed).length,
 );
 ```
 

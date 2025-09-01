@@ -616,11 +616,7 @@ Batches multiple state updates into a single effect flush.
 
 ### React Integration
 
-#### `setReact(reactModule: any): void` ⚠️ **Deprecated**
-
-This function is deprecated and no longer needed. The library now uses `use-sync-external-store/shim` for automatic React compatibility.
-
-#### `useSubscribe<T>(signal: Signal<T>): void`
+#### `useSubscribe<T>(signal: State<T> | ReadonlyState<T>): void`
 
 React hook to subscribe to state changes and trigger re-renders.
 
