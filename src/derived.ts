@@ -5,8 +5,7 @@
  * Derived values are read-only signals that automatically update when their dependencies change.
  */
 
-import { setActiveEffect } from './core';
-import type { ReadonlyState } from './core';
+import { setActiveEffect, ReadonlyState } from './core';
 
 /**
  * Creates a read-only signal that automatically updates when dependencies change.

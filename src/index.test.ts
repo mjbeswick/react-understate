@@ -1,19 +1,19 @@
 import * as ReactiveDOM from './index';
 
 describe('ReactiveDOM exports', () => {
-  describe('signal exports', () => {
-    it('should export signal function', () => {
-      expect(typeof ReactiveDOM.signal).toBe('function');
-      // Test that Signal type is available
-      const signal = ReactiveDOM.signal(0);
-      expect(signal).toBeDefined();
+  describe('state exports', () => {
+    it('should export state function', () => {
+      expect(typeof ReactiveDOM.state).toBe('function');
+      // Test that State type is available
+      const state = ReactiveDOM.state(0);
+      expect(state).toBeDefined();
     });
 
     it('should export derived function', () => {
       expect(typeof ReactiveDOM.derived).toBe('function');
       // Test that derived type is available
-      const signal = ReactiveDOM.signal(0);
-      const derivedValue = ReactiveDOM.derived(() => signal.value * 2);
+      const state = ReactiveDOM.state(0);
+      const derivedValue = ReactiveDOM.derived(() => state.value * 2);
       expect(derivedValue).toBeDefined();
     });
 
@@ -29,7 +29,7 @@ describe('ReactiveDOM exports', () => {
   describe('default export test', () => {
     it('should have all expected properties', () => {
       const expectedProperties = [
-        'signal',
+        'state',
         'derived',
         'effect',
         'batch',

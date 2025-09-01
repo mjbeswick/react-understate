@@ -32,7 +32,7 @@
     "noStrictGenericChecks": false,
     // Better tree-shaking
     "importsNotUsedAsValues": "remove",
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     // Performance optimizations
     "incremental": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
