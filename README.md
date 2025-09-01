@@ -1,6 +1,6 @@
 # React Understate
 
-A lightweight, reactive signals library for React 18+ with automatic dependency tracking and optimized performance.
+A lightweight, reactive state library for React 18+ with automatic dependency tracking and optimized performance.
 
 [![npm version](https://badge.fury.io/js/react-understate.svg)](https://badge.fury.io/js/react-understate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -8,8 +8,8 @@ A lightweight, reactive signals library for React 18+ with automatic dependency 
 
 ## Features
 
-- 🎯 **Simple API** - Just use `.value` to read/write signal values
-- ⚡ **Automatic dependency tracking** - Effects and computed values update automatically
+- 🎯 **Simple API** - Just use `.value` to read/write state values
+- ⚡ **Automatic dependency tracking** - Effects and derived values update automatically
 - 🔄 **React 18+ integration** - Built with `useSyncExternalStore` for optimal performance
 - 🚀 **Async support** - Built-in async update methods with loading states
 - 📦 **Lightweight** - Minimal bundle size with zero dependencies
@@ -25,17 +25,17 @@ npm install react-understate
 ## Quick Start
 
 ```tsx
-import React from "react";
-import { signal, useSubscribe, setReact } from "react-understate";
+import React from 'react';
+import { state, useSubscribe, setReact } from 'react-understate';
 
-// Set React for signal integration (call once at app startup)
+// Set React for state integration (call once at app startup)
 setReact(React);
 
-// Create a signal
-const count = signal(0);
+// Create a state
+const count = state(0);
 
 function Counter() {
-  // Subscribe to signal changes
+  // Subscribe to state changes
   useSubscribe(count);
 
   return (
@@ -49,18 +49,18 @@ function Counter() {
 
 ## Core Concepts
 
-### Signals
+### States
 
-Signals are reactive containers that hold values and notify subscribers when they change. Always use the `.value` property to read and write signal values.
+States are reactive containers that hold values and notify subscribers when they change. Always use the `.value` property to read and write state values.
 
 ```tsx
-import { signal } from "react-understate";
+import { state } from 'react-understate';
 
-// Create signals for different types
-const count = signal(0);
-const name = signal("John");
-const user = signal({ id: 1, name: "John", email: "john@example.com" });
-const items = signal<string[]>([]);
+// Create states for different types
+const count = state(0);
+const name = state('John');
+const user = state({ id: 1, name: 'John', email: 'john@example.com' });
+const items = state<string[]>([]);
 
 // ✅ CORRECT: Read and write using .value
 console.log(count.value); // 0
@@ -68,41 +68,41 @@ count.value = 42;
 console.log(count.value); // 42
 
 // ✅ CORRECT: Update object properties
-user.value = { ...user.value, name: "Jane" };
+user.value = { ...user.value, name: 'Jane' };
 
 // ✅ CORRECT: Update arrays
-items.value = [...items.value, "new item"];
+items.value = [...items.value, 'new item'];
 
-// ❌ INCORRECT: Don't assign signals to variables
+// ❌ INCORRECT: Don't assign states to variables
 // const badCount = count; // This breaks reactivity!
 // const badValue = count.value; // This doesn't track changes!
 ```
 
-### Computed Values
+### Derived Values
 
-Computed values automatically update when their dependencies change. They are lazy and only recalculate when accessed.
+Derived values automatically update when their dependencies change. They are lazy and only recalculate when accessed.
 
 ```tsx
-import { signal, computed } from "react-understate";
+import { state, derived } from 'react-understate';
 
-const firstName = signal("John");
-const lastName = signal("Doe");
+const firstName = state('John');
+const lastName = state('Doe');
 
-// Create a computed signal
-const fullName = computed(() => `${firstName.value} ${lastName.value}`);
+// Create a derived state
+const fullName = derived(() => `${firstName.value} ${lastName.value}`);
 
 console.log(fullName.value); // "John Doe"
 
-// Update dependencies - computed automatically updates
-firstName.value = "Jane";
+// Update dependencies - derived automatically updates
+firstName.value = 'Jane';
 console.log(fullName.value); // "Jane Doe"
 
-// Complex computed values with multiple dependencies
-const count = signal(5);
-const multiplier = signal(2);
-const isEven = signal(true);
+// Complex derived values with multiple dependencies
+const count = state(5);
+const multiplier = state(2);
+const isEven = state(true);
 
-const result = computed(() => {
+const result = derived(() => {
   const base = count.value * multiplier.value;
   return isEven.value ? base : base + 1;
 });
@@ -115,13 +115,13 @@ console.log(result.value); // 11 (5 * 2 = 10, isEven = false, so +1)
 
 ### Effects
 
-Effects run side effects when their dependencies change. They automatically track which signals they depend on.
+Effects run side effects when their dependencies change. They automatically track which states they depend on.
 
 ```tsx
-import { signal, effect } from "react-understate";
+import { state, effect } from 'react-understate';
 
-const count = signal(0);
-const name = signal("John");
+const count = state(0);
+const name = state('John');
 
 // Simple effect that logs changes
 const dispose = effect(() => {
@@ -129,7 +129,7 @@ const dispose = effect(() => {
 });
 
 count.value = 5; // Logs: "Count: 5, Name: John"
-name.value = "Jane"; // Logs: "Count: 5, Name: Jane"
+name.value = 'Jane'; // Logs: "Count: 5, Name: Jane"
 
 // Clean up the effect
 dispose();
@@ -140,17 +140,17 @@ dispose();
 Effects can return cleanup functions that run before the effect runs again or when disposed.
 
 ```tsx
-import { signal, effect } from "react-understate";
+import { state, effect } from 'react-understate';
 
-const isVisible = signal(true);
+const isVisible = state(true);
 
 const dispose = effect(() => {
   if (isVisible.value) {
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
 
     // Return cleanup function
     return () => {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = 'auto';
     };
   }
 });
@@ -169,11 +169,11 @@ dispose(); // Final cleanup runs
 Effects can be async and are commonly used for API calls:
 
 ```tsx
-import { signal, effect } from "react-understate";
+import { state, effect } from 'react-understate';
 
-const userId = signal(1);
-const userData = signal(null);
-const loading = signal(false);
+const userId = state(1);
+const userData = state(null);
+const loading = state(false);
 
 effect(async () => {
   const id = userId.value;
@@ -184,7 +184,7 @@ effect(async () => {
       const data = await response.json();
       userData.value = data;
     } catch (error) {
-      console.error("Failed to fetch user:", error);
+      console.error('Failed to fetch user:', error);
     } finally {
       loading.value = false;
     }
@@ -197,13 +197,13 @@ userId.value = 2; // Fetches user with ID 2
 
 ### Update Method with Async Support
 
-The `update` method provides a powerful way to update signals, especially for async operations. It includes built-in loading state management.
+The `update` method provides a powerful way to update states, especially for async operations. It includes built-in loading state management.
 
 ```tsx
-import { signal } from "react-understate";
+import { state } from 'react-understate';
 
-const count = signal(0);
-const user = signal({ id: 1, name: "John" });
+const count = state(0);
+const user = state({ id: 1, name: 'John' });
 
 // Sync update
 await count.update((prev) => prev + 1);
@@ -211,8 +211,8 @@ await count.update((prev) => prev + 1);
 // Async update with automatic loading state
 await user.update(async (prev) => {
   const response = await fetch(`/api/users/${prev.id}`, {
-    method: "PUT",
-    body: JSON.stringify({ ...prev, name: "Updated Name" }),
+    method: 'PUT',
+    body: JSON.stringify({ ...prev, name: 'Updated Name' }),
   });
   return response.json();
 });
@@ -222,13 +222,13 @@ console.log(user.pending); // true during async operation
 
 // Complex async update with error handling
 await count.update(async (prev) => {
-  const result = await fetch("/api/increment", {
-    method: "POST",
+  const result = await fetch('/api/increment', {
+    method: 'POST',
     body: JSON.stringify({ current: prev }),
   });
 
   if (!result.ok) {
-    throw new Error("Failed to increment");
+    throw new Error('Failed to increment');
   }
 
   const data = await result.json();
@@ -240,11 +240,11 @@ await count.update(async (prev) => {
 
 ### Setup
 
-First, set the React instance for signal integration:
+First, set the React instance for state integration:
 
 ```tsx
-import React from "react";
-import { setReact } from "react-understate";
+import React from 'react';
+import { setReact } from 'react-understate';
 
 // Call this once at app startup
 setReact(React);
@@ -252,22 +252,22 @@ setReact(React);
 
 ### useSubscribe Hook
 
-The `useSubscribe` hook subscribes to signal changes and triggers re-renders when signals update.
+The `useSubscribe` hook subscribes to state changes and triggers re-renders when states update.
 
-**Important:** The hook does NOT return a value. Access the signal's `.value` property directly in your component.
+**Important:** The hook does NOT return a value. Access the state's `.value` property directly in your component.
 
 ```tsx
-import { signal, useSubscribe } from "react-understate";
+import { state, useSubscribe } from 'react-understate';
 
-const userCount = signal(0);
-const userName = signal("Guest");
+const userCount = state(0);
+const userName = state('Guest');
 
 function UserDisplay() {
   // ✅ CORRECT: Use the hook to establish subscription
   useSubscribe(userCount);
   useSubscribe(userName);
 
-  // Access signal values directly
+  // Access state values directly
   const count = userCount.value;
   const name = userName.value;
 
@@ -276,7 +276,7 @@ function UserDisplay() {
       <h1>Welcome, {name}!</h1>
       <p>Active users: {count}</p>
       <button onClick={() => userCount.value++}>Add User</button>
-      <button onClick={() => (userName.value = "John")}>
+      <button onClick={() => (userName.value = 'John')}>
         Set Name to John
       </button>
     </div>
@@ -289,9 +289,9 @@ function UserDisplay() {
 Use the `pending` property to show loading states during async updates:
 
 ```tsx
-import { signal, useSubscribe } from "react-understate";
+import { state, useSubscribe } from 'react-understate';
 
-const userData = signal(null);
+const userData = state(null);
 
 function UserProfile({ userId }) {
   useSubscribe(userData);
@@ -322,33 +322,33 @@ function UserProfile({ userId }) {
 
 ### Complex React Example
 
-Here's a more complex example with multiple signals and computed values:
+Here's a more complex example with multiple signals and derived values:
 
 ```tsx
-import { signal, computed, useSubscribe } from "react-understate";
+import { state, derived, useSubscribe } from 'react-understate';
 
 // State
-const todos = signal([]);
-const filter = signal("all"); // 'all', 'active', 'completed'
-const newTodo = signal("");
+const todos = state([]);
+const filter = state('all'); // 'all', 'active', 'completed'
+const newTodo = state('');
 
-// Computed values
-const filteredTodos = computed(() => {
+// Derived values
+const filteredTodos = derived(() => {
   const allTodos = todos.value;
   const currentFilter = filter.value;
 
   switch (currentFilter) {
-    case "active":
+    case 'active':
       return allTodos.filter((todo) => !todo.completed);
-    case "completed":
+    case 'completed':
       return allTodos.filter((todo) => todo.completed);
     default:
       return allTodos;
   }
 });
 
-const activeCount = computed(
-  () => todos.value.filter((todo) => !todo.completed).length,
+const activeCount = derived(
+  () => todos.value.filter((todo) => !todo.completed).length
 );
 
 function TodoApp() {
@@ -368,13 +368,13 @@ function TodoApp() {
           completed: false,
         },
       ];
-      newTodo.value = "";
+      newTodo.value = '';
     }
   };
 
   const toggleTodo = (id) => {
     todos.value = todos.value.map((todo) =>
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo,
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
     );
   };
 
@@ -390,7 +390,7 @@ function TodoApp() {
         <input
           value={newTodo.value}
           onChange={(e) => (newTodo.value = e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && addTodo()}
+          onKeyPress={(e) => e.key === 'Enter' && addTodo()}
           placeholder="Add a todo..."
         />
         <button onClick={addTodo}>Add</button>
@@ -398,21 +398,21 @@ function TodoApp() {
 
       <div>
         <button
-          onClick={() => (filter.value = "all")}
-          style={{ fontWeight: filter.value === "all" ? "bold" : "normal" }}
+          onClick={() => (filter.value = 'all')}
+          style={{ fontWeight: filter.value === 'all' ? 'bold' : 'normal' }}
         >
           All
         </button>
         <button
-          onClick={() => (filter.value = "active")}
-          style={{ fontWeight: filter.value === "active" ? "bold" : "normal" }}
+          onClick={() => (filter.value = 'active')}
+          style={{ fontWeight: filter.value === 'active' ? 'bold' : 'normal' }}
         >
           Active ({activeCount.value})
         </button>
         <button
-          onClick={() => (filter.value = "completed")}
+          onClick={() => (filter.value = 'completed')}
           style={{
-            fontWeight: filter.value === "completed" ? "bold" : "normal",
+            fontWeight: filter.value === 'completed' ? 'bold' : 'normal',
           }}
         >
           Completed
@@ -429,7 +429,7 @@ function TodoApp() {
             />
             <span
               style={{
-                textDecoration: todo.completed ? "line-through" : "none",
+                textDecoration: todo.completed ? 'line-through' : 'none',
               }}
             >
               {todo.text}
@@ -445,29 +445,29 @@ function TodoApp() {
 
 ## Batching for Performance
 
-Use `batch` to group multiple signal updates and trigger effects only once:
+Use `batch` to group multiple state updates and trigger effects only once:
 
 ```tsx
-import { signal, batch, effect } from "react-understate";
+import { state, batch, effect } from 'react-understate';
 
-const firstName = signal("John");
-const lastName = signal("Doe");
-const age = signal(30);
+const firstName = state('John');
+const lastName = state('Doe');
+const age = state(30);
 
-// Effect that depends on multiple signals
+// Effect that depends on multiple states
 effect(() => {
   console.log(`User: ${firstName.value} ${lastName.value}, Age: ${age.value}`);
 });
 
 // Without batching - triggers effect 3 times
-firstName.value = "Jane";
-lastName.value = "Smith";
+firstName.value = 'Jane';
+lastName.value = 'Smith';
 age.value = 25;
 
 // With batching - triggers effect only once
 batch(() => {
-  firstName.value = "Jane";
-  lastName.value = "Smith";
+  firstName.value = 'Jane';
+  lastName.value = 'Smith';
   age.value = 25;
 });
 // Effect runs once with all updated values: "User: Jane Smith, Age: 25"
@@ -476,8 +476,8 @@ batch(() => {
 Batching is especially useful in event handlers:
 
 ```tsx
-const count = signal(0);
-const isLoading = signal(false);
+const count = state(0);
+const isLoading = state(false);
 
 const handleClick = () => {
   batch(() => {
@@ -493,15 +493,15 @@ const handleClick = () => {
 ### Signal Composition
 
 ```tsx
-import { signal, computed, effect } from "react-understate";
+import { state, derived, effect } from 'react-understate';
 
-// Base signals
-const x = signal(0);
-const y = signal(0);
+// Base states
+const x = state(0);
+const y = state(0);
 
-// Computed coordinates
-const position = computed(() => ({ x: x.value, y: y.value }));
-const distance = computed(() => Math.sqrt(x.value ** 2 + y.value ** 2));
+// Derived coordinates
+const position = derived(() => ({ x: x.value, y: y.value }));
+const distance = derived(() => Math.sqrt(x.value ** 2 + y.value ** 2));
 
 // Effect for side effects
 effect(() => {
@@ -518,22 +518,22 @@ y.value = 4;
 ### Form Validation
 
 ```tsx
-import { signal, computed } from "react-understate";
+import { state, derived } from 'react-understate';
 
-const email = signal("");
-const password = signal("");
-const confirmPassword = signal("");
+const email = state('');
+const password = state('');
+const confirmPassword = state('');
 
-const emailValid = computed(() =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value),
+const emailValid = derived(() =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)
 );
 
-const passwordValid = computed(() => password.value.length >= 8);
+const passwordValid = derived(() => password.value.length >= 8);
 
-const passwordsMatch = computed(() => password.value === confirmPassword.value);
+const passwordsMatch = derived(() => password.value === confirmPassword.value);
 
-const formValid = computed(
-  () => emailValid.value && passwordValid.value && passwordsMatch.value,
+const formValid = derived(
+  () => emailValid.value && passwordValid.value && passwordsMatch.value
 );
 
 function SignupForm() {
@@ -584,13 +584,13 @@ function SignupForm() {
 
 ### Core Functions
 
-#### `signal<T>(initialValue: T): Signal<T>`
+#### `state<T>(initialValue: T): State<T>`
 
-Creates a reactive signal with an initial value.
+Creates a reactive state with an initial value.
 
-#### `computed<T>(computeFn: () => T): ReadonlySignal<T>`
+#### `derived<T>(computeFn: () => T): ReadonlyState<T>`
 
-Creates a read-only signal that automatically updates when dependencies change.
+Creates a read-only state that automatically updates when dependencies change.
 
 #### `effect(fn: () => void | (() => void)): () => void`
 
@@ -598,27 +598,27 @@ Runs a side effect that automatically re-executes when dependencies change. Retu
 
 #### `batch(fn: () => void): void`
 
-Batches multiple signal updates into a single effect flush.
+Batches multiple state updates into a single effect flush.
 
 ### React Integration
 
 #### `setReact(reactModule: any): void`
 
-Sets the React instance for signal integration. Must be called once before using React features.
+Sets the React instance for state integration. Must be called once before using React features.
 
 #### `useSubscribe<T>(signal: Signal<T>): void`
 
-React hook to subscribe to signal changes and trigger re-renders.
+React hook to subscribe to state changes and trigger re-renders.
 
-### Signal Properties
+### State Properties
 
 #### `.value: T`
 
-Gets or sets the signal value. Reading establishes a dependency, writing triggers updates.
+Gets or sets the state value. Reading establishes a dependency, writing triggers updates.
 
 #### `.rawValue: T`
 
-Gets the signal value without establishing a dependency.
+Gets the state value without establishing a dependency.
 
 #### `.pending: boolean`
 
@@ -638,7 +638,7 @@ Subscribes to signal changes. Returns an unsubscribe function.
 2. **Create signals at module level** - Don't create signals inside components
 3. **Use `useSubscribe` in React** - Always call it for signals used in components
 4. **Batch related updates** - Use `batch()` for multiple simultaneous updates
-5. **Prefer computed over effects** - Use computed for derived state, effects for side effects
+5. **Prefer derived over effects** - Use derived for derived state, effects for side effects
 6. **Clean up effects** - Always call the disposal function when appropriate
 7. **Use TypeScript** - Take advantage of full type safety
 
