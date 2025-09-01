@@ -25,10 +25,7 @@
   "scripts": {
     "build": "rollup -c && node scripts/build-size.ts",
     "build:watch": "rollup -c --watch",
-    "build:dev": "rollup -c --environment NODE_ENV:development",
-    "build:prod": "rollup -c --environment NODE_ENV:production",
-    "build:analyze": "rollup -c --environment NODE_ENV:production && open bundle-analysis.html",
-    "dev": "rollup -c --watch --environment NODE_ENV:development",
+    "build:analyze": "rollup -c && open bundle-analysis.html",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
