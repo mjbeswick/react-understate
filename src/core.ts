@@ -335,18 +335,23 @@ export function state<T>(initialValue: T): State<T> {
   };
 
   const setValue = (newValue: T): void => {
+    console.log('setValue called - old value:', value, 'new value:', newValue);
     if (!Object.is(value, newValue)) {
+      console.log('Values are different, updating state');
       // Deep freeze objects and arrays to enforce immutability
       if (typeof newValue === 'object' && newValue !== null) {
         value = deepFreeze(newValue);
       } else {
         value = newValue;
       }
+      console.log('State updated, scheduling notifications');
       // Schedule updates
       pendingUpdates.add(notify);
       if (!isBatching) {
         flushUpdates();
       }
+    } else {
+      console.log('Values are the same, no update needed');
     }
   };
 

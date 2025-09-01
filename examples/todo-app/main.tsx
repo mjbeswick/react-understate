@@ -1,9 +1,6 @@
-import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { state, derived, useSubscribe, setReact } from 'react-understate';
+import { state, derived, useSubscribe } from 'react-understate';
 import styles from './styles.module.css';
-
-setReact(React);
 
 // Define the Todo type
 type Todo = {
@@ -47,6 +44,10 @@ function TodoApp() {
   useSubscribe(filteredTodos);
   useSubscribe(activeCount);
   useSubscribe(completedCount);
+
+  // Debug logging
+  console.log('TodoApp render - newTodo.value:', newTodo.value);
+  console.log('TodoApp render - todos.value:', todos.value);
 
   const addTodo = () => {
     if (newTodo.value.trim()) {
@@ -92,7 +93,18 @@ function TodoApp() {
           <input
             className={styles.newTodo}
             value={newTodo.value}
-            onChange={(e) => (newTodo.value = e.target.value)}
+            onChange={(e) => {
+              console.log('Input onChange - target.value:', e.target.value);
+              console.log(
+                'Input onChange - current newTodo.value:',
+                newTodo.value
+              );
+              newTodo.value = e.target.value;
+              console.log(
+                'Input onChange - after setting newTodo.value:',
+                newTodo.value
+              );
+            }}
             onKeyPress={(e) => e.key === 'Enter' && addTodo()}
             placeholder="What needs to be done?"
             autoFocus
