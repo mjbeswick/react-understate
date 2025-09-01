@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { state, useSubscribe } from 'react-understate';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import styles from './styles.module.css';
 import clsx from 'clsx';
 
