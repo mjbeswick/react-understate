@@ -1,8 +1,8 @@
 /**
- * @fileoverview Core Signal Types and Implementation
+ * @fileoverview Core State Types and Implementation
  *
- * This module contains the core signal types and implementation logic.
- * It provides the foundation for the reactive signals system.
+ * This module contains the core state types and implementation logic.
+ * It provides the foundation for the reactive states system.
  */
 
 // Global state for tracking active effects and batching
@@ -11,27 +11,27 @@ let isBatching = false;
 const pendingUpdates = new Set<() => void>();
 
 /**
- * A reactive signal that holds a value and notifies subscribers when it changes.
+ * A reactive state that holds a value and notifies subscribers when it changes.
  *
- * Signals are the core building blocks of the reactive system. They can hold any
+ * States are the core building blocks of the reactive system. They can hold any
  * type of value and automatically track dependencies when used in effects or
  * computed values.
  *
  * **Key Principles:**
- * - Always use `.value` to read/write signal values
- * - Never assign the signal object to a variable for storage
- * - Signals are designed to be passed around and used directly
+ * - Always use `.value` to read/write state values
+ * - Never assign the state object to a variable for storage
+ * - States are designed to be passed around and used directly
  *
- * @template T - The type of value held by the signal
+ * @template T - The type of value held by the state
  *
  * @example
  * ```tsx
- * import { signal } from './core';
+ * import { state } from './core';
  *
- * // Create signals
- * const count = signal(0);
- * const name = signal('John');
- * const user = signal({ id: 1, name: 'John' });
+ * // Create states
+ * const count = state(0);
+ * const name = state('John');
+ * const user = state({ id: 1, name: 'John' });
  *
  * // ✅ CORRECT: Read and write using .value
  * console.log(count.value); // 0
@@ -46,14 +46,14 @@ const pendingUpdates = new Set<() => void>();
  *   console.log(`Count changed to: ${count.value}`);
  * });
  *
- * // ❌ INCORRECT: Don't assign signals to variables
+ * // ❌ INCORRECT: Don't assign states to variables
  * // const badCount = count; // This breaks reactivity!
  * // const badValue = count.value; // This doesn't track changes!
  * ```
  */
-export type Signal<T> = {
+export type State<T> = {
   /**
-   * The raw internal value of the signal.
+   * The raw internal value of the state.
    *
    * Use `.value` for reactive access that tracks dependencies.
    * Use `.rawValue` only when you need the current value without
@@ -62,7 +62,7 @@ export type Signal<T> = {
   rawValue: T;
 
   /**
-   * Updates the signal using a function that receives the previous value.
+   * Updates the state using a function that receives the previous value.
    *
    * This method is useful for complex updates that depend on the current value
    * or for async updates.
@@ -72,7 +72,7 @@ export type Signal<T> = {
    *
    * @example
    * ```tsx
-   * const count = signal(0);
+   * const count = state(0);
    *
    * // Sync update
    * await count.update(prev => prev + 1);
@@ -89,14 +89,14 @@ export type Signal<T> = {
   update(fn: (prev: T) => T | Promise<T>): Promise<void>;
 
   /**
-   * Subscribes to changes in the signal value.
+   * Subscribes to changes in the state value.
    *
-   * @param fn - Function to call when the signal value changes
+   * @param fn - Function to call when the state value changes
    * @returns Unsubscribe function to remove the subscription
    *
    * @example
    * ```tsx
-   * const count = signal(0);
+   * const count = state(0);
    *
    * const unsubscribe = count.subscribe(() => {
    *   console.log('Count changed!');
@@ -111,21 +111,21 @@ export type Signal<T> = {
   subscribe(fn: () => void): () => void;
 
   /**
-   * Whether the signal is currently being updated.
+   * Whether the state is currently being updated.
    *
    * Useful for showing loading states during async updates.
    */
   readonly pending: boolean;
 
   /**
-   * The current value of the signal.
+   * The current value of the state.
    *
-   * **Getter:** Returns the current value and tracks this signal as a dependency
-   * **Setter:** Updates the signal value and notifies all subscribers
+   * **Getter:** Returns the current value and tracks this state as a dependency
+   * **Setter:** Updates the state value and notifies all subscribers
    *
    * @example
    * ```tsx
-   * const count = signal(0);
+   * const count = state(0);
    *
    * // Reading (establishes dependency)
    * console.log(count.value); // 0
@@ -142,23 +142,23 @@ export type Signal<T> = {
 };
 
 /**
- * A read-only signal that can only be read and subscribed to, not modified.
+ * A read-only state that can only be read and subscribed to, not modified.
  *
- * Read-only signals are useful for computed values and other derived state
+ * Read-only states are useful for computed values and other derived state
  * that should not be directly modified by consumers. They provide the same
- * reactive behavior as regular signals but without the ability to modify
+ * reactive behavior as regular states but without the ability to modify
  * the underlying value.
  *
- * @template T - The type of value held by the signal
+ * @template T - The type of value held by the state
  *
  * @example
  * ```tsx
- * import { signal, computed } from './effects';
+ * import { state, computed } from './effects';
  *
- * const firstName = signal('John');
- * const lastName = signal('Doe');
+ * const firstName = state('John');
+ * const lastName = state('Doe');
  *
- * // Create a computed (read-only) signal
+ * // Create a computed (read-only) state
  * const fullName = computed(() => `${firstName.value} ${lastName.value}`);
  *
  * // ✅ CORRECT: Read the computed value
@@ -174,7 +174,7 @@ export type Signal<T> = {
  */
 export type ReadonlyState<T> = {
   /**
-   * The raw internal value of the signal.
+   * The raw internal value of the state.
    *
    * Use `.value` for reactive access that tracks dependencies.
    * Use `.rawValue` only when you need the current value without
@@ -183,15 +183,15 @@ export type ReadonlyState<T> = {
   rawValue: T;
 
   /**
-   * Subscribes to changes in the signal value.
+   * Subscribes to changes in the state value.
    *
-   * @param fn - Function to call when the signal value changes
+   * @param fn - Function to call when the state value changes
    * @returns Unsubscribe function to remove the subscription
    */
   subscribe(fn: () => void): () => void;
 
   /**
-   * Whether the signal is currently being updated.
+   * Whether the state is currently being updated.
    *
    * For computed values, this is always false since they cannot be
    * directly updated.
@@ -199,40 +199,40 @@ export type ReadonlyState<T> = {
   readonly pending: boolean;
 
   /**
-   * The current value of the signal (read-only).
+   * The current value of the state (read-only).
    *
-   * Reading this property establishes a dependency on the signal,
+   * Reading this property establishes a dependency on the state,
    * causing any containing effects or computed values to re-run
-   * when the signal changes.
+   * when the state changes.
    */
   readonly value: T;
 };
 
 /**
- * Creates a reactive signal with an initial value.
+ * Creates a reactive state with an initial value.
  *
- * This is the primary function for creating reactive state. Signals
+ * This is the primary function for creating reactive state. States
  * automatically track dependencies and notify subscribers when their
  * values change.
  *
  * **Best Practices:**
- * - Create signals at the top level of your module or component
- * - Pass signal objects around, not their values
- * - Always use `.value` to read/write signal values
- * - Don't assign signals to variables for storage
+ * - Create states at the top level of your module or component
+ * - Pass state objects around, not their values
+ * - Always use `.value` to read/write state values
+ * - Don't assign states to variables for storage
  *
- * @param initialValue - The initial value for the signal
- * @returns A reactive signal that can be read and written using the .value property
+ * @param initialValue - The initial value for the state
+ * @returns A reactive state that can be read and written using the .value property
  *
  * @example
  * ```tsx
- * import { signal, effect } from './core';
+ * import { state, effect } from './core';
  *
- * // Create signals for different types
- * const count = signal(0);
- * const name = signal('John');
- * const isActive = signal(false);
- * const user = signal({ id: 1, name: 'John', email: 'john@example.com' });
+ * // Create states for different types
+ * const count = state(0);
+ * const name = state('John');
+ * const isActive = state(false);
+ * const user = state({ id: 1, name: 'John', email: 'john@example.com' });
  *
  * // ✅ CORRECT: Use .value to read and write
  * console.log(count.value); // 0
@@ -251,18 +251,18 @@ export type ReadonlyState<T> = {
  * // ✅ CORRECT: Use in computed values
  * const doubleCount = computed(() => count.value * 2);
  *
- * // ❌ INCORRECT: Don't assign signals to variables
+ * // ❌ INCORRECT: Don't assign states to variables
  * // const badCount = count; // This breaks reactivity!
  * // const badValue = count.value; // This doesn't track changes!
  * ```
  *
  * @example
  * ```tsx
- * // Signal composition
- * const firstName = signal('John');
- * const lastName = signal('Doe');
+ * // State composition
+ * const firstName = state('John');
+ * const lastName = state('Doe');
  *
- * // Computed signal that depends on multiple signals
+ * // Computed state that depends on multiple states
  * const fullName = computed(() => `${firstName.value} ${lastName.value}`);
  *
  * // Effect that reacts to full name changes
@@ -270,12 +270,12 @@ export type ReadonlyState<T> = {
  *   document.title = `Hello, ${fullName.value}!`;
  * });
  *
- * // Update one signal - automatically updates computed and effect
+ * // Update one state - automatically updates computed and effect
  * firstName.value = 'Jane';
  * // Document title automatically changes to "Hello, Jane Doe!"
  * ```
  */
-export function signal<T>(initialValue: T): Signal<T> {
+export function state<T>(initialValue: T): State<T> {
   let value = initialValue;
   let pending = false;
   let pendingUpdateCount = 0;
@@ -321,15 +321,15 @@ export function signal<T>(initialValue: T): Signal<T> {
       const result = fn(value); // value is the previous value
       if (result instanceof Promise) {
         const newValue = await result;
-        // Update the signal with the resolved value
+        // Update the state with the resolved value
         setValue(newValue);
       } else {
-        // Update the signal with the sync value
+        // Update the state with the sync value
         setValue(result);
       }
     } catch (error) {
       // Ignore failed updates, just log them
-      console.warn('Signal update failed:', error);
+      console.warn('State update failed:', error);
     } finally {
       const wasPending = pending;
       pendingUpdateCount--;
@@ -348,22 +348,22 @@ export function signal<T>(initialValue: T): Signal<T> {
     return () => subscribers.delete(fn);
   };
 
-  // Create the signal object with proper pending property access
-  const signalObj = {
+  // Create the state object with proper pending property access
+  const stateObj = {
     get rawValue() {
       return value;
     },
     update,
     subscribe,
     get pending() {
-      // Track this signal as a dependency if we're in an effect or computed
+      // Track this state as a dependency if we're in an effect or computed
       if (activeEffect) {
         dependencies.add(activeEffect);
       }
       return pending;
     },
     get value() {
-      // Track this signal as a dependency if we're in an effect or computed
+      // Track this state as a dependency if we're in an effect or computed
       if (activeEffect) {
         dependencies.add(activeEffect);
       }
@@ -377,13 +377,13 @@ export function signal<T>(initialValue: T): Signal<T> {
     },
   };
 
-  return signalObj as Signal<T>;
+  return stateObj as State<T>;
 }
 
 /**
  * Flushes all pending updates.
  *
- * This function processes all queued signal updates and triggers their
+ * This function processes all queued state updates and triggers their
  * associated effects. It's called automatically by the batching system
  * and typically doesn't need to be called manually.
  *
