@@ -270,15 +270,7 @@ The library automatically detects React when first used, working seamlessly with
 - Next.js
 - And any other modern bundler
 
-If you're using a custom React setup or automatic detection fails, you can optionally override:
-
-```tsx
-import React from 'react';
-import { setReact } from 'react-understate';
-
-// Only needed for custom React setups
-setReact(React);
-```
+The library automatically works with React 18+ using `use-sync-external-store/shim` for optimal compatibility.
 
 ### useSubscribe Hook
 
@@ -628,9 +620,9 @@ Batches multiple state updates into a single effect flush.
 
 ### React Integration
 
-#### `setReact(reactModule: any): void`
+#### `setReact(reactModule: any): void` ⚠️ **Deprecated**
 
-Sets the React instance for state integration. Only needed for custom React setups - automatic detection works in most cases.
+This function is deprecated and no longer needed. The library now uses `use-sync-external-store/shim` for automatic React compatibility.
 
 #### `useSubscribe<T>(signal: Signal<T>): void`
 
