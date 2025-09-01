@@ -27,8 +27,8 @@ Or in your `.eslintrc.js`:
 module.exports = {
   plugins: ['react-understate'],
   rules: {
-    'react-understate/require-use-subscribe': 'error'
-  }
+    'react-understate/require-use-subscribe': 'error',
+  },
 };
 ```
 
@@ -75,7 +75,7 @@ const name = state('John');
 function UserInfo() {
   useSubscribe(count);
   useSubscribe(name);
-  
+
   return (
     <div>
       <p>Name: {name.value}</p>
