@@ -1,17 +1,17 @@
 /**
- * @fileoverview React Integration for Signals
+ * @fileoverview React Integration for State
  *
- * This module provides React integration for the signals system,
+ * This module provides React integration for the state system,
  * including the useSubscribe hook and React instance management.
  */
 
-import type { Signal, ReadonlyState } from './core';
+import type { State, ReadonlyState } from './core';
 
 // React integration
 let ReactInstance: any = null;
 
 /**
- * Sets the React instance for signal integration.
+ * Sets the React instance for state integration.
  *
  * This function must be called once with the React module before using
  * any React-specific features like `useSubscribe`.
@@ -32,32 +32,32 @@ export function setReact(reactModule: any): void {
 }
 
 /**
- * React hook to subscribe to a signal in functional components.
+ * React hook to subscribe to a state in functional components.
  *
- * This hook automatically subscribes to signal changes and triggers
- * component re-renders when the signal value changes. It properly
+ * This hook automatically subscribes to state changes and triggers
+ * component re-renders when the state value changes. It properly
  * cleans up subscriptions when the component unmounts.
  *
  * **Important:** This hook does NOT return a value. Instead, access
- * the signal's `.value` property directly in your component. This
- * ensures proper reactivity and avoids confusion about how to use signals.
+ * the state's `.value` property directly in your component. This
+ * ensures proper reactivity and avoids confusion about how to use states.
  *
  * **Requires React 18+** - This hook uses `useSyncExternalStore` for optimal
  * performance and concurrent rendering support.
  *
- * @param signal - The signal to subscribe to
+ * @param signal - The state to subscribe to
  *
  * @example
  * ```tsx
- * import { signal, useSubscribe } from 'react-understate';
+ * import { state, useSubscribe } from 'react-understate';
  *
- * const userCount = signal(0);
+ * const userCount = state(0);
  *
  * function UserCounter() {
  *   // ✅ CORRECT: Use the hook to establish subscription
  *   useSubscribe(userCount);
  *
- *   // Access the signal value directly
+ *   // Access the state value directly
  *   const count = userCount.value;
  *
  *   return (
@@ -71,7 +71,7 @@ export function setReact(reactModule: any): void {
  * }
  * ```
  */
-export function useSubscribe<T>(signal: Signal<T> | ReadonlyState<T>): void {
+export function useSubscribe<T>(signal: State<T> | ReadonlyState<T>): void {
   if (!ReactInstance) {
     throw new Error(
       'React not set. Call setReact(React) before using useSubscribe'

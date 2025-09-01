@@ -5,20 +5,20 @@
  * It provides reactive state management for React applications with:
  * - Automatic dependency tracking
  * - Computed values that update automatically
- * - Components re-render when signals change
- * - Signals persist across re-renders
+ * - Components re-render when state changes
+ * - State persists across re-renders
  * - Lightweight and performant
  *
  * @example
- * import { signal, useSubscribe, effect } from 'react-understate';
+ * import { state, useSubscribe, effect } from 'react-understate';
  */
 
 // Core exports
-export { signal } from './core';
-export type { Signal, ReadonlyState } from './core';
+export { state } from './core';
+export type { State, ReadonlyState } from './core';
 
 // Reactive exports
-export { derived, effect, batch } from './reactive';
+export { derived, effect, batch } from './state';
 
 // React integration exports
 export { useSubscribe, setReact } from './react';
