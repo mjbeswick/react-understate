@@ -15,6 +15,7 @@ A lightweight, reactive state library for React 18+ with automatic dependency tr
 - 📦 **Lightweight** - Minimal bundle size with zero dependencies
 - 🎨 **TypeScript first** - Full type safety out of the box
 - ⚙️ **Batching support** - Optimize performance with batched updates
+- 🧊 **Automatic deep freezing** - Objects and arrays are automatically frozen to enforce immutability
 
 ## Installation
 
@@ -53,7 +54,7 @@ function Counter() {
 
 States are reactive containers that hold values and notify subscribers when they change. Always use the `.value` property to read and write state values.
 
-```tsx
+````tsx
 import { state } from 'react-understate';
 
 // Create states for different types
@@ -76,7 +77,44 @@ items.value = [...items.value, 'new item'];
 // ❌ INCORRECT: Don't assign states to variables
 // const badCount = count; // This breaks reactivity!
 // const badValue = count.value; // This doesn't track changes!
-```
+
+### Automatic Deep Freezing
+
+React Understate automatically deep-freezes objects and arrays to enforce immutability and prevent accidental mutations. This ensures that state values cannot be modified directly, forcing developers to use proper immutable patterns.
+
+```tsx
+const user = state({ name: 'John', age: 30 });
+const items = state(['apple', 'banana']);
+
+// ✅ CORRECT: Create new objects/arrays for updates
+user.value = { ...user.value, age: 31 };
+items.value = [...items.value, 'cherry'];
+
+// ❌ INCORRECT: Direct mutations will fail
+// user.value.name = 'Jane'; // This will throw an error or fail silently
+// items.value.push('cherry'); // This will throw an error or fail silently
+
+// Deep freezing works recursively
+const nested = state({
+  user: {
+    profile: {
+      preferences: { theme: 'dark' }
+    }
+  }
+});
+
+// All nested objects are frozen
+// nested.value.user.profile.preferences.theme = 'light'; // This will fail
+````
+
+**Benefits of Deep Freezing:**
+
+- **Prevents Bugs**: Catches accidental mutations at runtime
+- **Enforces Best Practices**: Forces use of immutable update patterns
+- **Improves Reactivity**: Ensures state changes are always detectable
+- **Better Performance**: Helps React optimize re-renders
+
+````
 
 ### Derived Values
 
@@ -111,7 +149,7 @@ console.log(result.value); // 10 (5 * 2 = 10, isEven = true)
 
 isEven.value = false;
 console.log(result.value); // 11 (5 * 2 = 10, isEven = false, so +1)
-```
+````
 
 ### Effects
 
