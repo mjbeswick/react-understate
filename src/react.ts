@@ -2,66 +2,11 @@
  * @fileoverview React Integration for State
  *
  * This module provides React integration for the state system,
- * including the useSubscribe hook with automatic React detection.
+ * using use-sync-external-store for optimal compatibility.
  */
 
-import type { State, ReadonlyState } from './core';
-
-// React integration with automatic detection
-let ReactInstance: unknown = null;
-
-/**
- * Automatically detects and returns the React instance.
- *
- * This function tries to find React in the global scope.
- *
- * @returns The React instance
- * @throws Error if React cannot be found
- */
-function getReactInstance(): unknown {
-  if (ReactInstance) {
-    return ReactInstance;
-  }
-
-  // Check if React is available globally (browser environment)
-  if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>)['React']) {
-    ReactInstance = (window as unknown as Record<string, unknown>)['React'];
-    return ReactInstance;
-  }
-
-  // Check for React in global scope (various bundler scenarios)
-  if (typeof global !== 'undefined' && (global as unknown as Record<string, unknown>)['React']) {
-    ReactInstance = (global as unknown as Record<string, unknown>)['React'];
-    return ReactInstance;
-  }
-
-  throw new Error(
-    'React not found. Please ensure React is available in your environment. ' +
-      "If you're using a custom React setup, you can still use setReact(React) to manually set the React instance."
-  );
-}
-
-/**
- * Sets the React instance for state integration (optional override).
- *
- * This function is provided as an optional override for cases where
- * automatic detection fails or you need to use a specific React instance.
- * In most cases, this is not needed as React is automatically detected.
- *
- * @param reactModule - The React module to integrate with
- *
- * @example
- * ```tsx
- * import React from 'react';
- * import { setReact } from 'react-understate';
- *
- * // Only needed if automatic detection fails
- * setReact(React);
- * ```
- */
-export function setReact(reactModule: unknown): void {
-  ReactInstance = reactModule;
-}
+import type { State, ReadonlyState } from "./core";
+import { useSyncExternalStore } from "use-sync-external-store/shim";
 
 /**
  * React hook to subscribe to a state in functional components.
@@ -77,7 +22,7 @@ export function setReact(reactModule: unknown): void {
  * **Requires React 18+** - This hook uses `useSyncExternalStore` for optimal
  * performance and concurrent rendering support.
  *
- * **No setup required** - React is automatically detected in most environments.
+ * **No setup required** - Uses use-sync-external-store/shim for automatic compatibility.
  *
  * @param signal - The state to subscribe to
  *
@@ -106,22 +51,34 @@ export function setReact(reactModule: unknown): void {
  * ```
  */
 export function useSubscribe<T>(signal: State<T> | ReadonlyState<T>): void {
-  const React = getReactInstance() as {
-    useSyncExternalStore: (
-      subscribe: (callback: () => void) => () => void,
-      getSnapshot: () => unknown
-    ) => unknown;
-  };
+  console.log("useSubscribe called for signal:", signal);
+  useSyncExternalStore(
+    (callback) => {
+      console.log("Setting up subscription for signal");
+      return signal.subscribe(() => {
+        console.log(
+          "Subscription triggered for signal, current value:",
+          signal.value,
+        );
+        callback(); // This is the key - we need to call the callback to trigger re-render
+      });
+    },
+    () => {
+      const value = signal.value;
+      console.log("getSnapshot called, returning value:", value);
+      return value;
+    },
+  );
+}
 
-  if (!React.useSyncExternalStore) {
-    throw new Error(
-      'useSyncExternalStore not found. This hook requires React 18+. ' +
-        'Please upgrade to React 18 or later.'
-    );
-  }
-
-  React.useSyncExternalStore(
-    (callback: () => void) => signal.subscribe(callback),
-    () => signal.value
+/**
+ * @deprecated This function is no longer needed as React is automatically detected via use-sync-external-store/shim.
+ * The library now works out of the box without any manual setup.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function setReact(_reactModule: unknown): void {
+  console.warn(
+    "setReact() is deprecated and no longer needed. " +
+      "react-understate now uses use-sync-external-store/shim for automatic React compatibility.",
   );
 }
