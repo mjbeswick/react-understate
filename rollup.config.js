@@ -49,7 +49,7 @@ const terserConfig = {
     safari10: true,
   },
   format: {
-    comments: !isProduction,
+    comments: false, // Always remove comments for smaller bundles
     beautify: !isProduction,
     indent_level: !isProduction ? 2 : 0,
   },

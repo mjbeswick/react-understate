@@ -13,11 +13,7 @@ let ReactInstance: any = null;
 /**
  * Automatically detects and returns the React instance.
  * 
- * This function tries multiple strategies to find React:
- * 1. Previously cached instance
- * 2. Global React (window.React)
- * 3. Module-level require/import
- * 4. Global scope (various bundler scenarios)
+ * This function tries to find React in the global scope.
  * 
  * @returns The React instance
  * @throws Error if React cannot be found
@@ -27,22 +23,13 @@ function getReactInstance(): any {
     return ReactInstance;
   }
 
-  // Strategy 1: Check if React is available globally (browser environment)
+  // Check if React is available globally (browser environment)
   if (typeof window !== 'undefined' && (window as any).React) {
     ReactInstance = (window as any).React;
     return ReactInstance;
   }
 
-  // Strategy 2: Try to require React (Node.js environment)
-  try {
-    ReactInstance = require('react');
-    return ReactInstance;
-  } catch {
-    // Strategy 3: Try dynamic import (ES modules)
-    // This is a fallback for environments where require doesn't work
-  }
-
-  // Strategy 4: Check for React in global scope (various bundler scenarios)
+  // Check for React in global scope (various bundler scenarios)
   if (typeof global !== 'undefined' && (global as any).React) {
     ReactInstance = (global as any).React;
     return ReactInstance;

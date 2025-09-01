@@ -10,37 +10,11 @@ let activeEffect: (() => void) | null = null;
 let isBatching = false;
 const pendingUpdates = new Set<() => void>();
 
-/**
- * Deeply freezes an object or array to prevent mutations.
- * This ensures that state values cannot be accidentally modified,
- * forcing developers to use proper immutable patterns.
- *
- * @param obj - The object or array to freeze
- * @returns The frozen object or array
- */
-function deepFreeze<T>(obj: T): T {
-  if (obj === null || typeof obj !== 'object') {
-    return obj;
+// Simple freeze function - removed deep freezing for smaller bundle
+function freeze<T>(obj: T): T {
+  if (obj !== null && typeof obj === 'object') {
+    Object.freeze(obj);
   }
-
-  // Freeze the object itself
-  Object.freeze(obj);
-
-  // Recursively freeze all properties
-  if (Array.isArray(obj)) {
-    for (let i = 0; i < obj.length; i++) {
-      deepFreeze(obj[i]);
-    }
-  } else {
-    const propNames = Object.getOwnPropertyNames(obj);
-    for (const name of propNames) {
-      const prop = (obj as any)[name];
-      if (typeof prop === 'object' && prop !== null) {
-        deepFreeze(prop);
-      }
-    }
-  }
-
   return obj;
 }
 
@@ -310,10 +284,10 @@ export type ReadonlyState<T> = {
  * ```
  */
 export function state<T>(initialValue: T): State<T> {
-  // Deep freeze the initial value if it's an object or array
+  // Freeze the initial value if it's an object
   let value =
     typeof initialValue === 'object' && initialValue !== null
-      ? deepFreeze(initialValue)
+      ? freeze(initialValue)
       : initialValue;
   let pending = false;
   let pendingUpdateCount = 0;
@@ -336,9 +310,9 @@ export function state<T>(initialValue: T): State<T> {
 
   const setValue = (newValue: T): void => {
     if (!Object.is(value, newValue)) {
-      // Deep freeze objects and arrays to enforce immutability
+      // Freeze objects to enforce immutability
       if (typeof newValue === 'object' && newValue !== null) {
-        value = deepFreeze(newValue);
+        value = freeze(newValue);
       } else {
         value = newValue;
       }
