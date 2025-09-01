@@ -1,13 +1,17 @@
-import { state, derived, effect, batch, useSubscribe, setReact } from './index';
+import { state, derived, effect, batch, useSubscribe, setReact } from "./index";
 
 // Mock React for testing
 const mockReact = {
-  useSyncExternalStore: jest.fn((subscribe, getSnapshot, getServerSnapshot) => {
-    // Call subscribe immediately to simulate the subscription
-    const unsubscribe = subscribe(() => {});
-    // Return the current snapshot
-    return getSnapshot();
-  }),
+  useSyncExternalStore: jest.fn(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (subscribe, getSnapshot, getServerSnapshot) => {
+      // Call subscribe immediately to simulate the subscription
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const unsubscribe = subscribe(() => {});
+      // Return the current snapshot
+      return getSnapshot();
+    },
+  ),
   // Keep old hooks for remaining tests that need them
   useState: jest.fn(() => [null, jest.fn()]),
   useEffect: jest.fn((fn) => {
@@ -20,32 +24,32 @@ const mockReact = {
 // Set React before running tests
 setReact(mockReact);
 
-describe('States', () => {
+describe("States", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('Basic signal functionality', () => {
-    it('should create a signal with initial value', () => {
-      const testState = state('initial');
-      expect(testState.value).toBe('initial');
-      expect(testState.rawValue).toBe('initial');
+  describe("Basic signal functionality", () => {
+    it("should create a signal with initial value", () => {
+      const testState = state("initial");
+      expect(testState.value).toBe("initial");
+      expect(testState.rawValue).toBe("initial");
     });
 
-    it('should update signal value', () => {
-      const testState = state('initial');
-      testState.value = 'updated';
-      expect(testState.value).toBe('updated');
-      expect(testState.rawValue).toBe('updated');
+    it("should update signal value", () => {
+      const testState = state("initial");
+      testState.value = "updated";
+      expect(testState.value).toBe("updated");
+      expect(testState.rawValue).toBe("updated");
     });
 
-    it('should update signal using update method', async () => {
+    it("should update signal using update method", async () => {
       const testState = state(0);
       await testState.update((prev) => prev + 1);
       expect(testState.value).toBe(1);
     });
 
-    it('should update signal using async update method', async () => {
+    it("should update signal using async update method", async () => {
       const testState = state(0);
       await testState.update(async (prev) => {
         await new Promise((resolve) => setTimeout(resolve, 10));
@@ -54,7 +58,7 @@ describe('States', () => {
       expect(testState.value).toBe(1);
     });
 
-    it('should handle multiple rapid updates', () => {
+    it("should handle multiple rapid updates", () => {
       const testState = state(0);
       testState.value = 1;
       testState.value = 2;
@@ -62,7 +66,7 @@ describe('States', () => {
       expect(testState.value).toBe(3);
     });
 
-    it('should not update if value is the same (Object.is)', () => {
+    it("should not update if value is the same (Object.is)", () => {
       const testState = state({ count: 0 });
       const originalValue = testState.value;
       testState.value = { count: 0 }; // Same value, different object
@@ -73,8 +77,8 @@ describe('States', () => {
     });
   });
 
-  describe('Signal subscriptions', () => {
-    it('should notify subscribers when value changes', () => {
+  describe("Signal subscriptions", () => {
+    it("should notify subscribers when value changes", () => {
       const testState = state(0);
       let notified = false;
 
@@ -86,7 +90,7 @@ describe('States', () => {
       expect(notified).toBe(true);
     });
 
-    it('should return unsubscribe function', () => {
+    it("should return unsubscribe function", () => {
       const testState = state(0);
       let notificationCount = 0;
 
@@ -103,7 +107,7 @@ describe('States', () => {
       expect(notificationCount).toBe(2); // Should not increase
     });
 
-    it('should handle multiple subscribers', () => {
+    it("should handle multiple subscribers", () => {
       const testState = state(0);
       let count1 = 0;
       let count2 = 0;
@@ -116,7 +120,7 @@ describe('States', () => {
       expect(count2).toBe(1);
     });
 
-    it('should not notify active effect', () => {
+    it("should not notify active effect", () => {
       const testState = state(0);
       let effectCount = 0;
 
@@ -132,26 +136,26 @@ describe('States', () => {
     });
   });
 
-  describe('useSubscribe hook', () => {
-    it('should subscribe to signal changes', () => {
-      const testState = state('test');
+  describe("useSubscribe hook", () => {
+    it("should subscribe to signal changes", () => {
+      const testState = state("test");
       useSubscribe(testState);
 
       expect(mockReact.useSyncExternalStore).toHaveBeenCalled();
     });
 
-    it('should call useSyncExternalStore with proper parameters', () => {
+    it("should call useSyncExternalStore with proper parameters", () => {
       const testState = state(0);
       useSubscribe(testState);
 
       expect(mockReact.useSyncExternalStore).toHaveBeenCalledWith(
         testState.subscribe,
         expect.any(Function),
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
-    it('should use setReact when provided', () => {
+    it("should use setReact when provided", () => {
       const testState = state(0);
 
       // Test that setReact works as an override
@@ -166,20 +170,20 @@ describe('States', () => {
       expect(mockReact.useSyncExternalStore).toHaveBeenCalled();
     });
 
-    it('should properly subscribe to signal changes', () => {
+    it("should properly subscribe to signal changes", () => {
       const testState = state(0);
 
       // Test that the hook calls useSyncExternalStore with correct parameters
       // Note: We can't actually call useSubscribe outside of a React component
       // So we test the subscription mechanism directly
       const unsubscribe = testState.subscribe(() => {});
-      expect(typeof unsubscribe).toBe('function');
+      expect(typeof unsubscribe).toBe("function");
 
       // Clean up
       unsubscribe();
     });
 
-    it('should handle multiple components using the same signal independently', () => {
+    it("should handle multiple components using the same signal independently", () => {
       const testState = state(0);
 
       // Test multiple subscriptions to the same signal
@@ -187,8 +191,8 @@ describe('States', () => {
       const unsubscribe2 = testState.subscribe(() => {});
 
       // Verify both subscriptions are independent
-      expect(typeof unsubscribe1).toBe('function');
-      expect(typeof unsubscribe2).toBe('function');
+      expect(typeof unsubscribe1).toBe("function");
+      expect(typeof unsubscribe2).toBe("function");
       expect(unsubscribe1).not.toBe(unsubscribe2);
 
       // Clean up
@@ -196,7 +200,7 @@ describe('States', () => {
       unsubscribe2();
     });
 
-    it('should verify actual signal subscription works', () => {
+    it("should verify actual signal subscription works", () => {
       const testState = state(0);
       let subscriptionCount = 0;
 
@@ -219,8 +223,8 @@ describe('States', () => {
     });
   });
 
-  describe('Pending state', () => {
-    it('should track pending state during updates', async () => {
+  describe("Pending state", () => {
+    it("should track pending state during updates", async () => {
       const testState = state(0);
 
       expect(testState.pending).toBe(false);
@@ -238,15 +242,15 @@ describe('States', () => {
     });
   });
 
-  describe('Derived values', () => {
-    it('should create derived value', () => {
+  describe("Derived values", () => {
+    it("should create derived value", () => {
       const source = state(1);
       const derivedValue = derived(() => source.value * 2);
 
       expect(derivedValue.value).toBe(2);
     });
 
-    it('should update derived value when dependency changes', () => {
+    it("should update derived value when dependency changes", () => {
       const source = state(1);
       const derivedValue = derived(() => source.value * 2);
 
@@ -256,7 +260,7 @@ describe('States', () => {
       expect(derivedValue.value).toBe(6);
     });
 
-    it('should handle multiple dependencies', () => {
+    it("should handle multiple dependencies", () => {
       const a = state(1);
       const b = state(2);
       const derivedValue = derived(() => a.value + b.value);
@@ -271,8 +275,8 @@ describe('States', () => {
     });
   });
 
-  describe('Effects', () => {
-    it('should run effect immediately', () => {
+  describe("Effects", () => {
+    it("should run effect immediately", () => {
       let effectRan = false;
 
       effect(() => {
@@ -282,7 +286,7 @@ describe('States', () => {
       expect(effectRan).toBe(true);
     });
 
-    it('should re-run effect when dependencies change', () => {
+    it("should re-run effect when dependencies change", () => {
       const testState = state(0);
       let effectCount = 0;
 
@@ -297,7 +301,7 @@ describe('States', () => {
       expect(effectCount).toBe(2);
     });
 
-    it('should handle cleanup function', () => {
+    it("should handle cleanup function", () => {
       const testState = state(0);
       let cleanupRan = false;
 
@@ -318,8 +322,8 @@ describe('States', () => {
     });
   });
 
-  describe('Batching', () => {
-    it('should batch multiple updates', () => {
+  describe("Batching", () => {
+    it("should batch multiple updates", () => {
       const testState = state(0);
       let notificationCount = 0;
 
@@ -338,8 +342,8 @@ describe('States', () => {
     });
   });
 
-  describe('Edge cases', () => {
-    it('should handle circular dependencies gracefully', () => {
+  describe("Edge cases", () => {
+    it("should handle circular dependencies gracefully", () => {
       const a = state(1);
       const b = state(2);
 
@@ -354,17 +358,17 @@ describe('States', () => {
       expect(derivedValue.value).toBe(2);
     });
 
-    it('should handle errors in update function', async () => {
+    it("should handle errors in update function", async () => {
       const testState = state(0);
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
 
       await testState.update(() => {
-        throw new Error('Test error');
+        throw new Error("Test error");
       });
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        'State update failed:',
-        expect.any(Error)
+        "State update failed:",
+        expect.any(Error),
       );
       expect(testState.value).toBe(0); // Value should remain unchanged
 
@@ -372,9 +376,9 @@ describe('States', () => {
     });
   });
 
-  describe('Deep freezing', () => {
-    it('should automatically freeze objects when set', () => {
-      const userState = state({ name: 'John', age: 30 });
+  describe("Deep freezing", () => {
+    it("should automatically freeze objects when set", () => {
+      const userState = state({ name: "John", age: 30 });
 
       // The object should be frozen
       expect(Object.isFrozen(userState.value)).toBe(true);
@@ -382,8 +386,8 @@ describe('States', () => {
       // so Object.isFrozen() behavior on them may vary
     });
 
-    it('should automatically freeze arrays when set', () => {
-      const itemsState = state(['apple', 'banana', 'cherry']);
+    it("should automatically freeze arrays when set", () => {
+      const itemsState = state(["apple", "banana", "cherry"]);
 
       // The array should be frozen
       expect(Object.isFrozen(itemsState.value)).toBe(true);
@@ -391,13 +395,13 @@ describe('States', () => {
       // so Object.isFrozen() behavior on them may vary
     });
 
-    it('should deeply freeze nested objects', () => {
+    it("should deeply freeze nested objects", () => {
       const nestedState = state({
         user: {
           profile: {
-            name: 'John',
+            name: "John",
             preferences: {
-              theme: 'dark',
+              theme: "dark",
               notifications: true,
             },
           },
@@ -409,14 +413,14 @@ describe('States', () => {
       expect(Object.isFrozen(nestedState.value.user)).toBe(true);
       expect(Object.isFrozen(nestedState.value.user.profile)).toBe(true);
       expect(Object.isFrozen(nestedState.value.user.profile.preferences)).toBe(
-        true
+        true,
       );
     });
 
-    it('should deeply freeze nested arrays', () => {
+    it("should deeply freeze nested arrays", () => {
       const nestedArrayState = state([
         [1, 2, 3],
-        ['a', 'b', 'c'],
+        ["a", "b", "c"],
         [{ x: 1, y: 2 }],
       ]);
 
@@ -427,8 +431,8 @@ describe('States', () => {
       expect(Object.isFrozen(nestedArrayState.value[2])).toBe(true);
     });
 
-    it('should not freeze primitive values', () => {
-      const stringState = state('hello');
+    it("should not freeze primitive values", () => {
+      const stringState = state("hello");
       const numberState = state(42);
       const booleanState = state(true);
       const nullState = state(null);
@@ -436,22 +440,22 @@ describe('States', () => {
 
       // Primitives are immutable by nature, so Object.isFrozen() behavior may vary
       // The important thing is that they work correctly as state values
-      expect(stringState.value).toBe('hello');
+      expect(stringState.value).toBe("hello");
       expect(numberState.value).toBe(42);
       expect(booleanState.value).toBe(true);
       expect(nullState.value).toBe(null);
       expect(undefinedState.value).toBe(undefined);
     });
 
-    it('should prevent mutations of frozen objects', () => {
-      const userState = state({ name: 'John', age: 30 });
+    it("should prevent mutations of frozen objects", () => {
+      const userState = state({ name: "John", age: 30 });
 
       // The object should be frozen and mutations should not work
       const originalName = userState.value.name;
 
       // Attempting to mutate should not work (either throws or fails silently)
       try {
-        (userState.value as any).name = 'Jane';
+        (userState.value as any).name = "Jane";
         // If we get here, the mutation failed silently (which is fine)
         expect(userState.value.name).toBe(originalName);
       } catch (e) {
@@ -460,15 +464,15 @@ describe('States', () => {
       }
     });
 
-    it('should prevent mutations of frozen arrays', () => {
-      const itemsState = state(['apple', 'banana']);
+    it("should prevent mutations of frozen arrays", () => {
+      const itemsState = state(["apple", "banana"]);
 
       // The array should be frozen and mutations should not work
       const originalLength = itemsState.value.length;
 
       // Attempting to mutate should not work (either throws or fails silently)
       try {
-        (itemsState.value as any).push('cherry');
+        (itemsState.value as any).push("cherry");
         // If we get here, the mutation failed silently (which is fine)
         expect(itemsState.value.length).toBe(originalLength);
       } catch (e) {
@@ -477,8 +481,8 @@ describe('States', () => {
       }
     });
 
-    it('should freeze objects when using update method', async () => {
-      const userState = state({ name: 'John', age: 30 });
+    it("should freeze objects when using update method", async () => {
+      const userState = state({ name: "John", age: 30 });
 
       await userState.update((prev) => ({ ...prev, age: 31 }));
 
@@ -487,8 +491,8 @@ describe('States', () => {
       expect(userState.value.age).toBe(31);
     });
 
-    it('should maintain reactivity while enforcing immutability', () => {
-      const userState = state({ name: 'John', age: 30 });
+    it("should maintain reactivity while enforcing immutability", () => {
+      const userState = state({ name: "John", age: 30 });
       let effectCount = 0;
 
       effect(() => {
@@ -499,9 +503,9 @@ describe('States', () => {
       expect(effectCount).toBe(1);
 
       // Update with new object (immutable pattern)
-      userState.value = { ...userState.value, name: 'Jane' };
+      userState.value = { ...userState.value, name: "Jane" };
       expect(effectCount).toBe(2);
-      expect(userState.value.name).toBe('Jane');
+      expect(userState.value.name).toBe("Jane");
     });
   });
 });

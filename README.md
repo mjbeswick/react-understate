@@ -26,8 +26,8 @@ npm install react-understate
 ## Quick Start
 
 ```tsx
-import React from 'react';
-import { state, useSubscribe } from 'react-understate';
+import React from "react";
+import { state, useSubscribe } from "react-understate";
 
 // Create a state
 const count = state(0);
@@ -111,17 +111,15 @@ const nested = state({
 - **Improves Reactivity**: Ensures state changes are always detectable
 - **Better Performance**: Helps React optimize re-renders
 
-````
-
 ### Derived Values
 
 Derived values automatically update when their dependencies change. They are lazy and only recalculate when accessed.
 
 ```tsx
-import { state, derived } from 'react-understate';
+import { state, derived } from "react-understate";
 
-const firstName = state('John');
-const lastName = state('Doe');
+const firstName = state("John");
+const lastName = state("Doe");
 
 // Create a derived state
 const fullName = derived(() => `${firstName.value} ${lastName.value}`);
@@ -129,7 +127,7 @@ const fullName = derived(() => `${firstName.value} ${lastName.value}`);
 console.log(fullName.value); // "John Doe"
 
 // Update dependencies - derived automatically updates
-firstName.value = 'Jane';
+firstName.value = "Jane";
 console.log(fullName.value); // "Jane Doe"
 
 // Complex derived values with multiple dependencies
@@ -146,17 +144,17 @@ console.log(result.value); // 10 (5 * 2 = 10, isEven = true)
 
 isEven.value = false;
 console.log(result.value); // 11 (5 * 2 = 10, isEven = false, so +1)
-````
+```
 
 ### Effects
 
 Effects run side effects when their dependencies change. They automatically track which states they depend on.
 
 ```tsx
-import { state, effect } from 'react-understate';
+import { state, effect } from "react-understate";
 
 const count = state(0);
-const name = state('John');
+const name = state("John");
 
 // Simple effect that logs changes
 const dispose = effect(() => {
@@ -164,7 +162,7 @@ const dispose = effect(() => {
 });
 
 count.value = 5; // Logs: "Count: 5, Name: John"
-name.value = 'Jane'; // Logs: "Count: 5, Name: Jane"
+name.value = "Jane"; // Logs: "Count: 5, Name: Jane"
 
 // Clean up the effect
 dispose();
@@ -175,17 +173,17 @@ dispose();
 Effects can return cleanup functions that run before the effect runs again or when disposed.
 
 ```tsx
-import { state, effect } from 'react-understate';
+import { state, effect } from "react-understate";
 
 const isVisible = state(true);
 
 const dispose = effect(() => {
   if (isVisible.value) {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
 
     // Return cleanup function
     return () => {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = "auto";
     };
   }
 });
@@ -204,7 +202,7 @@ dispose(); // Final cleanup runs
 Effects can be async and are commonly used for API calls:
 
 ```tsx
-import { state, effect } from 'react-understate';
+import { state, effect } from "react-understate";
 
 const userId = state(1);
 const userData = state(null);
@@ -219,7 +217,7 @@ effect(async () => {
       const data = await response.json();
       userData.value = data;
     } catch (error) {
-      console.error('Failed to fetch user:', error);
+      console.error("Failed to fetch user:", error);
     } finally {
       loading.value = false;
     }
@@ -235,10 +233,10 @@ userId.value = 2; // Fetches user with ID 2
 The `update` method provides a powerful way to update states, especially for async operations. It includes built-in loading state management.
 
 ```tsx
-import { state } from 'react-understate';
+import { state } from "react-understate";
 
 const count = state(0);
-const user = state({ id: 1, name: 'John' });
+const user = state({ id: 1, name: "John" });
 
 // Sync update
 await count.update((prev) => prev + 1);
@@ -246,8 +244,8 @@ await count.update((prev) => prev + 1);
 // Async update with automatic loading state
 await user.update(async (prev) => {
   const response = await fetch(`/api/users/${prev.id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ ...prev, name: 'Updated Name' }),
+    method: "PUT",
+    body: JSON.stringify({ ...prev, name: "Updated Name" }),
   });
   return response.json();
 });
@@ -257,13 +255,13 @@ console.log(user.pending); // true during async operation
 
 // Complex async update with error handling
 await count.update(async (prev) => {
-  const result = await fetch('/api/increment', {
-    method: 'POST',
+  const result = await fetch("/api/increment", {
+    method: "POST",
     body: JSON.stringify({ current: prev }),
   });
 
   if (!result.ok) {
-    throw new Error('Failed to increment');
+    throw new Error("Failed to increment");
   }
 
   const data = await result.json();
@@ -280,8 +278,8 @@ await count.update(async (prev) => {
 If you're using a custom React setup or automatic detection fails, you can optionally set the React instance:
 
 ```tsx
-import React from 'react';
-import { setReact } from 'react-understate';
+import React from "react";
+import { setReact } from "react-understate";
 
 // Only needed for custom React setups
 setReact(React);
@@ -294,10 +292,10 @@ The `useSubscribe` hook subscribes to state changes and triggers re-renders when
 **Important:** The hook does NOT return a value. Access the state's `.value` property directly in your component.
 
 ```tsx
-import { state, useSubscribe } from 'react-understate';
+import { state, useSubscribe } from "react-understate";
 
 const userCount = state(0);
-const userName = state('Guest');
+const userName = state("Guest");
 
 function UserDisplay() {
   // ✅ CORRECT: Use the hook to establish subscription
@@ -313,7 +311,7 @@ function UserDisplay() {
       <h1>Welcome, {name}!</h1>
       <p>Active users: {count}</p>
       <button onClick={() => userCount.value++}>Add User</button>
-      <button onClick={() => (userName.value = 'John')}>
+      <button onClick={() => (userName.value = "John")}>
         Set Name to John
       </button>
     </div>
@@ -326,7 +324,7 @@ function UserDisplay() {
 Use the `pending` property to show loading states during async updates:
 
 ```tsx
-import { state, useSubscribe } from 'react-understate';
+import { state, useSubscribe } from "react-understate";
 
 const userData = state(null);
 
@@ -362,12 +360,12 @@ function UserProfile({ userId }) {
 Here's a more complex example with multiple signals and derived values:
 
 ```tsx
-import { state, derived, useSubscribe } from 'react-understate';
+import { state, derived, useSubscribe } from "react-understate";
 
 // State
 const todos = state([]);
-const filter = state('all'); // 'all', 'active', 'completed'
-const newTodo = state('');
+const filter = state("all"); // 'all', 'active', 'completed'
+const newTodo = state("");
 
 // Derived values
 const filteredTodos = derived(() => {
@@ -375,9 +373,9 @@ const filteredTodos = derived(() => {
   const currentFilter = filter.value;
 
   switch (currentFilter) {
-    case 'active':
+    case "active":
       return allTodos.filter((todo) => !todo.completed);
-    case 'completed':
+    case "completed":
       return allTodos.filter((todo) => todo.completed);
     default:
       return allTodos;
@@ -385,7 +383,7 @@ const filteredTodos = derived(() => {
 });
 
 const activeCount = derived(
-  () => todos.value.filter((todo) => !todo.completed).length
+  () => todos.value.filter((todo) => !todo.completed).length,
 );
 
 function TodoApp() {
@@ -405,13 +403,13 @@ function TodoApp() {
           completed: false,
         },
       ];
-      newTodo.value = '';
+      newTodo.value = "";
     }
   };
 
   const toggleTodo = (id) => {
     todos.value = todos.value.map((todo) =>
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo,
     );
   };
 
@@ -427,7 +425,7 @@ function TodoApp() {
         <input
           value={newTodo.value}
           onChange={(e) => (newTodo.value = e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && addTodo()}
+          onKeyPress={(e) => e.key === "Enter" && addTodo()}
           placeholder="Add a todo..."
         />
         <button onClick={addTodo}>Add</button>
@@ -435,21 +433,21 @@ function TodoApp() {
 
       <div>
         <button
-          onClick={() => (filter.value = 'all')}
-          style={{ fontWeight: filter.value === 'all' ? 'bold' : 'normal' }}
+          onClick={() => (filter.value = "all")}
+          style={{ fontWeight: filter.value === "all" ? "bold" : "normal" }}
         >
           All
         </button>
         <button
-          onClick={() => (filter.value = 'active')}
-          style={{ fontWeight: filter.value === 'active' ? 'bold' : 'normal' }}
+          onClick={() => (filter.value = "active")}
+          style={{ fontWeight: filter.value === "active" ? "bold" : "normal" }}
         >
           Active ({activeCount.value})
         </button>
         <button
-          onClick={() => (filter.value = 'completed')}
+          onClick={() => (filter.value = "completed")}
           style={{
-            fontWeight: filter.value === 'completed' ? 'bold' : 'normal',
+            fontWeight: filter.value === "completed" ? "bold" : "normal",
           }}
         >
           Completed
@@ -466,7 +464,7 @@ function TodoApp() {
             />
             <span
               style={{
-                textDecoration: todo.completed ? 'line-through' : 'none',
+                textDecoration: todo.completed ? "line-through" : "none",
               }}
             >
               {todo.text}
@@ -485,10 +483,10 @@ function TodoApp() {
 Use `batch` to group multiple state updates and trigger effects only once:
 
 ```tsx
-import { state, batch, effect } from 'react-understate';
+import { state, batch, effect } from "react-understate";
 
-const firstName = state('John');
-const lastName = state('Doe');
+const firstName = state("John");
+const lastName = state("Doe");
 const age = state(30);
 
 // Effect that depends on multiple states
@@ -497,14 +495,14 @@ effect(() => {
 });
 
 // Without batching - triggers effect 3 times
-firstName.value = 'Jane';
-lastName.value = 'Smith';
+firstName.value = "Jane";
+lastName.value = "Smith";
 age.value = 25;
 
 // With batching - triggers effect only once
 batch(() => {
-  firstName.value = 'Jane';
-  lastName.value = 'Smith';
+  firstName.value = "Jane";
+  lastName.value = "Smith";
   age.value = 25;
 });
 // Effect runs once with all updated values: "User: Jane Smith, Age: 25"
@@ -530,7 +528,7 @@ const handleClick = () => {
 ### Signal Composition
 
 ```tsx
-import { state, derived, effect } from 'react-understate';
+import { state, derived, effect } from "react-understate";
 
 // Base states
 const x = state(0);
@@ -555,14 +553,14 @@ y.value = 4;
 ### Form Validation
 
 ```tsx
-import { state, derived } from 'react-understate';
+import { state, derived } from "react-understate";
 
-const email = state('');
-const password = state('');
-const confirmPassword = state('');
+const email = state("");
+const password = state("");
+const confirmPassword = state("");
 
 const emailValid = derived(() =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value),
 );
 
 const passwordValid = derived(() => password.value.length >= 8);
@@ -570,7 +568,7 @@ const passwordValid = derived(() => password.value.length >= 8);
 const passwordsMatch = derived(() => password.value === confirmPassword.value);
 
 const formValid = derived(
-  () => emailValid.value && passwordValid.value && passwordsMatch.value
+  () => emailValid.value && passwordValid.value && passwordsMatch.value,
 );
 
 function SignupForm() {
