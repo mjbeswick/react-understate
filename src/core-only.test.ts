@@ -180,4 +180,59 @@ describe('Core-Only Module', () => {
       expect(state2.value).toBe('universe');
     });
   });
+
+  describe('State Properties', () => {
+    it('should handle toString method', () => {
+      const testState = CoreOnly.state(42);
+      expect(testState.toString()).toBe('42');
+
+      const stringState = CoreOnly.state('hello');
+      expect(stringState.toString()).toBe('hello');
+
+      const objectState = CoreOnly.state({ name: 'test' });
+      expect(objectState.toString()).toBe('[object Object]');
+    });
+  });
+
+  describe('Internal Functions', () => {
+    it('should export internal functions', () => {
+      const { activeEffect, isBatching, pendingUpdates, setActiveEffect, setIsBatching, flushUpdates } = require('./core');
+
+      expect(typeof activeEffect).toBe('object');
+      expect(typeof isBatching).toBe('boolean');
+      expect(typeof pendingUpdates).toBe('object');
+      expect(typeof setActiveEffect).toBe('function');
+      expect(typeof setIsBatching).toBe('function');
+      expect(typeof flushUpdates).toBe('function');
+    });
+
+    it('should handle setActiveEffect', () => {
+      const { setActiveEffect } = require('./core');
+      
+      const testEffect = () => {};
+      const prev = setActiveEffect(testEffect);
+      expect(prev).toBe(null);
+      
+      const newEffect = () => {};
+      const prev2 = setActiveEffect(newEffect);
+      expect(prev2).toBe(testEffect);
+    });
+
+    it('should handle setIsBatching', () => {
+      const { setIsBatching } = require('./core');
+      
+      const prev = setIsBatching(true);
+      expect(prev).toBe(false);
+      
+      const prev2 = setIsBatching(false);
+      expect(prev2).toBe(true);
+    });
+
+    it('should handle flushUpdates', () => {
+      const { flushUpdates } = require('./core');
+      
+      // Should not throw when no updates are pending
+      expect(() => flushUpdates()).not.toThrow();
+    });
+  });
 });

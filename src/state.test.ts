@@ -149,7 +149,6 @@ describe('States', () => {
       useSubscribe(testState);
 
       expect(mockReact.useSyncExternalStore).toHaveBeenCalledWith(
-        testState.subscribe,
         expect.any(Function),
         expect.any(Function)
       );

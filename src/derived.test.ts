@@ -227,4 +227,86 @@ describe('Derived Values', () => {
       expect(doubled.value).toBe(30);
     });
   });
+
+  describe('Dependency Tracking', () => {
+    it('should track dependencies correctly during computation', () => {
+      const count = state(0);
+      const multiplier = state(2);
+      
+      let computationCount = 0;
+      const derivedValue = derived(() => {
+        computationCount++;
+        return count.value * multiplier.value;
+      });
+
+      // Initial computation
+      expect(derivedValue.value).toBe(0);
+      expect(computationCount).toBe(1);
+
+      // Update one dependency
+      count.value = 5;
+      expect(derivedValue.value).toBe(10);
+      expect(computationCount).toBe(2);
+
+      // Update another dependency
+      multiplier.value = 3;
+      expect(derivedValue.value).toBe(15);
+      expect(computationCount).toBe(3);
+    });
+
+    it('should handle circular dependencies gracefully', () => {
+      const count = state(0);
+      
+      const derived1 = derived(() => count.value + 1);
+      const derived2 = derived(() => derived1.value + 1);
+      
+      // This should not cause infinite loops
+      expect(derived1.value).toBe(1);
+      expect(derived2.value).toBe(2);
+    });
+  });
+
+  describe('Subscription Management', () => {
+    it('should manage subscriptions correctly', () => {
+      const count = state(0);
+      const derivedValue = derived(() => count.value * 2);
+      
+      let notifications = 0;
+      const unsubscribe = derivedValue.subscribe(() => notifications++);
+      
+      // Initial subscription
+      expect(notifications).toBe(0);
+      
+      // Update dependency
+      count.value = 5;
+      expect(notifications).toBe(1);
+      
+      // Unsubscribe
+      unsubscribe();
+      count.value = 10;
+      expect(notifications).toBe(1); // Should not increase
+    });
+
+    it('should handle multiple subscriptions', () => {
+      const count = state(0);
+      const derivedValue = derived(() => count.value * 2);
+      
+      let notifications1 = 0;
+      let notifications2 = 0;
+      
+      const unsubscribe1 = derivedValue.subscribe(() => notifications1++);
+      const unsubscribe2 = derivedValue.subscribe(() => notifications2++);
+      
+      count.value = 5;
+      expect(notifications1).toBe(1);
+      expect(notifications2).toBe(1);
+      
+      unsubscribe1();
+      count.value = 10;
+      expect(notifications1).toBe(1); // Should not increase
+      expect(notifications2).toBe(2); // Should increase
+      
+      unsubscribe2();
+    });
+  });
 });

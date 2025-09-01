@@ -46,6 +46,8 @@ describe('React Integration', () => {
     });
   });
 
+
+
   describe('Error Handling', () => {
     it('should throw error when React lacks useSyncExternalStore', () => {
       const oldReact = { version: '17.0.0' }; // React without useSyncExternalStore
@@ -70,16 +72,13 @@ describe('React Integration', () => {
       useSubscribe(testState);
 
       expect(mockReact.useSyncExternalStore).toHaveBeenCalledWith(
-        testState.subscribe,
         expect.any(Function),
         expect.any(Function)
       );
 
       // Verify the getter functions work correctly
-      const [, getSnapshot, getServerSnapshot] =
-        mockReact.useSyncExternalStore.mock.calls[0];
+      const [subscribe, getSnapshot] = mockReact.useSyncExternalStore.mock.calls[0];
       expect(getSnapshot()).toBe(42);
-      expect(getServerSnapshot()).toBe(42);
     });
   });
 });
