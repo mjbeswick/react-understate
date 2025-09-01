@@ -38,16 +38,14 @@ const completedCount = derived(
 );
 
 function TodoApp() {
-  useSubscribe(todos);
-  useSubscribe(filter);
-  useSubscribe(newTodo);
-  useSubscribe(filteredTodos);
-  useSubscribe(activeCount);
-  useSubscribe(completedCount);
-
-  // Debug logging
-  console.log('TodoApp render - newTodo.value:', newTodo.value);
-  console.log('TodoApp render - todos.value:', todos.value);
+  useSubscribe(
+    todos,
+    filter,
+    newTodo,
+    filteredTodos,
+    activeCount,
+    completedCount
+  );
 
   const addTodo = () => {
     if (newTodo.value.trim()) {
@@ -93,18 +91,7 @@ function TodoApp() {
           <input
             className={styles.newTodo}
             value={newTodo.value}
-            onChange={(e) => {
-              console.log('Input onChange - target.value:', e.target.value);
-              console.log(
-                'Input onChange - current newTodo.value:',
-                newTodo.value
-              );
-              newTodo.value = e.target.value;
-              console.log(
-                'Input onChange - after setting newTodo.value:',
-                newTodo.value
-              );
-            }}
+            onChange={(e) => (newTodo.value = e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && addTodo()}
             placeholder="What needs to be done?"
             autoFocus

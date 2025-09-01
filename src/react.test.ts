@@ -46,7 +46,7 @@ describe('React Integration', () => {
   });
 
   describe('useSubscribe', () => {
-    it('should call useSyncExternalStore with correct parameters', () => {
+    it('should call useSyncExternalStore with correct parameters for single state', () => {
       const testState = state(42);
 
       useSubscribe(testState);
@@ -57,13 +57,14 @@ describe('React Integration', () => {
       );
     });
 
-    it('should return current state value in getSnapshot', () => {
+    it('should return current state value in getSnapshot for single state', () => {
       const testState = state(42);
 
       useSubscribe(testState);
 
       const [, getSnapshot] = mockUseSyncExternalStore.mock.calls[0];
-      expect(getSnapshot()).toBe(42);
+      const snapshot = getSnapshot();
+      expect(snapshot).toEqual({ signal0: 42 });
     });
 
     it('should work with basic states', () => {
@@ -75,7 +76,7 @@ describe('React Integration', () => {
       expect(typeof getSnapshot).toBe('function');
       // Call getSnapshot to get the actual value
       const snapshotValue = getSnapshot();
-      expect(snapshotValue).toBe(42);
+      expect(snapshotValue).toEqual({ signal0: 42 });
     });
 
     it('should call useSyncExternalStore with proper subscription function', () => {
@@ -89,6 +90,33 @@ describe('React Integration', () => {
       expect(typeof subscribe).toBe('function');
       const unsubscribe = subscribe(() => {});
       expect(typeof unsubscribe).toBe('function');
+    });
+
+    it('should work with multiple states', () => {
+      const state1 = state(42);
+      const state2 = state('hello');
+
+      useSubscribe(state1, state2);
+
+      const [, getSnapshot] = mockUseSyncExternalStore.mock.calls[0];
+      const snapshot = getSnapshot();
+      expect(snapshot).toEqual({ signal0: 42, signal1: 'hello' });
+    });
+
+    it('should subscribe to all provided states', () => {
+      const state1 = state(0);
+      const state2 = state('test');
+
+      useSubscribe(state1, state2);
+
+      const [subscribe] = mockUseSyncExternalStore.mock.calls[0];
+      const unsubscribe = subscribe(() => {});
+
+      // Verify unsubscribe is a function
+      expect(typeof unsubscribe).toBe('function');
+
+      // Verify we can call unsubscribe without errors
+      expect(() => unsubscribe()).not.toThrow();
     });
   });
 });

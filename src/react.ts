@@ -9,10 +9,10 @@ import type { State, ReadonlyState } from "./core";
 import { useSyncExternalStore } from "use-sync-external-store/shim";
 
 /**
- * React hook to subscribe to a state in functional components.
+ * React hook to subscribe to one or more states in functional components.
  *
  * This hook automatically subscribes to state changes and triggers
- * component re-renders when the state value changes. It properly
+ * component re-renders when any of the subscribed states change. It properly
  * cleans up subscriptions when the component unmounts.
  *
  * **Important:** This hook does NOT return a value. Instead, access
@@ -24,49 +24,65 @@ import { useSyncExternalStore } from "use-sync-external-store/shim";
  *
  * **No setup required** - Uses use-sync-external-store/shim for automatic compatibility.
  *
- * @param signal - The state to subscribe to
+ * @param signals - One or more states to subscribe to
  *
  * @example
  * ```tsx
  * import { state, useSubscribe } from 'react-understate';
  *
  * const userCount = state(0);
+ * const userName = state('John');
  *
- * function UserCounter() {
- *   // ✅ CORRECT: Use the hook to establish subscription
- *   useSubscribe(userCount);
+ * function UserProfile() {
+ *   // ✅ CORRECT: Subscribe to multiple states at once
+ *   useSubscribe(userCount, userName);
  *
- *   // Access the state value directly
+ *   // Access the state values directly
  *   const count = userCount.value;
+ *   const name = userName.value;
  *
  *   return (
  *     <div>
+ *       <p>User: {name}</p>
  *       <p>Active users: {count}</p>
- *       <button onClick={() => userCount.value++}>
- *         Add User
- *       </button>
  *     </div>
  *   );
  * }
  * ```
+ *
+ * @example
+ * ```tsx
+ * // ✅ CORRECT: Single state subscription (backward compatible)
+ * useSubscribe(userCount);
+ *
+ * // ✅ CORRECT: Multiple state subscription
+ * useSubscribe(userCount, userName, isOnline);
+ * ```
  */
-export function useSubscribe<T>(signal: State<T> | ReadonlyState<T>): void {
-  console.log("useSubscribe called for signal:", signal);
+export function useSubscribe<T>(signal: State<T> | ReadonlyState<T>): void;
+export function useSubscribe(...signals: (State<unknown> | ReadonlyState<unknown>)[]): void;
+export function useSubscribe(...signals: (State<unknown> | ReadonlyState<unknown>)[]): void {
   useSyncExternalStore(
     (callback) => {
-      console.log("Setting up subscription for signal");
-      return signal.subscribe(() => {
-        console.log(
-          "Subscription triggered for signal, current value:",
-          signal.value,
-        );
-        callback(); // This is the key - we need to call the callback to trigger re-render
-      });
+      // Subscribe to all signals
+      const unsubscribes = signals.map(signal => 
+        signal.subscribe(() => {
+          callback(); // Trigger re-render when any signal changes
+        })
+      );
+      
+      // Return cleanup function that unsubscribes from all signals
+      return () => {
+        unsubscribes.forEach(unsubscribe => unsubscribe());
+      };
     },
     () => {
-      const value = signal.value;
-      console.log("getSnapshot called, returning value:", value);
-      return value;
+      // Return a snapshot that includes all signal values
+      // We use a simple object to ensure the snapshot changes when any signal changes
+      return signals.reduce((acc, signal, index) => {
+        acc[`signal${index}`] = signal.value;
+        return acc;
+      }, {} as Record<string, unknown>);
     },
   );
 }
