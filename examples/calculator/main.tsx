@@ -1,11 +1,8 @@
-import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { state, useSubscribe, setReact } from 'react-understate';
+import { state, useSubscribe } from 'react-understate';
 import { useEffect } from 'react';
 import styles from './styles.module.css';
 import clsx from 'clsx';
-
-setReact(React);
 
 // Calculator state using states
 const displayValue = state('0');
