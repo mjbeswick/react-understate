@@ -16,6 +16,10 @@
       "types": "./dist/core.d.ts",
       "import": "./dist/react-understate.signals.js",
       "require": "./dist/react-understate.signals.cjs.js"
+    },
+    "./eslint-plugin": {
+      "import": "./eslint-plugin-react-understate/index.js",
+      "require": "./eslint-plugin-react-understate/index.js"
     }
   },
   "scripts": {

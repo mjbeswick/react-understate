@@ -648,8 +648,10 @@ React Understate comes with a comprehensive ESLint plugin to help enforce best p
 
 ### Installation
 
+The ESLint plugin is included with the main package. No additional installation is required.
+
 ```bash
-npm install --save-dev eslint-plugin-react-understate
+npm install react-understate
 ```
 
 ### Configuration
@@ -658,7 +660,7 @@ Add the plugin to your ESLint configuration:
 
 ```json
 {
-  "plugins": ["react-understate"],
+  "plugins": ["react-understate/eslint-plugin"],
   "rules": {
     "react-understate/require-use-subscribe": "error",
     "react-understate/prefer-batch-for-multiple-updates": "warn",
