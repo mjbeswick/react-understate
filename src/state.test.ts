@@ -1,28 +1,4 @@
-import { state, derived, effect, batch, useSubscribe, setReact } from './index';
-
-// Mock React for testing
-const mockReact = {
-  useSyncExternalStore: jest.fn(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    (subscribe, getSnapshot, getServerSnapshot) => {
-      // Call subscribe immediately to simulate the subscription
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const unsubscribe = subscribe(() => {});
-      // Return the current snapshot
-      return getSnapshot();
-    }
-  ),
-  // Keep old hooks for remaining tests that need them
-  useState: jest.fn(() => [null, jest.fn()]),
-  useEffect: jest.fn((fn) => {
-    // Call the effect immediately and return cleanup function
-    const cleanup = fn();
-    return cleanup;
-  }),
-};
-
-// Set React before running tests
-setReact(mockReact);
+import { state, derived, effect, batch } from './index';
 
 describe('States', () => {
   beforeEach(() => {
@@ -136,45 +112,11 @@ describe('States', () => {
     });
   });
 
-  describe('useSubscribe hook', () => {
-    it('should subscribe to signal changes', () => {
-      const testState = state('test');
-      useSubscribe(testState);
-
-      expect(mockReact.useSyncExternalStore).toHaveBeenCalled();
-    });
-
-    it('should call useSyncExternalStore with proper parameters', () => {
-      const testState = state(0);
-      useSubscribe(testState);
-
-      expect(mockReact.useSyncExternalStore).toHaveBeenCalledWith(
-        expect.any(Function),
-        expect.any(Function)
-      );
-    });
-
-    it('should use setReact when provided', () => {
-      const testState = state(0);
-
-      // Test that setReact works as an override
-      setReact(mockReact);
-
-      // This should work because we set the React instance
-      expect(() => {
-        useSubscribe(testState);
-      }).not.toThrow();
-
-      // Verify the mock was called
-      expect(mockReact.useSyncExternalStore).toHaveBeenCalled();
-    });
-
+  describe('Subscription mechanism', () => {
     it('should properly subscribe to signal changes', () => {
       const testState = state(0);
 
-      // Test that the hook calls useSyncExternalStore with correct parameters
-      // Note: We can't actually call useSubscribe outside of a React component
-      // So we test the subscription mechanism directly
+      // Test that the subscription mechanism works correctly
       const unsubscribe = testState.subscribe(() => {});
       expect(typeof unsubscribe).toBe('function');
 
