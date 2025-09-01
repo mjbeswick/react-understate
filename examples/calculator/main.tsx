@@ -1,8 +1,11 @@
+import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { state, useSubscribe } from 'react-understate';
+import { state, useSubscribe, setReact } from 'react-understate';
 import { useEffect } from 'react';
 import styles from './styles.module.css';
 import clsx from 'clsx';
+
+setReact(React);
 
 // Calculator state using states
 const displayValue = state('0');
@@ -193,6 +196,17 @@ function Calculator() {
     console.log('Component rendered with displayValue:', displayValue.value);
     console.log('DOM should show:', displayValue.value);
   });
+
+  // Debug: Add subscription debugging
+  useEffect(() => {
+    const unsubscribe = displayValue.subscribe(() => {
+      console.log(
+        'displayValue subscription triggered! New value:',
+        displayValue.value
+      );
+    });
+    return unsubscribe;
+  }, []);
 
   return (
     <div className={styles.calculator}>

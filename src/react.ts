@@ -24,14 +24,14 @@ function getReactInstance(): unknown {
   }
 
   // Check if React is available globally (browser environment)
-  if (typeof window !== 'undefined' && (window as any).React) {
-    ReactInstance = (window as any).React;
+  if (typeof window !== 'undefined' && (window as unknown as Record<string, unknown>)['React']) {
+    ReactInstance = (window as unknown as Record<string, unknown>)['React'];
     return ReactInstance;
   }
 
   // Check for React in global scope (various bundler scenarios)
-  if (typeof global !== 'undefined' && (global as any).React) {
-    ReactInstance = (global as any).React;
+  if (typeof global !== 'undefined' && (global as unknown as Record<string, unknown>)['React']) {
+    ReactInstance = (global as unknown as Record<string, unknown>)['React'];
     return ReactInstance;
   }
 
@@ -59,7 +59,7 @@ function getReactInstance(): unknown {
  * setReact(React);
  * ```
  */
-export function setReact(reactModule: any): void {
+export function setReact(reactModule: unknown): void {
   ReactInstance = reactModule;
 }
 
@@ -108,7 +108,7 @@ export function setReact(reactModule: any): void {
 export function useSubscribe<T>(signal: State<T> | ReadonlyState<T>): void {
   const React = getReactInstance() as {
     useSyncExternalStore: (
-      subscribe: () => () => void,
+      subscribe: (callback: () => void) => () => void,
       getSnapshot: () => unknown
     ) => unknown;
   };
@@ -121,7 +121,7 @@ export function useSubscribe<T>(signal: State<T> | ReadonlyState<T>): void {
   }
 
   React.useSyncExternalStore(
-    () => signal.subscribe(() => {}),
-    () => signal.rawValue
+    (callback: () => void) => signal.subscribe(callback),
+    () => signal.value
   );
 }

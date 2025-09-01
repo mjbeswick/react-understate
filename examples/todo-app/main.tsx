@@ -1,6 +1,9 @@
+import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { state, derived, useSubscribe } from 'react-understate';
+import { state, derived, useSubscribe, setReact } from 'react-understate';
 import styles from './styles.module.css';
+
+setReact(React);
 
 // Define the Todo type
 type Todo = {
