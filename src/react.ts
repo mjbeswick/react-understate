@@ -2,28 +2,73 @@
  * @fileoverview React Integration for State
  *
  * This module provides React integration for the state system,
- * including the useSubscribe hook and React instance management.
+ * including the useSubscribe hook with automatic React detection.
  */
 
 import type { State, ReadonlyState } from './core';
 
-// React integration
+// React integration with automatic detection
 let ReactInstance: any = null;
 
 /**
- * Sets the React instance for state integration.
+ * Automatically detects and returns the React instance.
+ * 
+ * This function tries multiple strategies to find React:
+ * 1. Previously cached instance
+ * 2. Global React (window.React)
+ * 3. Module-level require/import
+ * 4. Global scope (various bundler scenarios)
+ * 
+ * @returns The React instance
+ * @throws Error if React cannot be found
+ */
+function getReactInstance(): any {
+  if (ReactInstance) {
+    return ReactInstance;
+  }
+
+  // Strategy 1: Check if React is available globally (browser environment)
+  if (typeof window !== 'undefined' && (window as any).React) {
+    ReactInstance = (window as any).React;
+    return ReactInstance;
+  }
+
+  // Strategy 2: Try to require React (Node.js environment)
+  try {
+    ReactInstance = require('react');
+    return ReactInstance;
+  } catch {
+    // Strategy 3: Try dynamic import (ES modules)
+    // This is a fallback for environments where require doesn't work
+  }
+
+  // Strategy 4: Check for React in global scope (various bundler scenarios)
+  if (typeof global !== 'undefined' && (global as any).React) {
+    ReactInstance = (global as any).React;
+    return ReactInstance;
+  }
+
+  throw new Error(
+    'React not found. Please ensure React is available in your environment. ' +
+    'If you\'re using a custom React setup, you can still use setReact(React) to manually set the React instance.'
+  );
+}
+
+/**
+ * Sets the React instance for state integration (optional override).
  *
- * This function must be called once with the React module before using
- * any React-specific features like `useSubscribe`.
+ * This function is provided as an optional override for cases where
+ * automatic detection fails or you need to use a specific React instance.
+ * In most cases, this is not needed as React is automatically detected.
  *
  * @param reactModule - The React module to integrate with
  *
  * @example
  * ```tsx
  * import React from 'react';
- * import { setReact } from './react';
+ * import { setReact } from 'react-understate';
  *
- * // Call this once at app startup
+ * // Only needed if automatic detection fails
  * setReact(React);
  * ```
  */
@@ -44,6 +89,8 @@ export function setReact(reactModule: any): void {
  *
  * **Requires React 18+** - This hook uses `useSyncExternalStore` for optimal
  * performance and concurrent rendering support.
+ *
+ * **No setup required** - React is automatically detected in most environments.
  *
  * @param signal - The state to subscribe to
  *
@@ -72,12 +119,16 @@ export function setReact(reactModule: any): void {
  * ```
  */
 export function useSubscribe<T>(signal: State<T> | ReadonlyState<T>): void {
-  if (!ReactInstance) {
+  const React = getReactInstance();
+  
+  if (!React.useSyncExternalStore) {
     throw new Error(
-      'React not set. Call setReact(React) before using useSubscribe'
+      'useSyncExternalStore not found. This hook requires React 18+. ' +
+      'Please upgrade to React 18 or later.'
     );
   }
-  ReactInstance.useSyncExternalStore(
+  
+  React.useSyncExternalStore(
     signal.subscribe,
     () => signal.rawValue,
     () => signal.rawValue

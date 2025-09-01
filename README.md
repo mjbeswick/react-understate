@@ -27,10 +27,7 @@ npm install react-understate
 
 ```tsx
 import React from 'react';
-import { state, useSubscribe, setReact } from 'react-understate';
-
-// Set React for state integration (call once at app startup)
-setReact(React);
+import { state, useSubscribe } from 'react-understate';
 
 // Create a state
 const count = state(0);
@@ -278,13 +275,15 @@ await count.update(async (prev) => {
 
 ### Setup
 
-First, set the React instance for state integration:
+**No setup required!** React is automatically detected in most environments. The `useSubscribe` hook works out of the box.
+
+If you're using a custom React setup or automatic detection fails, you can optionally set the React instance:
 
 ```tsx
 import React from 'react';
 import { setReact } from 'react-understate';
 
-// Call this once at app startup
+// Only needed for custom React setups
 setReact(React);
 ```
 
