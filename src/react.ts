@@ -8,17 +8,17 @@
 import type { State, ReadonlyState } from './core';
 
 // React integration with automatic detection
-let ReactInstance: any = null;
+let ReactInstance: unknown = null;
 
 /**
  * Automatically detects and returns the React instance.
- * 
+ *
  * This function tries to find React in the global scope.
- * 
+ *
  * @returns The React instance
  * @throws Error if React cannot be found
  */
-function getReactInstance(): any {
+function getReactInstance(): unknown {
   if (ReactInstance) {
     return ReactInstance;
   }
@@ -37,7 +37,7 @@ function getReactInstance(): any {
 
   throw new Error(
     'React not found. Please ensure React is available in your environment. ' +
-    'If you\'re using a custom React setup, you can still use setReact(React) to manually set the React instance.'
+      "If you're using a custom React setup, you can still use setReact(React) to manually set the React instance."
   );
 }
 
@@ -106,18 +106,22 @@ export function setReact(reactModule: any): void {
  * ```
  */
 export function useSubscribe<T>(signal: State<T> | ReadonlyState<T>): void {
-  const React = getReactInstance();
-  
+  const React = getReactInstance() as {
+    useSyncExternalStore: (
+      subscribe: () => () => void,
+      getSnapshot: () => unknown
+    ) => unknown;
+  };
+
   if (!React.useSyncExternalStore) {
     throw new Error(
       'useSyncExternalStore not found. This hook requires React 18+. ' +
-      'Please upgrade to React 18 or later.'
+        'Please upgrade to React 18 or later.'
     );
   }
-  
+
   React.useSyncExternalStore(
-    signal.subscribe,
-    () => signal.rawValue,
+    () => signal.subscribe(() => {}),
     () => signal.rawValue
   );
 }

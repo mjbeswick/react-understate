@@ -43,7 +43,7 @@ describe('Batching', () => {
 
       batch(() => {
         // No state updates in this batch
-        const value = count.value; // Just read the value
+        count.value; // Just read the value
       });
 
       expect(notifications).toBe(0);
