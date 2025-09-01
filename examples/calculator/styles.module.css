@@ -1,0 +1,239 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: #1a1a1a;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.calculator {
+  background: #2d2d2d;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  padding: 0;
+  width: 100%;
+  max-width: 360px;
+  border: 1px solid #404040;
+  position: relative;
+  overflow: hidden;
+}
+
+/* macOS Traffic Light Controls */
+.calculator::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 12px;
+  height: 12px;
+  background: #ff5f57;
+  border-radius: 50%;
+  box-shadow:
+    24px 0 0 #ffbd2e,
+    48px 0 0 #28ca42;
+  z-index: 10;
+}
+
+.display {
+  background: #2d2d2d;
+  padding: 60px 24px 24px 24px;
+  margin-bottom: 16px;
+  text-align: right;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-bottom: 1px solid #404040;
+  overflow: hidden;
+}
+
+.expression {
+  font-size: 16px;
+  color: #888;
+  margin-bottom: 8px;
+  min-height: 20px;
+  word-wrap: break-word;
+  font-weight: 400;
+}
+
+.result {
+  font-size: 48px;
+  font-weight: 300;
+  color: #ffffff;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Responsive text sizing for longer numbers */
+.digits-10,
+.digits-11 {
+  font-size: 42px !important;
+}
+
+.digits-12,
+.digits-13 {
+  font-size: 36px !important;
+}
+
+.digits-14,
+.digits-15 {
+  font-size: 30px !important;
+}
+
+.digits-16 {
+  font-size: 24px !important;
+}
+
+/* Additional responsive sizing for very long numbers */
+.digits-17,
+.digits-18 {
+  font-size: 20px !important;
+}
+
+.digits-19,
+.digits-20 {
+  font-size: 18px !important;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 0 16px 16px 16px;
+}
+
+.key {
+  background: #505050;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 20px;
+  font-weight: 400;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  position: relative;
+}
+
+.key:hover {
+  background: #606060;
+}
+
+.key:active {
+  background: #404040;
+}
+
+.key.operator {
+  background: #ff9500;
+  color: white;
+  font-weight: 500;
+}
+
+.key.operator:hover {
+  background: #ffaa33;
+}
+
+.key.operator:active {
+  background: #e6850e;
+}
+
+.key.function {
+  background: #666666;
+  color: white;
+  font-weight: 400;
+}
+
+.key.function:hover {
+  background: #777777;
+}
+
+.key.function:active {
+  background: #555555;
+}
+
+.key.zero {
+  grid-column: span 2;
+  width: 152px;
+  border-radius: 35px;
+}
+
+/* Number button specific styling */
+.key:not(.operator):not(.function) {
+  font-weight: 400;
+  color: #ffffff;
+}
+
+.key:not(.operator):not(.function):hover {
+  background: #606060;
+}
+
+.key:not(.operator):not(.function):active {
+  background: #404040;
+}
+
+/* Focus states for accessibility */
+.key:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 149, 0, 0.5);
+}
+
+@media (max-width: 480px) {
+  .calculator {
+    max-width: 320px;
+  }
+
+  .key {
+    width: 60px;
+    height: 60px;
+    font-size: 18px;
+  }
+
+  .key.zero {
+    width: 132px;
+  }
+
+  .result {
+    font-size: 40px;
+  }
+}
+
+@media (max-width: 360px) {
+  .calculator {
+    max-width: 280px;
+  }
+
+  .key {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+  }
+
+  .key.zero {
+    width: 112px;
+  }
+
+  .result {
+    font-size: 36px;
+  }
+
+  .keypad {
+    gap: 8px;
+    padding: 0 12px 12px 12px;
+  }
+}
