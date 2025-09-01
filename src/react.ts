@@ -60,29 +60,30 @@ import { useSyncExternalStore } from "use-sync-external-store/shim";
  * ```
  */
 export function useSubscribe<T>(signal: State<T> | ReadonlyState<T>): void;
-export function useSubscribe(...signals: (State<unknown> | ReadonlyState<unknown>)[]): void;
-export function useSubscribe(...signals: (State<unknown> | ReadonlyState<unknown>)[]): void {
+export function useSubscribe(
+  ...signals: (State<unknown> | ReadonlyState<unknown>)[]
+): void;
+export function useSubscribe(
+  ...signals: (State<unknown> | ReadonlyState<unknown>)[]
+): void {
   useSyncExternalStore(
     (callback) => {
       // Subscribe to all signals
-      const unsubscribes = signals.map(signal => 
+      const unsubscribes = signals.map((signal) =>
         signal.subscribe(() => {
           callback(); // Trigger re-render when any signal changes
-        })
+        }),
       );
-      
+
       // Return cleanup function that unsubscribes from all signals
       return () => {
-        unsubscribes.forEach(unsubscribe => unsubscribe());
+        unsubscribes.forEach((unsubscribe) => unsubscribe());
       };
     },
     () => {
-      // Return a snapshot that includes all signal values
-      // We use a simple object to ensure the snapshot changes when any signal changes
-      return signals.reduce((acc, signal, index) => {
-        acc[`signal${index}`] = signal.value;
-        return acc;
-      }, {} as Record<string, unknown>);
+      // Return a stable snapshot that only changes when signal values actually change
+      // Use JSON.stringify to create a stable hash of all signal values
+      return JSON.stringify(signals.map((signal) => signal.value));
     },
   );
 }
