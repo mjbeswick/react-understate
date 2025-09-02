@@ -20,31 +20,16 @@
   },
   "scripts": {
     "build": "rollup -c && node scripts/build-size.ts",
-    "build:watch": "rollup -c --watch",
-    "build:analyze": "rollup -c && open bundle-analysis.html",
     "test": "jest",
-    "test:coverage": "jest --coverage",
-    "test:watch": "jest --watch",
     "lint": "eslint src/ --ext .ts",
     "lint:fix": "eslint src/ --ext .ts --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "format:fix": "prettier --write . && eslint src/ --ext .ts --fix",
     "type-check": "tsc --noEmit",
-    "type-check:watch": "tsc --noEmit --watch",
-    "size": "node scripts/build-size.ts",
-    "analyze": "npm run build && open bundle-analysis.html",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build",
     "prepare": "husky",
-    "pre-commit": "npm run format:fix && npm run type-check && npm test",
-    "publish:patch": "npm version patch && npm publish",
-    "publish:minor": "npm version minor && npm publish",
-    "publish:major": "npm version major && npm publish",
-    "release:patch": "npm version patch && npm publish && git push origin main && git tag v$(npm run version --silent) && git push origin v$(npm run version --silent)",
-    "release:minor": "npm version minor && npm publish && git push origin main && git tag v$(npm run version --silent) && git push origin v$(npm run version --silent)",
-    "release:major": "npm version major && npm publish && git push origin main && git tag v$(npm run version --silent) && git push origin v$(npm run version --silent)",
-    "optimize": "npm run clean && npm run build:prod && npm run size && npm run analyze"
+    "pre-commit": "npm run format && npm run type-check && npm test",
+    "release": "npm version patch && npm publish && git push origin main && git push origin v$(node -p \"require('./package.json').version\")"
   },
   "lint-staged": {
     "src/**/*.{ts}": [
