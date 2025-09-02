@@ -16,10 +16,6 @@
       "types": "./dist/core.d.ts",
       "import": "./dist/react-understate.signals.js",
       "require": "./dist/react-understate.signals.cjs.js"
-    },
-    "./eslint-plugin": {
-      "import": "./eslint-plugin/index.js",
-      "require": "./eslint-plugin/index.js"
     }
   },
   "scripts": {
@@ -125,8 +121,7 @@
     "typescript": "^5.0.0"
   },
   "files": [
-    "dist",
-    "eslint-plugin"
+    "dist"
   ],
   "dependencies": {
     "use-sync-external-store": "^1.5.0"

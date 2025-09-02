@@ -656,11 +656,15 @@ npm install react-understate
 
 ### Configuration
 
-Add the plugin to your ESLint configuration:
+Install and configure the separate ESLint plugin package:
+
+```bash
+npm install --save-dev eslint-plugin-react-understate
+```
 
 ```json
 {
-  "plugins": ["react-understate/eslint-plugin"],
+  "plugins": ["react-understate"],
   "rules": {
     "react-understate/require-use-subscribe": "error",
     "react-understate/prefer-batch-for-multiple-updates": "warn",

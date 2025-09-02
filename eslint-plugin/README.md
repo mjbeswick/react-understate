@@ -5,7 +5,7 @@ ESLint plugin for React Understate to enforce best practices and catch common mi
 ## Installation
 
 ```bash
-npm install --save-dev react-understate
+npm install --save-dev eslint-plugin-react-understate
 ```
 
 ## Usage
@@ -14,7 +14,7 @@ Add the plugin to your ESLint configuration:
 
 ```json
 {
-  "plugins": ["react-understate/eslint-plugin"],
+  "plugins": ["react-understate"],
   "rules": {
     "react-understate/require-use-subscribe": "error",
     "react-understate/prefer-batch-for-multiple-updates": "warn",
@@ -30,7 +30,7 @@ Or in your `.eslintrc.js`:
 
 ```javascript
 module.exports = {
-  plugins: ["react-understate/eslint-plugin"],
+  plugins: ["react-understate"],
   rules: {
     "react-understate/require-use-subscribe": "error",
     "react-understate/prefer-batch-for-multiple-updates": "warn",
