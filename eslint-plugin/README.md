@@ -1,11 +1,11 @@
-# eslint-plugin-react-understate
+# React Understate ESLint Plugin
 
 ESLint plugin for React Understate to enforce best practices and catch common mistakes.
 
 ## Installation
 
 ```bash
-npm install --save-dev eslint-plugin-react-understate
+npm install --save-dev react-understate
 ```
 
 ## Usage
@@ -14,7 +14,7 @@ Add the plugin to your ESLint configuration:
 
 ```json
 {
-  "plugins": ["react-understate"],
+  "plugins": ["react-understate/eslint-plugin"],
   "rules": {
     "react-understate/require-use-subscribe": "error",
     "react-understate/prefer-batch-for-multiple-updates": "warn",
@@ -30,7 +30,7 @@ Or in your `.eslintrc.js`:
 
 ```javascript
 module.exports = {
-  plugins: ["react-understate"],
+  plugins: ["react-understate/eslint-plugin"],
   rules: {
     "react-understate/require-use-subscribe": "error",
     "react-understate/prefer-batch-for-multiple-updates": "warn",
