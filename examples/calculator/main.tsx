@@ -175,7 +175,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
 // Calculator component
 function Calculator() {
   // Use useSubscribe hook to automatically subscribe to state changes
-  // useSubscribe(displayValue, previousValue, operation, waitingForOperand);
+  useSubscribe(displayValue, previousValue, operation, waitingForOperand);
 
   console.log('render with useSubscribe:', displayValue.value);
 
