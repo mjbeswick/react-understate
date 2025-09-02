@@ -20,7 +20,8 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint": "^8.0.0",
     "typescript": "^5.0.0",
-    "vite": "^4.0.0"
+    "vite": "^4.0.0",
+    "eslint-plugin-react-understate": "file:../../eslint-plugin"
   },
   "dependencies": {
     "clsx": "^2.1.1",
