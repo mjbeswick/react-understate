@@ -122,7 +122,8 @@
     "typescript": "^5.0.0"
   },
   "files": [
-    "dist"
+    "dist",
+    "eslint-plugin-react-understate"
   ],
   "dependencies": {
     "use-sync-external-store": "^1.5.0"

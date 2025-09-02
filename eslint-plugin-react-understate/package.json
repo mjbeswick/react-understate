@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "ESLint plugin to check for missing useSubscribe calls when using state.value in React components",
   "main": "index.js",
+  "types": "index.d.ts",
   "keywords": [
     "eslint",
     "eslintplugin",
