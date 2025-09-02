@@ -20,6 +20,8 @@
   },
   "scripts": {
     "build": "rollup -c && node scripts/build-size.ts",
+    "build:watch": "rollup -c --watch",
+    "build:analyze": "rollup -c && open bundle-analysis.html",
     "test": "jest",
     "lint": "eslint src/ --ext .ts",
     "lint:fix": "eslint src/ --ext .ts --fix",
@@ -29,7 +31,10 @@
     "prepublishOnly": "npm run clean && npm run build",
     "prepare": "husky",
     "pre-commit": "npm run format && npm run type-check && npm test",
-    "release": "npm version patch && npm publish && git push origin main && git push origin v$(node -p \"require('./package.json').version\")"
+    "release": "npm version patch && npm publish && git push origin main && git push origin v$(node -p \"require('./package.json').version\")",
+    "release:patch": "npm version patch && npm publish && git push origin main && git push origin v$(node -p \"require('./package.json').version\")",
+    "release:minor": "npm version minor && npm publish && git push origin main && git push origin v$(node -p \"require('./package.json').version\")",
+    "release:major": "npm version major && npm publish && git push origin main && git push origin v$(node -p \"require('./package.json').version\")"
   },
   "lint-staged": {
     "src/**/*.{ts}": [
