@@ -1,5 +1,5 @@
 {
-  "name": "@internal/react-understate-eslint-plugin",
+  "name": "react-understate-eslint-plugin",
   "version": "1.0.0",
   "description": "ESLint plugin to check for missing useSubscribe calls when using state.value in React components",
   "main": "index.js",
@@ -15,6 +15,7 @@
   "author": "mjbeswick",
   "license": "MIT",
   "peerDependencies": {
-    "eslint": ">=8.0.0"
+    "eslint": ">=8.0.0",
+    "react-understate": ">=1.0.10"
   }
 }
