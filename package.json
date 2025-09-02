@@ -1,6 +1,6 @@
 {
   "name": "react-understate",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A lightweight, reactive signals library for React 18+ with automatic dependency tracking and optimized performance",
   "type": "module",
   "main": "dist/react-understate.esm.js",
