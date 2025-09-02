@@ -644,15 +644,7 @@ Subscribes to signal changes. Returns an unsubscribe function.
 
 ## ESLint Plugin
 
-React Understate comes with a comprehensive ESLint plugin to help enforce best practices and catch common mistakes early in development.
-
-### Installation
-
-The ESLint plugin is included with the main package. No additional installation is required.
-
-```bash
-npm install react-understate
-```
+Use the official ESLint plugin to enforce best practices: eslint-plugin-react-understate (`https://www.npmjs.com/package/eslint-plugin-react-understate`).
 
 ### Configuration
 
