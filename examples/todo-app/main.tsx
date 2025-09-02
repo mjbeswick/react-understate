@@ -16,16 +16,13 @@ const newTodo = state('');
 
 // Computed values
 const filteredTodos = derived(() => {
-  const allTodos = todos.value;
-  const currentFilter = filter.value;
-
-  switch (currentFilter) {
+  switch (filter.value) {
     case 'active':
-      return allTodos.filter((todo) => !todo.completed);
+      return todos.value.filter((todo) => !todo.completed);
     case 'completed':
-      return allTodos.filter((todo) => todo.completed);
+      return todos.value.filter((todo) => todo.completed);
     default:
-      return allTodos;
+      return todos.value;
   }
 });
 
