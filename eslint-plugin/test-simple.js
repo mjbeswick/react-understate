@@ -1,10 +1,10 @@
 // Simple test file to demonstrate the ESLint plugin
 // This file contains examples of correct and incorrect usage
 
-const { state, useSubscribe } = require('react-understate');
+const { state, useSubscribe } = require("react-understate");
 
 const count = state(0);
-const name = state('John');
+const name = state("John");
 
 // ❌ INCORRECT: Missing useSubscribe
 function BadCounter() {
@@ -21,7 +21,7 @@ function GoodCounter() {
 function GoodUserInfo() {
   useSubscribe(name);
   useSubscribe(count);
-  
+
   console.log(name.value);
   console.log(count.value);
 }

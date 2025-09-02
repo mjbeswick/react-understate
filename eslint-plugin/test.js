@@ -1,10 +1,10 @@
 // Test file to demonstrate the ESLint plugin
 // This file contains examples of correct and incorrect usage
 
-import { state, useSubscribe } from 'react-understate';
+import { state, useSubscribe } from "react-understate";
 
 const count = state(0);
-const name = state('John');
+const name = state("John");
 const isActive = state(false);
 
 // ❌ INCORRECT: Missing useSubscribe
@@ -32,7 +32,7 @@ function GoodCounter() {
 function GoodUserInfo() {
   useSubscribe(name);
   useSubscribe(count);
-  
+
   return (
     <div>
       <p>Name: {name.value}</p>
@@ -44,12 +44,12 @@ function GoodUserInfo() {
 // ✅ CORRECT: Arrow function component
 const GoodArrowComponent = () => {
   useSubscribe(isActive);
-  return <div>Active: {isActive.value ? 'Yes' : 'No'}</div>;
+  return <div>Active: {isActive.value ? "Yes" : "No"}</div>;
 };
 
 // ❌ INCORRECT: Arrow function without useSubscribe
 const BadArrowComponent = () => {
-  return <div>Active: {isActive.value ? 'Yes' : 'No'}</div>; // Error: Missing useSubscribe call
+  return <div>Active: {isActive.value ? "Yes" : "No"}</div>; // Error: Missing useSubscribe call
 };
 
 // ✅ CORRECT: Non-component function (should not trigger error)

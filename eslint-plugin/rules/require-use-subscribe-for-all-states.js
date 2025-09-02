@@ -5,16 +5,18 @@
 
 module.exports = {
   meta: {
-    type: 'problem',
+    type: "problem",
     docs: {
-      description: 'Ensure all states used in a React component are properly subscribed to',
-      category: 'React Understate',
+      description:
+        "Ensure all states used in a React component are properly subscribed to",
+      category: "React Understate",
       recommended: true,
     },
     fixable: null,
     schema: [],
     messages: {
-      missingUseSubscribe: 'State "{{stateName}}" is used but not subscribed to. Add useSubscribe({{stateName}}) to subscribe to state changes.',
+      missingUseSubscribe:
+        'State "{{stateName}}" is used but not subscribed to. Add useSubscribe({{stateName}}) to subscribe to state changes.',
     },
   },
 
@@ -27,7 +29,10 @@ module.exports = {
     // Check if we're in a React component function
     function isReactComponent(node) {
       // Check if it's a function declaration or arrow function
-      if (node.type === 'FunctionDeclaration' || node.type === 'VariableDeclarator') {
+      if (
+        node.type === "FunctionDeclaration" ||
+        node.type === "VariableDeclarator"
+      ) {
         const name = node.id?.name || node.init?.id?.name;
         // React components typically start with uppercase
         return name && /^[A-Z]/.test(name);
@@ -39,9 +44,11 @@ module.exports = {
     function isInFunction(node) {
       let current = node;
       while (current) {
-        if (current.type === 'FunctionDeclaration' || 
-            current.type === 'FunctionExpression' ||
-            current.type === 'ArrowFunctionExpression') {
+        if (
+          current.type === "FunctionDeclaration" ||
+          current.type === "FunctionExpression" ||
+          current.type === "ArrowFunctionExpression"
+        ) {
           return true;
         }
         current = current.parent;
@@ -61,7 +68,11 @@ module.exports = {
       },
 
       VariableDeclarator(node) {
-        if (node.init && node.init.type === 'ArrowFunctionExpression' && isReactComponent(node)) {
+        if (
+          node.init &&
+          node.init.type === "ArrowFunctionExpression" &&
+          isReactComponent(node)
+        ) {
           isInReactComponent = true;
           currentFunctionName = node.id?.name;
           stateUsages.set(currentFunctionName, new Set());
@@ -71,8 +82,14 @@ module.exports = {
 
       // Track useSubscribe calls
       CallExpression(node) {
-        if (node.callee.type === 'Identifier' && node.callee.name === 'useSubscribe') {
-          if (node.arguments.length > 0 && node.arguments[0].type === 'Identifier') {
+        if (
+          node.callee.type === "Identifier" &&
+          node.callee.name === "useSubscribe"
+        ) {
+          if (
+            node.arguments.length > 0 &&
+            node.arguments[0].type === "Identifier"
+          ) {
             useSubscribeCalls.add(node.arguments[0].name);
           }
         }
@@ -80,14 +97,18 @@ module.exports = {
 
       // Track state.value usage
       MemberExpression(node) {
-        if (node.property.type === 'Identifier' && node.property.name === 'value') {
-          if (node.object.type === 'Identifier') {
+        if (
+          node.property.type === "Identifier" &&
+          node.property.name === "value"
+        ) {
+          if (node.object.type === "Identifier") {
             const stateName = node.object.name;
-            
+
             // Only check if we're in a React component function
             if (isInReactComponent && isInFunction(node)) {
               if (currentFunctionName && !useSubscribeCalls.has(stateName)) {
-                const usages = stateUsages.get(currentFunctionName) || new Set();
+                const usages =
+                  stateUsages.get(currentFunctionName) || new Set();
                 usages.add(stateName);
                 stateUsages.set(currentFunctionName, usages);
               }
@@ -97,16 +118,16 @@ module.exports = {
       },
 
       // Report missing useSubscribe calls when leaving a component
-      'FunctionDeclaration:exit'(node) {
+      "FunctionDeclaration:exit"(node) {
         if (isReactComponent(node)) {
           const functionName = node.id?.name;
           if (functionName && stateUsages.has(functionName)) {
             const usages = stateUsages.get(functionName);
-            usages.forEach(stateName => {
+            usages.forEach((stateName) => {
               if (!useSubscribeCalls.has(stateName)) {
                 context.report({
                   node,
-                  messageId: 'missingUseSubscribe',
+                  messageId: "missingUseSubscribe",
                   data: {
                     stateName,
                   },
@@ -121,16 +142,20 @@ module.exports = {
         }
       },
 
-      'VariableDeclarator:exit'(node) {
-        if (node.init && node.init.type === 'ArrowFunctionExpression' && isReactComponent(node)) {
+      "VariableDeclarator:exit"(node) {
+        if (
+          node.init &&
+          node.init.type === "ArrowFunctionExpression" &&
+          isReactComponent(node)
+        ) {
           const functionName = node.id?.name;
           if (functionName && stateUsages.has(functionName)) {
             const usages = stateUsages.get(functionName);
-            usages.forEach(stateName => {
+            usages.forEach((stateName) => {
               if (!useSubscribeCalls.has(stateName)) {
                 context.report({
                   node,
-                  messageId: 'missingUseSubscribe',
+                  messageId: "missingUseSubscribe",
                   data: {
                     stateName,
                   },

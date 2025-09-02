@@ -51,9 +51,12 @@
     "optimize": "npm run clean && npm run build:prod && npm run size && npm run analyze"
   },
   "lint-staged": {
-    "*.{js,ts}": [
+    "src/**/*.{ts}": [
       "prettier --write",
       "eslint --fix"
+    ],
+    "eslint-plugin/**/*.{js,ts}": [
+      "prettier --write"
     ],
     "*.{json,md,yml,yaml}": [
       "prettier --write"

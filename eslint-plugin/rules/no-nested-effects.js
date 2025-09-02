@@ -5,16 +5,18 @@
 
 module.exports = {
   meta: {
-    type: 'problem',
+    type: "problem",
     docs: {
-      description: 'Prevent nested effect() calls which can cause performance issues and unexpected behavior',
-      category: 'React Understate',
+      description:
+        "Prevent nested effect() calls which can cause performance issues and unexpected behavior",
+      category: "React Understate",
       recommended: true,
     },
     fixable: null,
     schema: [],
     messages: {
-      noNestedEffects: 'Nested effect() calls are not allowed. Move the inner effect outside or combine them into a single effect.',
+      noNestedEffects:
+        "Nested effect() calls are not allowed. Move the inner effect outside or combine them into a single effect.",
     },
   },
 
@@ -24,9 +26,9 @@ module.exports = {
 
     function isEffectCall(node) {
       return (
-        node.type === 'CallExpression' &&
-        node.callee.type === 'Identifier' &&
-        node.callee.name === 'effect'
+        node.type === "CallExpression" &&
+        node.callee.type === "Identifier" &&
+        node.callee.name === "effect"
       );
     }
 
@@ -38,14 +40,14 @@ module.exports = {
           if (effectDepth > 1) {
             context.report({
               node,
-              messageId: 'noNestedEffects',
+              messageId: "noNestedEffects",
             });
           }
         }
       },
 
       // Track when we exit an effect call
-      'CallExpression:exit'(node) {
+      "CallExpression:exit"(node) {
         if (isEffectCall(node)) {
           effectDepth--;
         }

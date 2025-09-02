@@ -5,19 +5,20 @@
 
 module.exports = {
   meta: {
-    type: 'suggestion',
+    type: "suggestion",
     docs: {
-      description: 'Prefer batch() for multiple state updates to avoid unnecessary re-renders',
-      category: 'React Understate',
+      description:
+        "Prefer batch() for multiple state updates to avoid unnecessary re-renders",
+      category: "React Understate",
       recommended: true,
     },
-    fixable: 'code',
+    fixable: "code",
     schema: [
       {
-        type: 'object',
+        type: "object",
         properties: {
           minUpdates: {
-            type: 'number',
+            type: "number",
             minimum: 2,
             default: 3,
           },
@@ -26,26 +27,27 @@ module.exports = {
       },
     ],
     messages: {
-      preferBatch: 'Multiple state updates detected. Consider using batch() to group these updates: {{updates}}',
+      preferBatch:
+        "Multiple state updates detected. Consider using batch() to group these updates: {{updates}}",
     },
   },
 
   create(context) {
     const options = context.options[0] || {};
     const minUpdates = options.minUpdates || 3;
-    
+
     const stateUpdates = new Map(); // Track updates per function
     let currentFunction = null;
 
     function isStateUpdate(node) {
       // Check if this is a state.value = ... assignment
       return (
-        node.type === 'AssignmentExpression' &&
-        node.operator === '=' &&
-        node.left.type === 'MemberExpression' &&
-        node.left.property.type === 'Identifier' &&
-        node.left.property.name === 'value' &&
-        node.left.object.type === 'Identifier'
+        node.type === "AssignmentExpression" &&
+        node.operator === "=" &&
+        node.left.type === "MemberExpression" &&
+        node.left.property.type === "Identifier" &&
+        node.left.property.name === "value" &&
+        node.left.object.type === "Identifier"
       );
     }
 
@@ -62,7 +64,11 @@ module.exports = {
 
       // Track arrow functions and function expressions
       VariableDeclarator(node) {
-        if (node.init && (node.init.type === 'ArrowFunctionExpression' || node.init.type === 'FunctionExpression')) {
+        if (
+          node.init &&
+          (node.init.type === "ArrowFunctionExpression" ||
+            node.init.type === "FunctionExpression")
+        ) {
           currentFunction = node.id?.name;
           stateUpdates.set(currentFunction, []);
         }
@@ -82,7 +88,7 @@ module.exports = {
       },
 
       // Check for multiple updates when leaving a function
-      'FunctionDeclaration:exit'(node) {
+      "FunctionDeclaration:exit"(node) {
         const functionName = node.id?.name;
         if (functionName && stateUpdates.has(functionName)) {
           const updates = stateUpdates.get(functionName);
@@ -95,34 +101,36 @@ module.exports = {
             });
 
             if (isConsecutive) {
-              const updateNames = sortedUpdates.map(u => u.stateName).join(', ');
+              const updateNames = sortedUpdates
+                .map((u) => u.stateName)
+                .join(", ");
               context.report({
                 node: sortedUpdates[0].node,
-                messageId: 'preferBatch',
+                messageId: "preferBatch",
                 data: {
                   updates: updateNames,
                 },
                 fix(fixer) {
                   const firstUpdate = sortedUpdates[0];
                   const lastUpdate = sortedUpdates[sortedUpdates.length - 1];
-                  
+
                   // Get the text range for all updates
                   const start = firstUpdate.node.range[0];
                   const end = lastUpdate.node.range[1];
-                  
+
                   // Get the indentation of the first update
                   const sourceCode = context.getSourceCode();
                   const firstLine = sourceCode.lines[firstUpdate.line - 1];
                   const indentation = firstLine.match(/^\s*/)[0];
-                  
+
                   // Create the batch wrapper
                   const batchStart = `batch(() => {\n${indentation}  `;
                   const batchEnd = `\n${indentation}});`;
-                  
+
                   // Get the original text and wrap it
                   const originalText = sourceCode.text.slice(start, end);
                   const wrappedText = batchStart + originalText + batchEnd;
-                  
+
                   return fixer.replaceTextRange([start, end], wrappedText);
                 },
               });
@@ -133,7 +141,7 @@ module.exports = {
         currentFunction = null;
       },
 
-      'VariableDeclarator:exit'(node) {
+      "VariableDeclarator:exit"(node) {
         const functionName = node.id?.name;
         if (functionName && stateUpdates.has(functionName)) {
           const updates = stateUpdates.get(functionName);
@@ -145,30 +153,32 @@ module.exports = {
             });
 
             if (isConsecutive) {
-              const updateNames = sortedUpdates.map(u => u.stateName).join(', ');
+              const updateNames = sortedUpdates
+                .map((u) => u.stateName)
+                .join(", ");
               context.report({
                 node: sortedUpdates[0].node,
-                messageId: 'preferBatch',
+                messageId: "preferBatch",
                 data: {
                   updates: updateNames,
                 },
                 fix(fixer) {
                   const firstUpdate = sortedUpdates[0];
                   const lastUpdate = sortedUpdates[sortedUpdates.length - 1];
-                  
+
                   const start = firstUpdate.node.range[0];
                   const end = lastUpdate.node.range[1];
-                  
+
                   const sourceCode = context.getSourceCode();
                   const firstLine = sourceCode.lines[firstUpdate.line - 1];
                   const indentation = firstLine.match(/^\s*/)[0];
-                  
+
                   const batchStart = `batch(() => {\n${indentation}  `;
                   const batchEnd = `\n${indentation}});`;
-                  
+
                   const originalText = sourceCode.text.slice(start, end);
                   const wrappedText = batchStart + originalText + batchEnd;
-                  
+
                   return fixer.replaceTextRange([start, end], wrappedText);
                 },
               });
