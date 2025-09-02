@@ -11,38 +11,15 @@ let isBatching = false;
 const pendingUpdates = new Set<() => void>();
 
 /**
- * Deeply freezes an object or array to prevent mutations.
- * This ensures that state values cannot be accidentally modified,
- * forcing developers to use proper immutable patterns.
- *
- * @param obj - The object or array to freeze
- * @returns The frozen object or array
+ * TypeScript utility type for deep immutability.
+ * Makes all properties and nested properties readonly at compile time.
+ * This provides compile-time safety without runtime overhead.
  */
-function deepFreeze<T>(obj: T): T {
-  if (obj === null || typeof obj !== 'object') {
-    return obj;
-  }
-
-  // Freeze the object itself
-  Object.freeze(obj);
-
-  // Recursively freeze all properties
-  if (Array.isArray(obj)) {
-    for (let i = 0; i < obj.length; i++) {
-      deepFreeze(obj[i]);
-    }
-  } else {
-    const propNames = Object.getOwnPropertyNames(obj);
-    for (const name of propNames) {
-      const prop = (obj as any)[name];
-      if (typeof prop === 'object' && prop !== null) {
-        deepFreeze(prop);
-      }
-    }
-  }
-
-  return obj;
-}
+export type DeepReadonly<T> = T extends (infer R)[]
+  ? ReadonlyArray<DeepReadonly<R>>
+  : T extends object
+    ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+    : T;
 
 /**
  * A reactive state that holds a value and notifies subscribers when it changes.
@@ -239,7 +216,7 @@ export type ReadonlyState<T> = {
    * causing any containing effects or computed values to re-run
    * when the state changes.
    */
-  readonly value: T;
+  readonly value: DeepReadonly<T>;
 };
 
 /**
@@ -310,11 +287,8 @@ export type ReadonlyState<T> = {
  * ```
  */
 export function state<T>(initialValue: T): State<T> {
-  // Deep freeze the initial value if it's an object or array
-  let value =
-    typeof initialValue === 'object' && initialValue !== null
-      ? deepFreeze(initialValue)
-      : initialValue;
+  // Store the initial value directly - TypeScript handles immutability
+  let value = initialValue;
   let pending = false;
   let pendingUpdateCount = 0;
   const subscribers = new Set<() => void>();
@@ -336,12 +310,8 @@ export function state<T>(initialValue: T): State<T> {
 
   const setValue = (newValue: T): void => {
     if (!Object.is(value, newValue)) {
-      // Deep freeze objects and arrays to enforce immutability
-      if (typeof newValue === 'object' && newValue !== null) {
-        value = deepFreeze(newValue);
-      } else {
-        value = newValue;
-      }
+      // Store the new value directly - TypeScript handles immutability
+      value = newValue;
       // Schedule updates
       pendingUpdates.add(notify);
       if (!isBatching) {
@@ -372,7 +342,7 @@ export function state<T>(initialValue: T): State<T> {
       }
     } catch (error) {
       // Ignore failed updates, just log them
-      console.warn('State update failed:', error);
+      console.warn("State update failed:", error);
     } finally {
       const wasPending = pending;
       pendingUpdateCount--;
@@ -444,7 +414,7 @@ export function flushUpdates(): void {
 // Export internal functions for use by other modules
 export { activeEffect, isBatching, pendingUpdates };
 export function setActiveEffect(
-  effect: (() => void) | null
+  effect: (() => void) | null,
 ): (() => void) | null {
   const prev = activeEffect;
   activeEffect = effect;

@@ -5,7 +5,7 @@
  * Derived values are read-only signals that automatically update when their dependencies change.
  */
 
-import { setActiveEffect, ReadonlyState } from './core';
+import { setActiveEffect, ReadonlyState, DeepReadonly } from "./core";
 
 /**
  * Creates a read-only signal that automatically updates when dependencies change.
@@ -144,7 +144,7 @@ export function derived<T>(computeFn: () => T): ReadonlyState<T> {
       if (setActiveEffect(null)) {
         dependencies.add(setActiveEffect(null)!);
       }
-      return computeValue();
+      return computeValue() as DeepReadonly<T>;
     },
   };
 }

@@ -15,7 +15,7 @@ The state management library that's so lightweight, it makes Redux feel like you
 - 📦 **Lightweight** - Minimal bundle size with zero dependencies
 - 🎨 **TypeScript first** - Full type safety out of the box
 - ⚙️ **Batching support** - Optimize performance with batched updates
-- 🧊 **Automatic deep freezing** - Objects and arrays are automatically frozen to enforce immutability
+- 🧊 **TypeScript immutability** - Deep readonly types prevent mutations at compile time
 
 ## Installation
 
@@ -74,9 +74,9 @@ items.value = [...items.value, 'new item'];
 // const badCount = count; // This breaks reactivity!
 // const badValue = count.value; // This doesn't track changes!
 
-### Automatic Deep Freezing
+### TypeScript Immutability
 
-React Understate automatically deep-freezes objects and arrays to enforce immutability and prevent accidental mutations. This ensures that state values cannot be modified directly, forcing developers to use proper immutable patterns.
+React Understate uses TypeScript's type system to enforce immutability at compile time. All state values are wrapped in `DeepReadonly<T>` types, making all properties and nested properties readonly. This prevents mutations during development while maintaining zero runtime overhead.
 
 ```tsx
 const user = state({ name: 'John', age: 30 });
@@ -86,11 +86,11 @@ const items = state(['apple', 'banana']);
 user.value = { ...user.value, age: 31 };
 items.value = [...items.value, 'cherry'];
 
-// ❌ INCORRECT: Direct mutations will fail
-// user.value.name = 'Jane'; // This will throw an error or fail silently
-// items.value.push('cherry'); // This will throw an error or fail silently
+// ❌ INCORRECT: Direct mutations will cause TypeScript errors
+// user.value.name = 'Jane'; // TypeScript error: Cannot assign to 'name' because it is a read-only property
+// items.value.push('cherry'); // TypeScript error: Property 'push' does not exist on type 'readonly string[]'
 
-// Deep freezing works recursively
+// Deep readonly works recursively
 const nested = state({
   user: {
     profile: {
@@ -99,16 +99,17 @@ const nested = state({
   }
 });
 
-// All nested objects are frozen
-// nested.value.user.profile.preferences.theme = 'light'; // This will fail
+// All nested properties are readonly
+// nested.value.user.profile.preferences.theme = 'light'; // TypeScript error: Cannot assign to 'theme'
 ````
 
-**Benefits of Deep Freezing:**
+**Benefits of TypeScript Immutability:**
 
-- **Prevents Bugs**: Catches accidental mutations at runtime
-- **Enforces Best Practices**: Forces use of immutable update patterns
-- **Improves Reactivity**: Ensures state changes are always detectable
-- **Better Performance**: Helps React optimize re-renders
+- **Zero Runtime Cost**: No performance overhead from freezing
+- **Compile-time Safety**: Catches mutations during development
+- **Better Performance**: No recursive freezing operations
+- **Type Safety**: Full TypeScript support with proper readonly types
+- **Developer Experience**: Clear error messages when attempting mutations
 
 ### Derived Values
 
