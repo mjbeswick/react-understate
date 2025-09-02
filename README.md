@@ -286,8 +286,7 @@ const userName = state("Guest");
 
 function UserDisplay() {
   // ✅ CORRECT: Use the hook to establish subscription
-  useSubscribe(userCount);
-  useSubscribe(userName);
+  useSubscribe(userCount, userName);
 
   return (
     <div>
@@ -551,10 +550,7 @@ const formValid = derived(
 );
 
 function SignupForm() {
-  useSubscribe(email);
-  useSubscribe(password);
-  useSubscribe(confirmPassword);
-  useSubscribe(formValid);
+  useSubscribe(email, password, confirmPassword, formValid);
 
   return (
     <form>
