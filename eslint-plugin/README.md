@@ -46,17 +46,17 @@ module.exports = {
 
 ### `require-use-subscribe`
 
-Ensures that when you use `state.value` in a React component, you also call `useSubscribe(state)` to properly subscribe to state changes.
+Ensures that when you use `state.value` in a React component, you also call `useUnderstate(state)` to properly subscribe to state changes.
 
 #### ❌ Incorrect
 
 ```tsx
-import { state, useSubscribe } from "react-understate";
+import { state, useUnderstate } from "react-understate";
 
 const count = state(0);
 
 function Counter() {
-  // Missing useSubscribe call
+  // Missing useUnderstate call
   return <div>Count: {count.value}</div>;
 }
 ```
@@ -64,12 +64,12 @@ function Counter() {
 #### ✅ Correct
 
 ```tsx
-import { state, useSubscribe } from "react-understate";
+import { state, useUnderstate } from "react-understate";
 
 const count = state(0);
 
 function Counter() {
-  useSubscribe(count); // Properly subscribe to state changes
+  useUnderstate(count); // Properly subscribe to state changes
   return <div>Count: {count.value}</div>;
 }
 ```
@@ -136,7 +136,7 @@ function MyComponent() {
 const count = state(0); // Created outside component
 
 function MyComponent() {
-  useSubscribe(count);
+  useUnderstate(count);
   return <div>{count.value}</div>;
 }
 ```
@@ -195,7 +195,7 @@ Suggests using `derived()` instead of manual computations in components.
 
 ```tsx
 function MyComponent() {
-  useSubscribe(count);
+  useUnderstate(count);
   const doubled = count.value * 2; // Recalculated on every render
   return <div>{doubled}</div>;
 }
@@ -207,7 +207,7 @@ function MyComponent() {
 const doubled = derived(() => count.value * 2);
 
 function MyComponent() {
-  useSubscribe(doubled);
+  useUnderstate(doubled);
   return <div>{doubled.value}</div>;
 }
 ```
@@ -220,7 +220,7 @@ Suggests using `effect()` instead of `useEffect()` for state-related side effect
 
 ```tsx
 function MyComponent() {
-  useSubscribe(count);
+  useUnderstate(count);
   useEffect(() => {
     console.log("Count changed:", count.value);
   }, [count.value]);
@@ -249,7 +249,7 @@ const unusedState = state(0); // Never used anywhere
 
 ```tsx
 const usedState = state(0);
-useSubscribe(usedState);
+useUnderstate(usedState);
 ```
 
 ### `require-error-handling-in-async-updates`
@@ -319,7 +319,7 @@ The rules detect various patterns in your code:
 
 1. **React Components**: Functions that start with uppercase letters (React component convention)
 2. **State Usage**: `state.value` property access and state creation
-3. **Missing Subscriptions**: When `useSubscribe(state)` is not called for a state that's being used
+3. **Missing Subscriptions**: When `useUnderstate(state)` is not called for a state that's being used
 4. **Performance Issues**: Multiple state updates without batching, nested effects/derived calls
 5. **Best Practices**: State creation in components, direct state assignments
 

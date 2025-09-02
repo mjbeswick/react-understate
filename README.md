@@ -26,14 +26,14 @@ npm install react-understate
 ## Quick Start
 
 ```tsx
-import { state, useSubscribe } from "react-understate";
+import { state, useUnderstate } from "react-understate";
 
 // Create a state
 const count = state(0);
 
 function Counter() {
   // Subscribe to state changes
-  useSubscribe(count);
+  useUnderstate(count);
 
   return (
     <div>
@@ -260,7 +260,7 @@ await count.update(async (prev) => {
 
 ### Setup
 
-**No setup required!** React is automatically detected in all environments, just like Redux. The `useSubscribe` hook works out of the box with zero configuration.
+**No setup required!** React is automatically detected in all environments, just like Redux. The `useUnderstate` hook works out of the box with zero configuration.
 
 The library automatically detects React when first used, working seamlessly with:
 
@@ -272,21 +272,21 @@ The library automatically detects React when first used, working seamlessly with
 
 The library automatically works with React 18+ using `use-sync-external-store/shim` for optimal compatibility.
 
-### useSubscribe Hook
+### useUnderstate Hook
 
-The `useSubscribe` hook subscribes to state changes and triggers re-renders when states update.
+The `useUnderstate` hook subscribes to state changes and triggers re-renders when states update.
 
 **Important:** The hook does NOT return a value. Access the state's `.value` property directly in your component.
 
 ```tsx
-import { state, useSubscribe } from "react-understate";
+import { state, useUnderstate } from "react-understate";
 
 const userCount = state(0);
 const userName = state("Guest");
 
 function UserDisplay() {
   // ✅ CORRECT: Use the hook to establish subscription
-  useSubscribe(userCount, userName);
+  useUnderstate(userCount, userName);
 
   return (
     <div>
@@ -306,12 +306,12 @@ function UserDisplay() {
 Use the `pending` property to show loading states during async updates:
 
 ```tsx
-import { state, useSubscribe } from "react-understate";
+import { state, useUnderstate } from "react-understate";
 
 const userData = state(null);
 
 function UserProfile({ userId }) {
-  useSubscribe(userData);
+  useUnderstate(userData);
 
   const loadUser = async () => {
     await userData.update(async () => {
@@ -342,7 +342,7 @@ function UserProfile({ userId }) {
 Here's a more complex example with multiple signals and derived values:
 
 ```tsx
-import { state, derived, useSubscribe } from "react-understate";
+import { state, derived, useUnderstate } from "react-understate";
 
 // State
 const todos = state([]);
@@ -366,7 +366,7 @@ const activeCount = derived(
 );
 
 function TodoApp() {
-  useSubscribe(todos, filter, newTodo, filteredTodos, activeCount);
+  useUnderstate(todos, filter, newTodo, filteredTodos, activeCount);
 
   const addTodo = () => {
     if (newTodo.value.trim()) {
@@ -547,7 +547,7 @@ const formValid = derived(
 );
 
 function SignupForm() {
-  useSubscribe(email, password, confirmPassword, formValid);
+  useUnderstate(email, password, confirmPassword, formValid);
 
   return (
     <form>
@@ -609,7 +609,7 @@ Batches multiple state updates into a single effect flush.
 
 ### React Integration
 
-#### `useSubscribe<T>(signal: State<T> | ReadonlyState<T>): void`
+#### `useUnderstate<T>(signal: State<T> | ReadonlyState<T>): void`
 
 React hook to subscribe to state changes and trigger re-renders.
 
@@ -643,7 +643,7 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
 
 1. **Always use `.value`** - Never assign signals to variables for storage
 2. **Create signals at module level** - Don't create signals inside components
-3. **Use `useSubscribe` in React** - Always call it for signals used in components
+3. **Use `useUnderstate` in React** - Always call it for signals used in components
 4. **Batch related updates** - Use `batch()` for multiple simultaneous updates
 5. **Prefer derived over effects** - Use derived for derived state, effects for side effects
 6. **Clean up effects** - Always call the disposal function when appropriate

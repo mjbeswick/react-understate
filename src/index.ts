@@ -10,15 +10,15 @@
  * - Lightweight and performant
  *
  * @example
- * import { state, useSubscribe, effect } from 'react-understate';
+ * import { state, useUnderstate, effect } from 'react-understate';
  */
 
 // Core exports
-export { state } from './core';
-export type { State, ReadonlyState } from './core';
+export { state } from "./core";
+export type { State, ReadonlyState } from "./core";
 
 // Reactive exports
-export { derived, effect, batch } from './state';
+export { derived, effect, batch } from "./state";
 
 // React integration exports
-export { useSubscribe, setReact } from './react';
+export { useUnderstate, setReact } from "./react";

@@ -42,12 +42,12 @@ module.exports = {
       );
     }
 
-    // Check if this is a useSubscribe call
+    // Check if this is a useUnderstate call
     function isUseSubscribeCall(node) {
       return (
         node.type === "CallExpression" &&
         node.callee.type === "Identifier" &&
-        node.callee.name === "useSubscribe"
+        node.callee.name === "useUnderstate"
       );
     }
 
@@ -76,7 +76,7 @@ module.exports = {
         }
       },
 
-      // Track state usage through useSubscribe
+      // Track state usage through useUnderstate
       CallExpression(node) {
         if (isUseSubscribeCall(node) && node.arguments.length > 0) {
           const arg = node.arguments[0];

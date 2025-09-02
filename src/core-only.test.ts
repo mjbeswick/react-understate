@@ -26,7 +26,7 @@ describe("Core-Only Module", () => {
     });
 
     it("should not export React-specific functions", () => {
-      expect((CoreOnly as any).useSubscribe).toBeUndefined();
+      expect((CoreOnly as any).useUnderstate).toBeUndefined();
       expect((CoreOnly as any).setReact).toBeUndefined();
     });
   });
@@ -159,7 +159,7 @@ describe("Core-Only Module", () => {
       });
 
       // Should not have any React-specific exports
-      expect(actualExports).not.toContain("useSubscribe");
+      expect(actualExports).not.toContain("useUnderstate");
       expect(actualExports).not.toContain("setReact");
     });
 

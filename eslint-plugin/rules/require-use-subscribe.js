@@ -1,5 +1,5 @@
 /**
- * @fileoverview ESLint rule to ensure useSubscribe is called when state.value is used in React components
+ * @fileoverview ESLint rule to ensure useUnderstate is called when state.value is used in React components
  * @author mjbeswick
  */
 
@@ -8,7 +8,7 @@ module.exports = {
     type: "problem",
     docs: {
       description:
-        "Require useSubscribe when state.value is used in React components",
+        "Require useUnderstate when state.value is used in React components",
       category: "React Understate",
       recommended: true,
     },
@@ -16,13 +16,13 @@ module.exports = {
     schema: [],
     messages: {
       missingUseSubscribe:
-        'Missing useSubscribe call for state "{{stateName}}". Add useSubscribe({{stateName}}) to subscribe to state changes.',
+        'Missing useUnderstate call for state "{{stateName}}". Add useUnderstate({{stateName}}) to subscribe to state changes.',
     },
   },
 
   create(context) {
     const stateUsages = new Map();
-    const useSubscribeCalls = new Set();
+    const useUnderstateCalls = new Set();
     let isInReactComponent = false;
     let currentFunctionName = null;
 
@@ -76,17 +76,17 @@ module.exports = {
         }
       },
 
-      // Track useSubscribe calls
+      // Track useUnderstate calls
       CallExpression(node) {
         if (
           node.callee.type === "Identifier" &&
-          node.callee.name === "useSubscribe"
+          node.callee.name === "useUnderstate"
         ) {
           if (
             node.arguments.length > 0 &&
             node.arguments[0].type === "Identifier"
           ) {
-            useSubscribeCalls.add(node.arguments[0].name);
+            useUnderstateCalls.add(node.arguments[0].name);
           }
         }
       },
@@ -102,7 +102,7 @@ module.exports = {
 
             // Only check if we're in a React component function
             if (isInReactComponent && isInFunction(node)) {
-              if (!useSubscribeCalls.has(stateName)) {
+              if (!useUnderstateCalls.has(stateName)) {
                 context.report({
                   node,
                   messageId: "missingUseSubscribe",
@@ -121,7 +121,7 @@ module.exports = {
         if (isReactComponent(node)) {
           isInReactComponent = false;
           currentFunctionName = null;
-          useSubscribeCalls.clear();
+          useUnderstateCalls.clear();
         }
       },
 
@@ -133,7 +133,7 @@ module.exports = {
         ) {
           isInReactComponent = false;
           currentFunctionName = null;
-          useSubscribeCalls.clear();
+          useUnderstateCalls.clear();
         }
       },
     };

@@ -1,5 +1,5 @@
 /**
- * @fileoverview ESLint rule to require useSubscribe for all states used in React components
+ * @fileoverview ESLint rule to require useUnderstate for all states used in React components
  * @author mjbeswick
  */
 
@@ -16,13 +16,13 @@ module.exports = {
     schema: [],
     messages: {
       missingUseSubscribe:
-        'State "{{stateName}}" is used but not subscribed to. Add useSubscribe({{stateName}}) to subscribe to state changes.',
+        'State "{{stateName}}" is used but not subscribed to. Add useUnderstate({{stateName}}) to subscribe to state changes.',
     },
   },
 
   create(context) {
     const stateUsages = new Map();
-    const useSubscribeCalls = new Set();
+    const useUnderstateCalls = new Set();
     let isInReactComponent = false;
     let currentFunctionName = null;
 
@@ -63,7 +63,7 @@ module.exports = {
           isInReactComponent = true;
           currentFunctionName = node.id?.name;
           stateUsages.set(currentFunctionName, new Set());
-          useSubscribeCalls.clear();
+          useUnderstateCalls.clear();
         }
       },
 
@@ -76,21 +76,21 @@ module.exports = {
           isInReactComponent = true;
           currentFunctionName = node.id?.name;
           stateUsages.set(currentFunctionName, new Set());
-          useSubscribeCalls.clear();
+          useUnderstateCalls.clear();
         }
       },
 
-      // Track useSubscribe calls
+      // Track useUnderstate calls
       CallExpression(node) {
         if (
           node.callee.type === "Identifier" &&
-          node.callee.name === "useSubscribe"
+          node.callee.name === "useUnderstate"
         ) {
           if (
             node.arguments.length > 0 &&
             node.arguments[0].type === "Identifier"
           ) {
-            useSubscribeCalls.add(node.arguments[0].name);
+            useUnderstateCalls.add(node.arguments[0].name);
           }
         }
       },
@@ -106,7 +106,7 @@ module.exports = {
 
             // Only check if we're in a React component function
             if (isInReactComponent && isInFunction(node)) {
-              if (currentFunctionName && !useSubscribeCalls.has(stateName)) {
+              if (currentFunctionName && !useUnderstateCalls.has(stateName)) {
                 const usages =
                   stateUsages.get(currentFunctionName) || new Set();
                 usages.add(stateName);
@@ -117,14 +117,14 @@ module.exports = {
         }
       },
 
-      // Report missing useSubscribe calls when leaving a component
+      // Report missing useUnderstate calls when leaving a component
       "FunctionDeclaration:exit"(node) {
         if (isReactComponent(node)) {
           const functionName = node.id?.name;
           if (functionName && stateUsages.has(functionName)) {
             const usages = stateUsages.get(functionName);
             usages.forEach((stateName) => {
-              if (!useSubscribeCalls.has(stateName)) {
+              if (!useUnderstateCalls.has(stateName)) {
                 context.report({
                   node,
                   messageId: "missingUseSubscribe",
@@ -138,7 +138,7 @@ module.exports = {
           }
           isInReactComponent = false;
           currentFunctionName = null;
-          useSubscribeCalls.clear();
+          useUnderstateCalls.clear();
         }
       },
 
@@ -152,7 +152,7 @@ module.exports = {
           if (functionName && stateUsages.has(functionName)) {
             const usages = stateUsages.get(functionName);
             usages.forEach((stateName) => {
-              if (!useSubscribeCalls.has(stateName)) {
+              if (!useUnderstateCalls.has(stateName)) {
                 context.report({
                   node,
                   messageId: "missingUseSubscribe",
@@ -166,7 +166,7 @@ module.exports = {
           }
           isInReactComponent = false;
           currentFunctionName = null;
-          useSubscribeCalls.clear();
+          useUnderstateCalls.clear();
         }
       },
     };

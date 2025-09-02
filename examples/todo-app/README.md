@@ -40,9 +40,9 @@ const activeCount = computed(
 
 ```tsx
 function TodoApp() {
-  useSubscribe(todos);
-  useSubscribe(filter);
-  useSubscribe(filteredTodos);
+  useUnderstate(todos);
+  useUnderstate(filter);
+  useUnderstate(filteredTodos);
   // Component logic...
 }
 ```

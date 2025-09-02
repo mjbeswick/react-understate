@@ -28,14 +28,14 @@ import { useSyncExternalStore } from "use-sync-external-store/shim";
  *
  * @example
  * ```tsx
- * import { state, useSubscribe } from 'react-understate';
+ * import { state, useUnderstate } from 'react-understate';
  *
  * const userCount = state(0);
  * const userName = state('John');
  *
  * function UserProfile() {
  *   // ✅ CORRECT: Subscribe to multiple states at once
- *   useSubscribe(userCount, userName);
+ *   useUnderstate(userCount, userName);
  *
  *   // Access the state values directly
  *   const count = userCount.value;
@@ -53,17 +53,17 @@ import { useSyncExternalStore } from "use-sync-external-store/shim";
  * @example
  * ```tsx
  * // ✅ CORRECT: Single state subscription (backward compatible)
- * useSubscribe(userCount);
+ * useUnderstate(userCount);
  *
  * // ✅ CORRECT: Multiple state subscription
- * useSubscribe(userCount, userName, isOnline);
+ * useUnderstate(userCount, userName, isOnline);
  * ```
  */
-export function useSubscribe<T>(signal: State<T> | ReadonlyState<T>): void;
-export function useSubscribe(
+export function useUnderstate<T>(signal: State<T> | ReadonlyState<T>): void;
+export function useUnderstate(
   ...signals: (State<unknown> | ReadonlyState<unknown>)[]
 ): void;
-export function useSubscribe(
+export function useUnderstate(
   ...signals: (State<unknown> | ReadonlyState<unknown>)[]
 ): void {
   useSyncExternalStore(

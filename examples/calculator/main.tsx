@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { state, useSubscribe } from 'react-understate';
+import { state, useUnderstate } from 'react-understate';
 import { useEffect } from 'react';
 import styles from './styles.module.css';
 import clsx from 'clsx';
@@ -174,10 +174,10 @@ const handleKeyDown = (event: KeyboardEvent) => {
 
 // Calculator component
 function Calculator() {
-  // Use useSubscribe hook to automatically subscribe to state changes
-  useSubscribe(displayValue, previousValue, operation, waitingForOperand);
+  // Use useUnderstate hook to automatically subscribe to state changes
+  useUnderstate(displayValue, previousValue, operation, waitingForOperand);
 
-  console.log('render with useSubscribe:', displayValue.value);
+  console.log('render with useUnderstate:', displayValue.value);
 
   // Add event listener
   useEffect(() => {

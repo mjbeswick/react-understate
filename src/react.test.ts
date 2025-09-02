@@ -5,7 +5,7 @@
  * for the react.ts file which currently has 45.45% coverage.
  */
 
-import { setReact, useSubscribe } from "./react";
+import { setReact, useUnderstate } from "./react";
 import { state } from "./core";
 
 // Mock use-sync-external-store/shim
@@ -45,11 +45,11 @@ describe("React Integration", () => {
     });
   });
 
-  describe("useSubscribe", () => {
+  describe("useUnderstate", () => {
     it("should call useSyncExternalStore with correct parameters for single state", () => {
       const testState = state(42);
 
-      useSubscribe(testState);
+      useUnderstate(testState);
 
       expect(mockUseSyncExternalStore).toHaveBeenCalledWith(
         expect.any(Function),
@@ -60,7 +60,7 @@ describe("React Integration", () => {
     it("should return current state value in getSnapshot for single state", () => {
       const testState = state(42);
 
-      useSubscribe(testState);
+      useUnderstate(testState);
 
       const [, getSnapshot] = mockUseSyncExternalStore.mock.calls[0];
       const snapshot = getSnapshot();
@@ -70,7 +70,7 @@ describe("React Integration", () => {
     it("should work with basic states", () => {
       const testState = state(42);
 
-      useSubscribe(testState);
+      useUnderstate(testState);
 
       const [, getSnapshot] = mockUseSyncExternalStore.mock.calls[0];
       expect(typeof getSnapshot).toBe("function");
@@ -82,7 +82,7 @@ describe("React Integration", () => {
     it("should call useSyncExternalStore with proper subscription function", () => {
       const testState = state(0);
 
-      useSubscribe(testState);
+      useUnderstate(testState);
 
       const [subscribe] = mockUseSyncExternalStore.mock.calls[0];
 
@@ -96,7 +96,7 @@ describe("React Integration", () => {
       const state1 = state(42);
       const state2 = state("hello");
 
-      useSubscribe(state1, state2);
+      useUnderstate(state1, state2);
 
       const [, getSnapshot] = mockUseSyncExternalStore.mock.calls[0];
       const snapshot = getSnapshot();
@@ -107,7 +107,7 @@ describe("React Integration", () => {
       const state1 = state(0);
       const state2 = state("test");
 
-      useSubscribe(state1, state2);
+      useUnderstate(state1, state2);
 
       const [subscribe] = mockUseSyncExternalStore.mock.calls[0];
       const unsubscribe = subscribe(() => {});

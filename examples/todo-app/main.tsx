@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { state, derived, useSubscribe } from 'react-understate';
+import { state, derived, useUnderstate } from 'react-understate';
 import styles from './styles.module.css';
 
 // Define the Todo type
@@ -35,7 +35,7 @@ const completedCount = derived(
 );
 
 function TodoApp() {
-  useSubscribe(
+  useUnderstate(
     todos,
     filter,
     newTodo,

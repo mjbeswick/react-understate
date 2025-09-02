@@ -13,16 +13,16 @@ This is the first stable release of react-understate with all core functionality
 
 ### ✨ Added
 
-- **Multiple Signal Support**: `useSubscribe` now accepts multiple signals in a single call
+- **Multiple Signal Support**: `useUnderstate` now accepts multiple signals in a single call
 
   ```tsx
   // Before: Multiple calls
-  useSubscribe(state1);
-  useSubscribe(state2);
-  useSubscribe(state3);
+  useUnderstate(state1);
+  useUnderstate(state2);
+  useUnderstate(state3);
 
   // After: Single call
-  useSubscribe(state1, state2, state3);
+  useUnderstate(state1, state2, state3);
   ```
 
 - **Automatic React Detection**: No manual setup required - works out of the box with React 18+
@@ -31,7 +31,7 @@ This is the first stable release of react-understate with all core functionality
 ### 🐛 Fixed
 
 - **Critical Text Input Bug**: Fixed issue where text inputs were not updating due to incorrect `useSyncExternalStore` implementation
-- **React Integration**: Properly implemented `useSubscribe` hook to trigger re-renders when state changes
+- **React Integration**: Properly implemented `useUnderstate` hook to trigger re-renders when state changes
 - **State Subscription**: Fixed dependency tracking in React components
 
 ### 🔧 Changed
