@@ -18,8 +18,8 @@
       "require": "./dist/react-understate.signals.cjs.js"
     },
     "./eslint-plugin": {
-      "import": "./eslint-plugin-react-understate/index.js",
-      "require": "./eslint-plugin-react-understate/index.js"
+      "import": "./eslint-plugin/index.js",
+      "require": "./eslint-plugin/index.js"
     }
   },
   "scripts": {
@@ -29,11 +29,11 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
-    "lint": "eslint src/ examples/ --ext .ts",
-    "lint:fix": "eslint src/ examples/ --ext .ts --fix",
+    "lint": "eslint src/ --ext .ts",
+    "lint:fix": "eslint src/ --ext .ts --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "format:fix": "prettier --write . && eslint src/ examples/ --ext .ts --fix",
+    "format:fix": "prettier --write . && eslint src/ --ext .ts --fix",
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --watch",
     "size": "node scripts/build-size.ts",
@@ -123,7 +123,7 @@
   },
   "files": [
     "dist",
-    "eslint-plugin-react-understate"
+    "eslint-plugin"
   ],
   "dependencies": {
     "use-sync-external-store": "^1.5.0"

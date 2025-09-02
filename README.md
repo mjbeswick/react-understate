@@ -775,7 +775,7 @@ function MyComponent() {
 | `require-error-handling-in-async-updates` | Ensure error handling in async updates                          | `warn`  |
 | `prefer-object-spread-for-updates`        | Encourage immutable object updates                              | `warn`  |
 
-For detailed information about each rule, see the [ESLint Plugin Documentation](https://github.com/mjbeswick/react-understate/tree/main/eslint-plugin-react-understate).
+For detailed information about each rule, see the [ESLint Plugin Documentation](https://github.com/mjbeswick/react-understate/tree/main/eslint-plugin).
 
 ## Best Practices
 
