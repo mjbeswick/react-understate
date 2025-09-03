@@ -238,7 +238,7 @@ module.exports = {
                   // Replace the original text with the batched version
                   return fixer.replaceTextRange(
                     [start, end],
-                    batchStart + originalText + batchEnd
+                    batchStart + originalText + batchEnd,
                   );
                 },
               });
