@@ -1,4 +1,4 @@
-import { state, derived } from 'react-understate';
+import { state, derived } from "react-understate";
 
 // Define the Todo type
 export type Todo = {
@@ -9,15 +9,15 @@ export type Todo = {
 
 // State
 const todos = state<Todo[]>([]);
-const filter = state<'all' | 'active' | 'completed'>('all');
-const newTodo = state('');
+const filter = state<"all" | "active" | "completed">("all");
+const newTodo = state("");
 
 // Computed values
 export const filteredTodos = derived(() => {
   switch (filter.value) {
-    case 'active':
+    case "active":
       return todos.value.filter((todo) => !todo.completed);
-    case 'completed':
+    case "completed":
       return todos.value.filter((todo) => todo.completed);
     default:
       return todos.value;
@@ -25,11 +25,11 @@ export const filteredTodos = derived(() => {
 });
 
 export const activeCount = derived(
-  () => todos.value.filter((todo) => !todo.completed).length
+  () => todos.value.filter((todo) => !todo.completed).length,
 );
 
 export const completedCount = derived(
-  () => todos.value.filter((todo) => todo.completed).length
+  () => todos.value.filter((todo) => todo.completed).length,
 );
 
 // Actions
@@ -37,7 +37,7 @@ function setNewTodo(text: string) {
   newTodo.value = text;
 }
 
-function setFilter(newFilter: 'all' | 'active' | 'completed') {
+function setFilter(newFilter: "all" | "active" | "completed") {
   filter.value = newFilter;
 }
 
@@ -51,13 +51,13 @@ function addTodo() {
         completed: false,
       },
     ];
-    newTodo.value = '';
+    newTodo.value = "";
   }
 }
 
 function toggleTodo(id: number) {
   todos.value = todos.value.map((todo) =>
-    todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    todo.id === id ? { ...todo, completed: !todo.completed } : todo,
   );
 }
 
@@ -77,14 +77,11 @@ function toggleAll() {
   }));
 }
 
-// Export as default
-export default {
+// Export all the state variables and functions for use in components
+export {
   todos,
   filter,
   newTodo,
-  filteredTodos,
-  activeCount,
-  completedCount,
   setNewTodo,
   setFilter,
   addTodo,
