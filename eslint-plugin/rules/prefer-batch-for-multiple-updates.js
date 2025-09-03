@@ -51,6 +51,23 @@ module.exports = {
       );
     }
 
+    function isAlreadyBatched(node) {
+      // Check if this node is already inside a batch() call
+      let parent = node.parent;
+      while (parent) {
+        if (
+          parent.type === "CallExpression" &&
+          parent.callee &&
+          parent.callee.type === "Identifier" &&
+          parent.callee.name === "batch"
+        ) {
+          return true;
+        }
+        parent = parent.parent;
+      }
+      return false;
+    }
+
     function getStateName(node) {
       return node.left.object.name;
     }
@@ -76,7 +93,7 @@ module.exports = {
 
       // Track assignment expressions
       AssignmentExpression(node) {
-        if (isStateUpdate(node) && currentFunction) {
+        if (isStateUpdate(node) && currentFunction && !isAlreadyBatched(node)) {
           const updates = stateUpdates.get(currentFunction) || [];
           updates.push({
             node,
@@ -163,23 +180,66 @@ module.exports = {
                   updates: updateNames,
                 },
                 fix(fixer) {
+                  const sourceCode = context.getSourceCode();
+
+                  // Find the common parent block that contains all updates
+                  let commonParent = sortedUpdates[0].node.parent;
+                  while (commonParent) {
+                    if (
+                      commonParent.type === "BlockStatement" ||
+                      commonParent.type === "Program"
+                    ) {
+                      break;
+                    }
+                    commonParent = commonParent.parent;
+                  }
+
+                  if (!commonParent || commonParent.type === "Program") {
+                    // Can't safely fix at program level
+                    return null;
+                  }
+
+                  // Get the range of all consecutive updates
                   const firstUpdate = sortedUpdates[0];
                   const lastUpdate = sortedUpdates[sortedUpdates.length - 1];
 
-                  const start = firstUpdate.node.range[0];
-                  const end = lastUpdate.node.range[1];
+                  // Find the start of the first statement and end of the last statement
+                  let start = firstUpdate.node.range[0];
+                  let end = lastUpdate.node.range[1];
 
-                  const sourceCode = context.getSourceCode();
+                  // Extend to include the full statements (including semicolons)
+                  const firstToken = sourceCode.getFirstToken(firstUpdate.node);
+                  const lastToken = sourceCode.getLastToken(lastUpdate.node);
+
+                  if (firstToken && lastToken) {
+                    start = firstToken.range[0];
+                    end = lastToken.range[1];
+                  }
+
+                  // Get proper indentation from the first line
                   const firstLine = sourceCode.lines[firstUpdate.line - 1];
                   const indentation = firstLine.match(/^\s*/)[0];
 
+                  // Get the original text and fix indentation
+                  let originalText = sourceCode.text.slice(start, end);
+
+                  // Fix indentation of the original text
+                  const lines = originalText.split("\n");
+                  const fixedLines = lines.map((line, index) => {
+                    if (index === 0) return line; // First line doesn't need indentation fix
+                    return indentation + "  " + line.trim();
+                  });
+                  originalText = fixedLines.join("\n");
+
+                  // Create the batch wrapper
                   const batchStart = `batch(() => {\n${indentation}  `;
                   const batchEnd = `\n${indentation}});`;
 
-                  const originalText = sourceCode.text.slice(start, end);
-                  const wrappedText = batchStart + originalText + batchEnd;
-
-                  return fixer.replaceTextRange([start, end], wrappedText);
+                  // Replace the original text with the batched version
+                  return fixer.replaceTextRange(
+                    [start, end],
+                    batchStart + originalText + batchEnd,
+                  );
                 },
               });
             }

@@ -10,7 +10,27 @@ npm install --save-dev eslint-plugin-react-understate
 
 ## Usage
 
-Add the plugin to your ESLint configuration:
+### Quick Setup (Recommended)
+
+The easiest way to use this plugin is with the recommended configuration, which includes all rules with sensible defaults:
+
+```json
+{
+  "extends": ["plugin:react-understate/recommended"]
+}
+```
+
+Or in your `.eslintrc.js`:
+
+```javascript
+module.exports = {
+  extends: ["plugin:react-understate/recommended"],
+};
+```
+
+### Manual Configuration
+
+If you prefer to configure rules individually:
 
 ```json
 {

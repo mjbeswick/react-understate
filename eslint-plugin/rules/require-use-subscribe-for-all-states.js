@@ -86,12 +86,12 @@ module.exports = {
           node.callee.type === "Identifier" &&
           node.callee.name === "useUnderstate"
         ) {
-          if (
-            node.arguments.length > 0 &&
-            node.arguments[0].type === "Identifier"
-          ) {
-            useUnderstateCalls.add(node.arguments[0].name);
-          }
+          // Check all arguments, not just the first one
+          node.arguments.forEach((arg) => {
+            if (arg.type === "Identifier") {
+              useUnderstateCalls.add(arg.name);
+            }
+          });
         }
       },
 
