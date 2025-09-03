@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { useUnderstate } from 'react-understate';
+import clsx from 'clsx';
 import styles from './styles.module.css';
 import * as store from './store';
 
@@ -53,9 +54,9 @@ function TodoApp() {
             {filteredTodos.map((todo) => (
               <li
                 key={todo.id}
-                className={`${styles.todoItem} ${
-                  todo.completed ? styles.completed : ''
-                }`}
+                className={clsx(styles.todoItem, {
+                  [styles.completed]: todo.completed,
+                })}
               >
                 <div className={styles.view}>
                   <input
@@ -88,7 +89,7 @@ function TodoApp() {
           <ul className={styles.filters}>
             <li>
               <button
-                className={filter === 'all' ? styles.selected : ''}
+                className={clsx({ [styles.selected]: filter === 'all' })}
                 onClick={() => setFilter('all')}
               >
                 All
@@ -96,7 +97,7 @@ function TodoApp() {
             </li>
             <li>
               <button
-                className={filter === 'active' ? styles.selected : ''}
+                className={clsx({ [styles.selected]: filter === 'active' })}
                 onClick={() => setFilter('active')}
               >
                 Active
@@ -104,7 +105,7 @@ function TodoApp() {
             </li>
             <li>
               <button
-                className={filter === 'completed' ? styles.selected : ''}
+                className={clsx({ [styles.selected]: filter === 'completed' })}
                 onClick={() => setFilter('completed')}
               >
                 Completed

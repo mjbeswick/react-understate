@@ -13,17 +13,18 @@
   "devDependencies": {
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@vitejs/plugin-react": "^5.0.2",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^5.0.2",
+    "eslint": "^8.0.0",
     "eslint-plugin-react": "^7.34.0",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint": "^8.0.0",
+    "eslint-plugin-react-understate": "file:../../eslint-plugin",
     "typescript": "^5.0.0",
-    "vite": "^4.0.0",
-    "eslint-plugin-react-understate": "file:../../eslint-plugin"
+    "vite": "^4.0.0"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-understate": "file:../../"
