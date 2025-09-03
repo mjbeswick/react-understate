@@ -1,33 +1,24 @@
 import { createRoot } from 'react-dom/client';
 import { useUnderstate } from 'react-understate';
 import styles from './styles.module.css';
-import store from './store';
-
-const {
-  todos,
-  filter,
-  newTodo,
-  filteredTodos,
-  activeCount,
-  completedCount,
-  setNewTodo,
-  setFilter,
-  addTodo,
-  toggleTodo,
-  removeTodo,
-  clearCompleted,
-  toggleAll,
-} = store;
+import * as store from './store';
 
 function TodoApp() {
-  useUnderstate(
+  const {
     todos,
     filter,
     newTodo,
     filteredTodos,
     activeCount,
-    completedCount
-  );
+    completedCount,
+    setNewTodo,
+    setFilter,
+    addTodo,
+    toggleTodo,
+    removeTodo,
+    clearCompleted,
+    toggleAll,
+  } = useUnderstate(store);
 
   return (
     <div className={styles.container}>
@@ -36,7 +27,7 @@ function TodoApp() {
         <div className={styles.inputContainer}>
           <input
             className={styles.newTodo}
-            value={newTodo.value}
+            value={newTodo}
             onChange={(e) => setNewTodo(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && addTodo()}
             placeholder="What needs to be done?"
@@ -45,21 +36,21 @@ function TodoApp() {
         </div>
       </header>
 
-      {todos.value.length > 0 && (
+      {todos.length > 0 && (
         <section className={styles.main}>
           <div className={styles.toggleAllContainer}>
             <input
               id="toggle-all"
               className={styles.toggleAll}
               type="checkbox"
-              checked={todos.value.every((todo) => todo.completed)}
+              checked={todos.every((todo) => todo.completed)}
               onChange={toggleAll}
             />
             <label htmlFor="toggle-all">Mark all as complete</label>
           </div>
 
           <ul className={styles.todoList}>
-            {filteredTodos.value.map((todo) => (
+            {filteredTodos.map((todo) => (
               <li
                 key={todo.id}
                 className={`${styles.todoItem} ${
@@ -87,17 +78,17 @@ function TodoApp() {
         </section>
       )}
 
-      {todos.value.length > 0 && (
+      {todos.length > 0 && (
         <footer className={styles.footer}>
           <span className={styles.todoCount}>
-            <strong>{activeCount.value}</strong>{' '}
-            {activeCount.value === 1 ? 'item' : 'items'} left
+            <strong>{activeCount}</strong>{' '}
+            {activeCount === 1 ? 'item' : 'items'} left
           </span>
 
           <ul className={styles.filters}>
             <li>
               <button
-                className={filter.value === 'all' ? styles.selected : ''}
+                className={filter === 'all' ? styles.selected : ''}
                 onClick={() => setFilter('all')}
               >
                 All
@@ -105,7 +96,7 @@ function TodoApp() {
             </li>
             <li>
               <button
-                className={filter.value === 'active' ? styles.selected : ''}
+                className={filter === 'active' ? styles.selected : ''}
                 onClick={() => setFilter('active')}
               >
                 Active
@@ -113,7 +104,7 @@ function TodoApp() {
             </li>
             <li>
               <button
-                className={filter.value === 'completed' ? styles.selected : ''}
+                className={filter === 'completed' ? styles.selected : ''}
                 onClick={() => setFilter('completed')}
               >
                 Completed
@@ -121,7 +112,7 @@ function TodoApp() {
             </li>
           </ul>
 
-          {completedCount.value > 0 && (
+          {completedCount > 0 && (
             <button className={styles.clearCompleted} onClick={clearCompleted}>
               Clear completed
             </button>
