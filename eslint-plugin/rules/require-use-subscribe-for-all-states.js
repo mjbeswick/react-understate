@@ -23,6 +23,7 @@ module.exports = {
   create(context) {
     const stateUsages = new Map();
     const useUnderstateCalls = new Set();
+    const storeObjectCalls = new Set();
     let isInReactComponent = false;
     let currentFunctionName = null;
 
@@ -86,7 +87,17 @@ module.exports = {
           node.callee.type === 'Identifier' &&
           node.callee.name === 'useUnderstate'
         ) {
-          // Check all arguments, not just the first one
+          // Check if it's a store object call (single argument)
+          if (
+            node.arguments.length === 1 &&
+            node.arguments[0].type === 'Identifier'
+          ) {
+            // This is a store object call
+            storeObjectCalls.add(node.arguments[0].name);
+            return;
+          }
+
+          // Check all arguments for individual state subscriptions
           node.arguments.forEach(arg => {
             if (arg.type === 'Identifier') {
               useUnderstateCalls.add(arg.name);
@@ -106,11 +117,25 @@ module.exports = {
 
             // Only check if we're in a React component function
             if (isInReactComponent && isInFunction(node)) {
+              // Skip if this state is part of a store object that's being used
               if (currentFunctionName && !useUnderstateCalls.has(stateName)) {
-                const usages =
-                  stateUsages.get(currentFunctionName) || new Set();
-                usages.add(stateName);
-                stateUsages.set(currentFunctionName, usages);
+                // Check if this state might be part of a store object
+                let isPartOfStore = false;
+                for (const storeName of storeObjectCalls) {
+                  // This is a heuristic - if the state name is used in a store object call,
+                  // we assume it's part of that store
+                  if (storeName && storeName !== stateName) {
+                    isPartOfStore = true;
+                    break;
+                  }
+                }
+
+                if (!isPartOfStore) {
+                  const usages =
+                    stateUsages.get(currentFunctionName) || new Set();
+                  usages.add(stateName);
+                  stateUsages.set(currentFunctionName, usages);
+                }
               }
             }
           }
@@ -139,6 +164,7 @@ module.exports = {
           isInReactComponent = false;
           currentFunctionName = null;
           useUnderstateCalls.clear();
+          storeObjectCalls.clear();
         }
       },
 
@@ -167,6 +193,7 @@ module.exports = {
           isInReactComponent = false;
           currentFunctionName = null;
           useUnderstateCalls.clear();
+          storeObjectCalls.clear();
         }
       },
     };

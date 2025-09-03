@@ -94,6 +94,49 @@ function Counter() {
 }
 ```
 
+### `require-use-subscribe-store-object`
+
+Ensures that when you use store objects in React components, you properly call `useUnderstate(store)` to subscribe to state changes.
+
+#### ❌ Incorrect
+
+```tsx
+import { state, useUnderstate } from 'react-understate';
+
+const store = {
+  count: state(0),
+  name: state('John'),
+  increment: () => store.count.value++,
+};
+
+function Counter() {
+  // Missing useUnderstate call
+  return <div>Count: {store.count.value}</div>;
+}
+```
+
+#### ✅ Correct
+
+```tsx
+import { state, useUnderstate } from 'react-understate';
+
+const store = {
+  count: state(0),
+  name: state('John'),
+  increment: () => store.count.value++,
+};
+
+function Counter() {
+  // Individual states pattern
+  useUnderstate(store.count);
+  return <div>Count: {store.count.value}</div>;
+
+  // OR store object pattern
+  const { count, increment } = useUnderstate(store);
+  return <div>Count: {count}</div>;
+}
+```
+
 ### `prefer-batch-for-multiple-updates`
 
 Suggests using `batch()` when multiple state updates happen in sequence to avoid unnecessary re-renders.
@@ -340,8 +383,31 @@ The rules detect various patterns in your code:
 1. **React Components**: Functions that start with uppercase letters (React component convention)
 2. **State Usage**: `state.value` property access and state creation
 3. **Missing Subscriptions**: When `useUnderstate(state)` is not called for a state that's being used
-4. **Performance Issues**: Multiple state updates without batching, nested effects/derived calls
-5. **Best Practices**: State creation in components, direct state assignments
+4. **Store Object Usage**: When store objects are used without proper `useUnderstate` subscription
+5. **Performance Issues**: Multiple state updates without batching, nested effects/derived calls
+6. **Best Practices**: State creation in components, direct state assignments
+
+## useUnderstate Patterns
+
+The ESLint plugin supports both `useUnderstate` usage patterns:
+
+### Individual States Pattern
+
+```tsx
+// Subscribe to individual states
+useUnderstate(count, name);
+// Access values via .value
+const currentCount = count.value;
+```
+
+### Store Object Pattern
+
+```tsx
+// Subscribe to store object and get current values
+const { count, name, increment } = useUnderstate(store);
+// Access values directly (no .value needed)
+const currentCount = count;
+```
 
 ## Why these rules matter
 

@@ -1,6 +1,7 @@
 module.exports = {
   rules: {
     'require-use-subscribe': require('./rules/require-use-subscribe'),
+    'require-use-subscribe-store-object': require('./rules/require-use-subscribe-store-object'),
     'prefer-batch-for-multiple-updates': require('./rules/prefer-batch-for-multiple-updates'),
     'no-direct-state-assignment': require('./rules/no-direct-state-assignment'),
     'require-use-subscribe-for-all-states': require('./rules/require-use-subscribe-for-all-states'),
@@ -19,6 +20,7 @@ module.exports = {
       rules: {
         // Error rules - these are critical for correct usage
         'react-understate/require-use-subscribe-for-all-states': 'error',
+        'react-understate/require-use-subscribe-store-object': 'error',
         'react-understate/no-direct-state-assignment': 'error',
         'react-understate/no-state-creation-in-components': 'error',
         'react-understate/no-nested-effects': 'error',
