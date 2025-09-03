@@ -5,6 +5,6 @@
  * Use this for applications that don't need React or want to minimize bundle size.
  */
 
-export { state } from './core';
-export type { State, ReadonlyState } from './core';
-export { derived, effect, batch } from './state';
+export { state } from "./core";
+export type { State } from "./core";
+export { derived, effect, batch } from "./state";

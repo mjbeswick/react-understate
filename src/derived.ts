@@ -5,7 +5,7 @@
  * Derived values are read-only signals that automatically update when their dependencies change.
  */
 
-import { setActiveEffect, ReadonlyState, DeepReadonly } from "./core";
+import { setActiveEffect, State } from "./core";
 
 /**
  * Creates a read-only signal that automatically updates when dependencies change.
@@ -60,7 +60,7 @@ import { setActiveEffect, ReadonlyState, DeepReadonly } from "./core";
  * console.log(result.value); // 11 (5 * 2 = 10, isEven = false, so +1)
  * ```
  */
-export function derived<T>(computeFn: () => T): ReadonlyState<T> {
+export function derived<T>(computeFn: () => T): State<T> {
   let cachedValue: T;
   let dirty = true;
   let isComputing = false;
@@ -128,9 +128,12 @@ export function derived<T>(computeFn: () => T): ReadonlyState<T> {
     return () => subscribers.delete(fn);
   };
 
-  // Return a read-only signal
+  // Return a state-like object (read-only)
   return {
     rawValue: cachedValue,
+    update: () => {
+      throw new Error("Cannot update derived values directly");
+    },
     subscribe,
     get pending() {
       // Derived values are never pending, but we need to track dependencies
@@ -144,7 +147,10 @@ export function derived<T>(computeFn: () => T): ReadonlyState<T> {
       if (setActiveEffect(null)) {
         dependencies.add(setActiveEffect(null)!);
       }
-      return computeValue() as DeepReadonly<T>;
+      return computeValue();
     },
-  };
+    set value(_newValue: T) {
+      throw new Error("Cannot update derived values directly");
+    },
+  } as State<T>;
 }

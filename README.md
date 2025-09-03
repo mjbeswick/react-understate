@@ -596,7 +596,7 @@ function SignupForm() {
 
 Creates a reactive state with an initial value.
 
-#### `derived<T>(computeFn: () => T): ReadonlyState<T>`
+#### `derived<T>(computeFn: () => T): State<T>`
 
 Creates a read-only state that automatically updates when dependencies change.
 
@@ -610,7 +610,7 @@ Batches multiple state updates into a single effect flush.
 
 ### React Integration
 
-#### `useUnderstate<T>(signal: State<T> | ReadonlyState<T>): void`
+#### `useUnderstate<T>(signal: State<T>): void`
 
 React hook to subscribe to state changes and trigger re-renders.
 

@@ -1,4 +1,4 @@
-import { state, derived, readonlyStates } from 'react-understate';
+import { state, derived } from 'react-understate';
 
 // Define the Todo type
 export type Todo = {
@@ -77,13 +77,11 @@ function toggleAll() {
   }));
 }
 
-// Export as default with readonly states
+// Export as default
 export default {
-  ...readonlyStates({
-    todos,
-    filter,
-    newTodo,
-  }),
+  todos,
+  filter,
+  newTodo,
   filteredTodos,
   activeCount,
   completedCount,

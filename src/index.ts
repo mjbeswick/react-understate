@@ -15,7 +15,7 @@
 
 // Core exports
 export { state } from "./core";
-export type { State, ReadonlyState } from "./core";
+export type { State } from "./core";
 
 // Reactive exports
 export { derived, effect, batch } from "./state";

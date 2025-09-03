@@ -153,73 +153,6 @@ export type State<T> = {
 };
 
 /**
- * A read-only state that can only be read and subscribed to, not modified.
- *
- * Read-only states are useful for computed values and other derived state
- * that should not be directly modified by consumers. They provide the same
- * reactive behavior as regular states but without the ability to modify
- * the underlying value.
- *
- * @template T - The type of value held by the state
- *
- * @example
- * ```tsx
- * import { state, computed } from './effects';
- *
- * const firstName = state('John');
- * const lastName = state('Doe');
- *
- * // Create a computed (read-only) state
- * const fullName = computed(() => `${firstName.value} ${lastName.value}`);
- *
- * // ✅ CORRECT: Read the computed value
- * console.log(fullName.value); // "John Doe"
- *
- * // ❌ INCORRECT: Cannot modify computed values
- * // fullName.value = 'Jane Smith'; // Error!
- *
- * // The computed automatically updates when dependencies change
- * firstName.value = 'Jane';
- * console.log(fullName.value); // "Jane Doe"
- * ```
- */
-export type ReadonlyState<T> = {
-  /**
-   * The raw internal value of the state.
-   *
-   * Use `.value` for reactive access that tracks dependencies.
-   * Use `.rawValue` only when you need the current value without
-   * establishing a dependency.
-   */
-  rawValue: T;
-
-  /**
-   * Subscribes to changes in the state value.
-   *
-   * @param fn - Function to call when the state value changes
-   * @returns Unsubscribe function to remove the subscription
-   */
-  subscribe(fn: () => void): () => void;
-
-  /**
-   * Whether the state is currently being updated.
-   *
-   * For computed values, this is always false since they cannot be
-   * directly updated.
-   */
-  readonly pending: boolean;
-
-  /**
-   * The current value of the state (read-only).
-   *
-   * Reading this property establishes a dependency on the state,
-   * causing any containing effects or computed values to re-run
-   * when the state changes.
-   */
-  readonly value: DeepReadonly<T>;
-};
-
-/**
  * Creates a reactive state with an initial value.
  *
  * This is the primary function for creating reactive state. States
@@ -385,6 +318,7 @@ export function state<T>(initialValue: T): State<T> {
     set value(newValue: T) {
       setValue(newValue);
     },
+
     toString() {
       return String(value);
     },

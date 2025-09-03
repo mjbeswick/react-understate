@@ -5,7 +5,7 @@
  * using use-sync-external-store for optimal compatibility.
  */
 
-import type { State, ReadonlyState } from "./core";
+import type { State } from "./core";
 import { useSyncExternalStore } from "use-sync-external-store/shim";
 
 /**
@@ -59,13 +59,9 @@ import { useSyncExternalStore } from "use-sync-external-store/shim";
  * useUnderstate(userCount, userName, isOnline);
  * ```
  */
-export function useUnderstate<T>(signal: State<T> | ReadonlyState<T>): void;
-export function useUnderstate(
-  ...signals: (State<unknown> | ReadonlyState<unknown>)[]
-): void;
-export function useUnderstate(
-  ...signals: (State<unknown> | ReadonlyState<unknown>)[]
-): void {
+export function useUnderstate<T>(signal: State<T>): void;
+export function useUnderstate(...signals: State<unknown>[]): void;
+export function useUnderstate(...signals: State<unknown>[]): void {
   useSyncExternalStore(
     (callback) => {
       // Subscribe to all signals

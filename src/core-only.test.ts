@@ -90,9 +90,9 @@ describe("Core-Only Module", () => {
       expect(count.value).toBe(0);
     });
 
-    it("should provide ReadonlyState type", () => {
+    it("should provide derived state type", () => {
       const base = CoreOnly.state(10);
-      const doubled: CoreOnly.ReadonlyState<number> = CoreOnly.derived(
+      const doubled: CoreOnly.State<number> = CoreOnly.derived(
         () => base.value * 2,
       );
       expect(doubled.value).toBe(20);
