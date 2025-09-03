@@ -5,17 +5,17 @@
 
 module.exports = {
   meta: {
-    type: "suggestion",
+    type: 'suggestion',
     docs: {
-      description: "Ensure async state updates have proper error handling",
-      category: "React Understate",
+      description: 'Ensure async state updates have proper error handling',
+      category: 'React Understate',
       recommended: true,
     },
     fixable: null,
     schema: [],
     messages: {
       requireErrorHandlingInAsyncUpdates:
-        "Async state update should include error handling. Consider wrapping the update in a try-catch block or using proper error handling.",
+        'Async state update should include error handling. Consider wrapping the update in a try-catch block or using proper error handling.',
     },
   },
 
@@ -23,11 +23,11 @@ module.exports = {
     // Check if this is a state.update() call
     function isStateUpdateCall(node) {
       return (
-        node.type === "CallExpression" &&
-        node.callee.type === "MemberExpression" &&
-        node.callee.property.type === "Identifier" &&
-        node.callee.property.name === "update" &&
-        node.callee.object.type === "Identifier"
+        node.type === 'CallExpression' &&
+        node.callee.type === 'MemberExpression' &&
+        node.callee.property.type === 'Identifier' &&
+        node.callee.property.name === 'update' &&
+        node.callee.object.type === 'Identifier'
       );
     }
 
@@ -37,8 +37,8 @@ module.exports = {
 
       const callback = node.arguments[0];
       if (
-        callback.type === "ArrowFunctionExpression" ||
-        callback.type === "FunctionExpression"
+        callback.type === 'ArrowFunctionExpression' ||
+        callback.type === 'FunctionExpression'
       ) {
         return callback.async === true;
       }
@@ -51,8 +51,8 @@ module.exports = {
 
       const callback = node.arguments[0];
       if (
-        callback.type === "ArrowFunctionExpression" ||
-        callback.type === "FunctionExpression"
+        callback.type === 'ArrowFunctionExpression' ||
+        callback.type === 'FunctionExpression'
       ) {
         return hasTryCatchInFunction(callback);
       }
@@ -64,12 +64,12 @@ module.exports = {
       if (!node.body) return false;
 
       const body = node.body;
-      if (body.type === "BlockStatement") {
-        return body.body.some((statement) => {
-          if (statement.type === "TryStatement") {
+      if (body.type === 'BlockStatement') {
+        return body.body.some(statement => {
+          if (statement.type === 'TryStatement') {
             return true;
           }
-          if (statement.type === "IfStatement") {
+          if (statement.type === 'IfStatement') {
             // Check for error handling patterns like if (error) or if (result.error)
             return isErrorHandlingCondition(statement.test);
           }
@@ -81,21 +81,21 @@ module.exports = {
 
     // Check if a condition suggests error handling
     function isErrorHandlingCondition(node) {
-      if (node.type === "Identifier") {
-        return node.name === "error" || node.name === "err";
+      if (node.type === 'Identifier') {
+        return node.name === 'error' || node.name === 'err';
       }
-      if (node.type === "MemberExpression") {
+      if (node.type === 'MemberExpression') {
         return (
-          node.property.type === "Identifier" &&
-          (node.property.name === "error" || node.property.name === "status")
+          node.property.type === 'Identifier' &&
+          (node.property.name === 'error' || node.property.name === 'status')
         );
       }
-      if (node.type === "BinaryExpression") {
+      if (node.type === 'BinaryExpression') {
         return (
-          node.operator === "!==" ||
-          node.operator === "!=" ||
-          node.operator === "===" ||
-          node.operator === "=="
+          node.operator === '!==' ||
+          node.operator === '!=' ||
+          node.operator === '===' ||
+          node.operator === '=='
         );
       }
       return false;
@@ -110,7 +110,7 @@ module.exports = {
         ) {
           context.report({
             node,
-            messageId: "requireErrorHandlingInAsyncUpdates",
+            messageId: 'requireErrorHandlingInAsyncUpdates',
           });
         }
       },

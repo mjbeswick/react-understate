@@ -5,31 +5,31 @@
 
 module.exports = {
   meta: {
-    type: "suggestion",
+    type: 'suggestion',
     docs: {
       description:
-        "Prefer effect() over useEffect() for state-related side effects",
-      category: "React Understate",
+        'Prefer effect() over useEffect() for state-related side effects',
+      category: 'React Understate',
       recommended: true,
     },
     fixable: null,
     schema: [],
     messages: {
       preferEffectForSideEffects:
-        "Consider using effect() instead of useEffect() for state-related side effects. This provides better integration with the reactive system.",
+        'Consider using effect() instead of useEffect() for state-related side effects. This provides better integration with the reactive system.',
     },
   },
 
   create(context) {
     let isInReactComponent = false;
-    let currentFunctionName = null;
+    let _currentFunctionName = null;
     const stateUsages = new Set();
 
     // Check if we're in a React component function
     function isReactComponent(node) {
       if (
-        node.type === "FunctionDeclaration" ||
-        node.type === "VariableDeclarator"
+        node.type === 'FunctionDeclaration' ||
+        node.type === 'VariableDeclarator'
       ) {
         const name = node.id?.name || node.init?.id?.name;
         return name && /^[A-Z]/.test(name);
@@ -42,9 +42,9 @@ module.exports = {
       let current = node;
       while (current) {
         if (
-          current.type === "FunctionDeclaration" ||
-          current.type === "FunctionExpression" ||
-          current.type === "ArrowFunctionExpression"
+          current.type === 'FunctionDeclaration' ||
+          current.type === 'FunctionExpression' ||
+          current.type === 'ArrowFunctionExpression'
         ) {
           return true;
         }
@@ -56,19 +56,19 @@ module.exports = {
     // Check if this is a state.value access
     function isStateValueAccess(node) {
       return (
-        node.type === "MemberExpression" &&
-        node.property.type === "Identifier" &&
-        node.property.name === "value" &&
-        node.object.type === "Identifier"
+        node.type === 'MemberExpression' &&
+        node.property.type === 'Identifier' &&
+        node.property.name === 'value' &&
+        node.object.type === 'Identifier'
       );
     }
 
     // Check if this is a useEffect call
     function isUseEffectCall(node) {
       return (
-        node.type === "CallExpression" &&
-        node.callee.type === "Identifier" &&
-        node.callee.name === "useEffect"
+        node.type === 'CallExpression' &&
+        node.callee.type === 'Identifier' &&
+        node.callee.name === 'useEffect'
       );
     }
 
@@ -76,30 +76,30 @@ module.exports = {
     function usesStateValues(node) {
       let usesState = false;
 
-      const checkNode = (n) => {
+      const checkNode = n => {
         if (isStateValueAccess(n)) {
           usesState = true;
         }
-        if (n.type === "BinaryExpression") {
+        if (n.type === 'BinaryExpression') {
           checkNode(n.left);
           checkNode(n.right);
         }
-        if (n.type === "CallExpression") {
+        if (n.type === 'CallExpression') {
           n.arguments.forEach(checkNode);
         }
-        if (n.type === "ConditionalExpression") {
+        if (n.type === 'ConditionalExpression') {
           checkNode(n.test);
           checkNode(n.consequent);
           checkNode(n.alternate);
         }
-        if (n.type === "LogicalExpression") {
+        if (n.type === 'LogicalExpression') {
           checkNode(n.left);
           checkNode(n.right);
         }
-        if (n.type === "UnaryExpression") {
+        if (n.type === 'UnaryExpression') {
           checkNode(n.argument);
         }
-        if (n.type === "MemberExpression") {
+        if (n.type === 'MemberExpression') {
           checkNode(n.object);
           if (n.property) checkNode(n.property);
         }
@@ -114,7 +114,7 @@ module.exports = {
       FunctionDeclaration(node) {
         if (isReactComponent(node)) {
           isInReactComponent = true;
-          currentFunctionName = node.id?.name;
+          _currentFunctionName = node.id?.name;
           stateUsages.clear();
         }
       },
@@ -123,11 +123,11 @@ module.exports = {
       VariableDeclarator(node) {
         if (
           node.init &&
-          node.init.type === "ArrowFunctionExpression" &&
+          node.init.type === 'ArrowFunctionExpression' &&
           isReactComponent(node)
         ) {
           isInReactComponent = true;
-          currentFunctionName = node.id?.name;
+          _currentFunctionName = node.id?.name;
           stateUsages.clear();
         }
       },
@@ -150,29 +150,29 @@ module.exports = {
           if (node.arguments.length > 0 && usesStateValues(node.arguments[0])) {
             context.report({
               node,
-              messageId: "preferEffectForSideEffects",
+              messageId: 'preferEffectForSideEffects',
             });
           }
         }
       },
 
       // Reset when leaving a component
-      "FunctionDeclaration:exit"(node) {
+      'FunctionDeclaration:exit'(node) {
         if (isReactComponent(node)) {
           isInReactComponent = false;
-          currentFunctionName = null;
+          _currentFunctionName = null;
           stateUsages.clear();
         }
       },
 
-      "VariableDeclarator:exit"(node) {
+      'VariableDeclarator:exit'(node) {
         if (
           node.init &&
-          node.init.type === "ArrowFunctionExpression" &&
+          node.init.type === 'ArrowFunctionExpression' &&
           isReactComponent(node)
         ) {
           isInReactComponent = false;
-          currentFunctionName = null;
+          _currentFunctionName = null;
           stateUsages.clear();
         }
       },

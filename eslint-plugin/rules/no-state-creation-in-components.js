@@ -5,30 +5,30 @@
 
 module.exports = {
   meta: {
-    type: "problem",
+    type: 'problem',
     docs: {
       description:
-        "Prevent creating states inside React components, which can cause issues with re-renders",
-      category: "React Understate",
+        'Prevent creating states inside React components, which can cause issues with re-renders',
+      category: 'React Understate',
       recommended: true,
     },
     fixable: null,
     schema: [],
     messages: {
       noStateCreationInComponent:
-        "Do not create states inside React components. Move state creation outside the component to avoid re-creation on every render.",
+        'Do not create states inside React components. Move state creation outside the component to avoid re-creation on every render.',
     },
   },
 
   create(context) {
     let isInReactComponent = false;
-    let currentFunctionName = null;
+    let _currentFunctionName = null;
 
     // Check if we're in a React component function
     function isReactComponent(node) {
       if (
-        node.type === "FunctionDeclaration" ||
-        node.type === "VariableDeclarator"
+        node.type === 'FunctionDeclaration' ||
+        node.type === 'VariableDeclarator'
       ) {
         const name = node.id?.name || node.init?.id?.name;
         return name && /^[A-Z]/.test(name);
@@ -41,9 +41,9 @@ module.exports = {
       let current = node;
       while (current) {
         if (
-          current.type === "FunctionDeclaration" ||
-          current.type === "FunctionExpression" ||
-          current.type === "ArrowFunctionExpression"
+          current.type === 'FunctionDeclaration' ||
+          current.type === 'FunctionExpression' ||
+          current.type === 'ArrowFunctionExpression'
         ) {
           return true;
         }
@@ -55,9 +55,9 @@ module.exports = {
     // Check if this is a state() call
     function isStateCall(node) {
       return (
-        node.type === "CallExpression" &&
-        node.callee.type === "Identifier" &&
-        node.callee.name === "state"
+        node.type === 'CallExpression' &&
+        node.callee.type === 'Identifier' &&
+        node.callee.name === 'state'
       );
     }
 
@@ -66,7 +66,7 @@ module.exports = {
       FunctionDeclaration(node) {
         if (isReactComponent(node)) {
           isInReactComponent = true;
-          currentFunctionName = node.id?.name;
+          _currentFunctionName = node.id?.name;
         }
       },
 
@@ -74,11 +74,11 @@ module.exports = {
       VariableDeclarator(node) {
         if (
           node.init &&
-          node.init.type === "ArrowFunctionExpression" &&
+          node.init.type === 'ArrowFunctionExpression' &&
           isReactComponent(node)
         ) {
           isInReactComponent = true;
-          currentFunctionName = node.id?.name;
+          _currentFunctionName = node.id?.name;
         }
       },
 
@@ -87,27 +87,27 @@ module.exports = {
         if (isStateCall(node) && isInReactComponent && isInFunction(node)) {
           context.report({
             node,
-            messageId: "noStateCreationInComponent",
+            messageId: 'noStateCreationInComponent',
           });
         }
       },
 
       // Reset when leaving a component
-      "FunctionDeclaration:exit"(node) {
+      'FunctionDeclaration:exit'(node) {
         if (isReactComponent(node)) {
           isInReactComponent = false;
-          currentFunctionName = null;
+          _currentFunctionName = null;
         }
       },
 
-      "VariableDeclarator:exit"(node) {
+      'VariableDeclarator:exit'(node) {
         if (
           node.init &&
-          node.init.type === "ArrowFunctionExpression" &&
+          node.init.type === 'ArrowFunctionExpression' &&
           isReactComponent(node)
         ) {
           isInReactComponent = false;
-          currentFunctionName = null;
+          _currentFunctionName = null;
         }
       },
     };

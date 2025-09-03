@@ -5,30 +5,30 @@
 
 module.exports = {
   meta: {
-    type: "problem",
+    type: 'problem',
     docs: {
       description:
-        "Prevent nested effect() calls which can cause performance issues and unexpected behavior",
-      category: "React Understate",
+        'Prevent nested effect() calls which can cause performance issues and unexpected behavior',
+      category: 'React Understate',
       recommended: true,
     },
     fixable: null,
     schema: [],
     messages: {
       noNestedEffects:
-        "Nested effect() calls are not allowed. Move the inner effect outside or combine them into a single effect.",
+        'Nested effect() calls are not allowed. Move the inner effect outside or combine them into a single effect.',
     },
   },
 
   create(context) {
     let effectDepth = 0;
-    let isInEffect = false;
+    const isInEffect = false;
 
     function isEffectCall(node) {
       return (
-        node.type === "CallExpression" &&
-        node.callee.type === "Identifier" &&
-        node.callee.name === "effect"
+        node.type === 'CallExpression' &&
+        node.callee.type === 'Identifier' &&
+        node.callee.name === 'effect'
       );
     }
 
@@ -40,28 +40,28 @@ module.exports = {
           if (effectDepth > 1) {
             context.report({
               node,
-              messageId: "noNestedEffects",
+              messageId: 'noNestedEffects',
             });
           }
         }
       },
 
       // Track when we exit an effect call
-      "CallExpression:exit"(node) {
+      'CallExpression:exit'(node) {
         if (isEffectCall(node)) {
           effectDepth--;
         }
       },
 
       // Track when we enter the effect callback function
-      FunctionExpression(node) {
+      FunctionExpression(_node) {
         if (isInEffect) {
           // We're entering a nested function inside an effect
           // This is allowed, but we need to track it
         }
       },
 
-      ArrowFunctionExpression(node) {
+      ArrowFunctionExpression(_node) {
         if (isInEffect) {
           // We're entering a nested arrow function inside an effect
           // This is allowed, but we need to track it

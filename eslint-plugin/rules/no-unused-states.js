@@ -5,10 +5,10 @@
 
 module.exports = {
   meta: {
-    type: "problem",
+    type: 'problem',
     docs: {
-      description: "Detect states that are created but never used",
-      category: "React Understate",
+      description: 'Detect states that are created but never used',
+      category: 'React Understate',
       recommended: true,
     },
     fixable: null,
@@ -21,33 +21,33 @@ module.exports = {
 
   create(context) {
     const stateDeclarations = new Map(); // Track state declarations
-    const stateUsages = new Set(); // Track state usage
+    const _stateUsages = new Set(); // Track state usage
 
     // Check if this is a state() call
     function isStateCall(node) {
       return (
-        node.type === "CallExpression" &&
-        node.callee.type === "Identifier" &&
-        node.callee.name === "state"
+        node.type === 'CallExpression' &&
+        node.callee.type === 'Identifier' &&
+        node.callee.name === 'state'
       );
     }
 
     // Check if this is a state.value access
     function isStateValueAccess(node) {
       return (
-        node.type === "MemberExpression" &&
-        node.property.type === "Identifier" &&
-        node.property.name === "value" &&
-        node.object.type === "Identifier"
+        node.type === 'MemberExpression' &&
+        node.property.type === 'Identifier' &&
+        node.property.name === 'value' &&
+        node.object.type === 'Identifier'
       );
     }
 
     // Check if this is a useUnderstate call
     function isUseSubscribeCall(node) {
       return (
-        node.type === "CallExpression" &&
-        node.callee.type === "Identifier" &&
-        node.callee.name === "useUnderstate"
+        node.type === 'CallExpression' &&
+        node.callee.type === 'Identifier' &&
+        node.callee.name === 'useUnderstate'
       );
     }
 
@@ -76,11 +76,12 @@ module.exports = {
         }
       },
 
-      // Track state usage through useUnderstate
+      // Track state usage through useUnderstate and derived() dependencies
       CallExpression(node) {
+        // Track state usage through useUnderstate
         if (isUseSubscribeCall(node) && node.arguments.length > 0) {
           const arg = node.arguments[0];
-          if (arg.type === "Identifier") {
+          if (arg.type === 'Identifier') {
             const stateName = arg.name;
             if (stateDeclarations.has(stateName)) {
               const stateInfo = stateDeclarations.get(stateName);
@@ -89,23 +90,21 @@ module.exports = {
             }
           }
         }
-      },
 
-      // Track state usage through derived() dependencies
-      CallExpression(node) {
+        // Track state usage through derived() dependencies
         if (
-          node.type === "CallExpression" &&
-          node.callee.type === "Identifier" &&
-          node.callee.name === "derived" &&
+          node.type === 'CallExpression' &&
+          node.callee.type === 'Identifier' &&
+          node.callee.name === 'derived' &&
           node.arguments.length > 0
         ) {
           const derivedCallback = node.arguments[0];
           if (
-            derivedCallback.type === "ArrowFunctionExpression" ||
-            derivedCallback.type === "FunctionExpression"
+            derivedCallback.type === 'ArrowFunctionExpression' ||
+            derivedCallback.type === 'FunctionExpression'
           ) {
             // Check the derived callback for state usage
-            const checkNode = (n) => {
+            const checkNode = n => {
               if (isStateValueAccess(n)) {
                 const stateName = n.object.name;
                 if (stateDeclarations.has(stateName)) {
@@ -114,35 +113,35 @@ module.exports = {
                   stateDeclarations.set(stateName, stateInfo);
                 }
               }
-              if (n.type === "BinaryExpression") {
+              if (n.type === 'BinaryExpression') {
                 checkNode(n.left);
                 checkNode(n.right);
               }
-              if (n.type === "CallExpression") {
+              if (n.type === 'CallExpression') {
                 n.arguments.forEach(checkNode);
               }
-              if (n.type === "ConditionalExpression") {
+              if (n.type === 'ConditionalExpression') {
                 checkNode(n.test);
                 checkNode(n.consequent);
                 checkNode(n.alternate);
               }
-              if (n.type === "LogicalExpression") {
+              if (n.type === 'LogicalExpression') {
                 checkNode(n.left);
                 checkNode(n.right);
               }
-              if (n.type === "UnaryExpression") {
+              if (n.type === 'UnaryExpression') {
                 checkNode(n.argument);
               }
-              if (n.type === "MemberExpression") {
+              if (n.type === 'MemberExpression') {
                 checkNode(n.object);
                 if (n.property) checkNode(n.property);
               }
             };
 
             // Check the derived callback body
-            if (derivedCallback.body.type === "BlockStatement") {
-              derivedCallback.body.body.forEach((statement) => {
-                if (statement.type === "ExpressionStatement") {
+            if (derivedCallback.body.type === 'BlockStatement') {
+              derivedCallback.body.body.forEach(statement => {
+                if (statement.type === 'ExpressionStatement') {
                   checkNode(statement.expression);
                 }
               });
@@ -154,12 +153,12 @@ module.exports = {
       },
 
       // Report unused states at the end of the file
-      "Program:exit"() {
+      'Program:exit'() {
         stateDeclarations.forEach((stateInfo, stateName) => {
           if (stateInfo.declared && !stateInfo.used) {
             context.report({
               node: stateInfo.node,
-              messageId: "noUnusedStates",
+              messageId: 'noUnusedStates',
               data: {
                 stateName,
               },

@@ -5,11 +5,11 @@
 
 module.exports = {
   meta: {
-    type: "problem",
+    type: 'problem',
     docs: {
       description:
-        "Ensure all states used in a React component are properly subscribed to",
-      category: "React Understate",
+        'Ensure all states used in a React component are properly subscribed to',
+      category: 'React Understate',
       recommended: true,
     },
     fixable: null,
@@ -30,8 +30,8 @@ module.exports = {
     function isReactComponent(node) {
       // Check if it's a function declaration or arrow function
       if (
-        node.type === "FunctionDeclaration" ||
-        node.type === "VariableDeclarator"
+        node.type === 'FunctionDeclaration' ||
+        node.type === 'VariableDeclarator'
       ) {
         const name = node.id?.name || node.init?.id?.name;
         // React components typically start with uppercase
@@ -45,9 +45,9 @@ module.exports = {
       let current = node;
       while (current) {
         if (
-          current.type === "FunctionDeclaration" ||
-          current.type === "FunctionExpression" ||
-          current.type === "ArrowFunctionExpression"
+          current.type === 'FunctionDeclaration' ||
+          current.type === 'FunctionExpression' ||
+          current.type === 'ArrowFunctionExpression'
         ) {
           return true;
         }
@@ -70,7 +70,7 @@ module.exports = {
       VariableDeclarator(node) {
         if (
           node.init &&
-          node.init.type === "ArrowFunctionExpression" &&
+          node.init.type === 'ArrowFunctionExpression' &&
           isReactComponent(node)
         ) {
           isInReactComponent = true;
@@ -83,12 +83,12 @@ module.exports = {
       // Track useUnderstate calls
       CallExpression(node) {
         if (
-          node.callee.type === "Identifier" &&
-          node.callee.name === "useUnderstate"
+          node.callee.type === 'Identifier' &&
+          node.callee.name === 'useUnderstate'
         ) {
           // Check all arguments, not just the first one
-          node.arguments.forEach((arg) => {
-            if (arg.type === "Identifier") {
+          node.arguments.forEach(arg => {
+            if (arg.type === 'Identifier') {
               useUnderstateCalls.add(arg.name);
             }
           });
@@ -98,10 +98,10 @@ module.exports = {
       // Track state.value usage
       MemberExpression(node) {
         if (
-          node.property.type === "Identifier" &&
-          node.property.name === "value"
+          node.property.type === 'Identifier' &&
+          node.property.name === 'value'
         ) {
-          if (node.object.type === "Identifier") {
+          if (node.object.type === 'Identifier') {
             const stateName = node.object.name;
 
             // Only check if we're in a React component function
@@ -118,16 +118,16 @@ module.exports = {
       },
 
       // Report missing useUnderstate calls when leaving a component
-      "FunctionDeclaration:exit"(node) {
+      'FunctionDeclaration:exit'(node) {
         if (isReactComponent(node)) {
           const functionName = node.id?.name;
           if (functionName && stateUsages.has(functionName)) {
             const usages = stateUsages.get(functionName);
-            usages.forEach((stateName) => {
+            usages.forEach(stateName => {
               if (!useUnderstateCalls.has(stateName)) {
                 context.report({
                   node,
-                  messageId: "missingUseSubscribe",
+                  messageId: 'missingUseSubscribe',
                   data: {
                     stateName,
                   },
@@ -142,20 +142,20 @@ module.exports = {
         }
       },
 
-      "VariableDeclarator:exit"(node) {
+      'VariableDeclarator:exit'(node) {
         if (
           node.init &&
-          node.init.type === "ArrowFunctionExpression" &&
+          node.init.type === 'ArrowFunctionExpression' &&
           isReactComponent(node)
         ) {
           const functionName = node.id?.name;
           if (functionName && stateUsages.has(functionName)) {
             const usages = stateUsages.get(functionName);
-            usages.forEach((stateName) => {
+            usages.forEach(stateName => {
               if (!useUnderstateCalls.has(stateName)) {
                 context.report({
                   node,
-                  messageId: "missingUseSubscribe",
+                  messageId: 'missingUseSubscribe',
                   data: {
                     stateName,
                   },

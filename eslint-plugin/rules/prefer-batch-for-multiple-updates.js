@@ -5,20 +5,20 @@
 
 module.exports = {
   meta: {
-    type: "suggestion",
+    type: 'suggestion',
     docs: {
       description:
-        "Prefer batch() for multiple state updates to avoid unnecessary re-renders",
-      category: "React Understate",
+        'Prefer batch() for multiple state updates to avoid unnecessary re-renders',
+      category: 'React Understate',
       recommended: true,
     },
-    fixable: "code",
+    fixable: 'code',
     schema: [
       {
-        type: "object",
+        type: 'object',
         properties: {
           minUpdates: {
-            type: "number",
+            type: 'number',
             minimum: 2,
             default: 3,
           },
@@ -28,7 +28,7 @@ module.exports = {
     ],
     messages: {
       preferBatch:
-        "Multiple state updates detected. Consider using batch() to group these updates: {{updates}}",
+        'Multiple state updates detected. Consider using batch() to group these updates: {{updates}}',
     },
   },
 
@@ -42,12 +42,12 @@ module.exports = {
     function isStateUpdate(node) {
       // Check if this is a state.value = ... assignment
       return (
-        node.type === "AssignmentExpression" &&
-        node.operator === "=" &&
-        node.left.type === "MemberExpression" &&
-        node.left.property.type === "Identifier" &&
-        node.left.property.name === "value" &&
-        node.left.object.type === "Identifier"
+        node.type === 'AssignmentExpression' &&
+        node.operator === '=' &&
+        node.left.type === 'MemberExpression' &&
+        node.left.property.type === 'Identifier' &&
+        node.left.property.name === 'value' &&
+        node.left.object.type === 'Identifier'
       );
     }
 
@@ -56,10 +56,10 @@ module.exports = {
       let parent = node.parent;
       while (parent) {
         if (
-          parent.type === "CallExpression" &&
+          parent.type === 'CallExpression' &&
           parent.callee &&
-          parent.callee.type === "Identifier" &&
-          parent.callee.name === "batch"
+          parent.callee.type === 'Identifier' &&
+          parent.callee.name === 'batch'
         ) {
           return true;
         }
@@ -83,8 +83,8 @@ module.exports = {
       VariableDeclarator(node) {
         if (
           node.init &&
-          (node.init.type === "ArrowFunctionExpression" ||
-            node.init.type === "FunctionExpression")
+          (node.init.type === 'ArrowFunctionExpression' ||
+            node.init.type === 'FunctionExpression')
         ) {
           currentFunction = node.id?.name;
           stateUpdates.set(currentFunction, []);
@@ -105,7 +105,7 @@ module.exports = {
       },
 
       // Check for multiple updates when leaving a function
-      "FunctionDeclaration:exit"(node) {
+      'FunctionDeclaration:exit'(node) {
         const functionName = node.id?.name;
         if (functionName && stateUpdates.has(functionName)) {
           const updates = stateUpdates.get(functionName);
@@ -119,11 +119,11 @@ module.exports = {
 
             if (isConsecutive) {
               const updateNames = sortedUpdates
-                .map((u) => u.stateName)
-                .join(", ");
+                .map(u => u.stateName)
+                .join(', ');
               context.report({
                 node: sortedUpdates[0].node,
-                messageId: "preferBatch",
+                messageId: 'preferBatch',
                 data: {
                   updates: updateNames,
                 },
@@ -158,7 +158,7 @@ module.exports = {
         currentFunction = null;
       },
 
-      "VariableDeclarator:exit"(node) {
+      'VariableDeclarator:exit'(node) {
         const functionName = node.id?.name;
         if (functionName && stateUpdates.has(functionName)) {
           const updates = stateUpdates.get(functionName);
@@ -171,11 +171,11 @@ module.exports = {
 
             if (isConsecutive) {
               const updateNames = sortedUpdates
-                .map((u) => u.stateName)
-                .join(", ");
+                .map(u => u.stateName)
+                .join(', ');
               context.report({
                 node: sortedUpdates[0].node,
-                messageId: "preferBatch",
+                messageId: 'preferBatch',
                 data: {
                   updates: updateNames,
                 },
@@ -186,15 +186,15 @@ module.exports = {
                   let commonParent = sortedUpdates[0].node.parent;
                   while (commonParent) {
                     if (
-                      commonParent.type === "BlockStatement" ||
-                      commonParent.type === "Program"
+                      commonParent.type === 'BlockStatement' ||
+                      commonParent.type === 'Program'
                     ) {
                       break;
                     }
                     commonParent = commonParent.parent;
                   }
 
-                  if (!commonParent || commonParent.type === "Program") {
+                  if (!commonParent || commonParent.type === 'Program') {
                     // Can't safely fix at program level
                     return null;
                   }
@@ -224,12 +224,12 @@ module.exports = {
                   let originalText = sourceCode.text.slice(start, end);
 
                   // Fix indentation of the original text
-                  const lines = originalText.split("\n");
+                  const lines = originalText.split('\n');
                   const fixedLines = lines.map((line, index) => {
                     if (index === 0) return line; // First line doesn't need indentation fix
-                    return indentation + "  " + line.trim();
+                    return indentation + '  ' + line.trim();
                   });
-                  originalText = fixedLines.join("\n");
+                  originalText = fixedLines.join('\n');
 
                   // Create the batch wrapper
                   const batchStart = `batch(() => {\n${indentation}  `;
@@ -238,7 +238,7 @@ module.exports = {
                   // Replace the original text with the batched version
                   return fixer.replaceTextRange(
                     [start, end],
-                    batchStart + originalText + batchEnd,
+                    batchStart + originalText + batchEnd
                   );
                 },
               });
