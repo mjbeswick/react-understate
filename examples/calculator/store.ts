@@ -1,88 +1,115 @@
-import { state, batch } from "react-understate";
+import { state, batch } from 'react-understate';
 
-// Calculator state using states
-const displayValue = state("0");
-const previousValue = state<number | null>(null);
-const operation = state<string | null>(null);
+/**
+ * State containing the current display value shown on the calculator
+ */
+export const displayValue = state('0');
+/**
+ * State storing the previous value for calculations
+ */
+export const previousValue = state<number | null>(null);
+/**
+ * State storing the current operation to be performed
+ */
+export const operation = state<string | null>(null);
+/**
+ * State tracking whether the calculator is waiting for a new operand
+ */
 const waitingForOperand = state(false);
 
-// Helper function to calculate
+/**
+ * Performs the specified mathematical operation on two values
+ * @param firstValue The first operand
+ * @param secondValue The second operand
+ * @param op The operation to perform (+, -, ×, ÷)
+ * @returns The result of the calculation
+ */
 function calculate(
   firstValue: number,
   secondValue: number,
-  op: string,
+  op: string
 ): number {
   switch (op) {
-    case "+":
+    case '+':
       return firstValue + secondValue;
-    case "-":
+    case '-':
       return firstValue - secondValue;
-    case "×":
+    case '×':
       return firstValue * secondValue;
-    case "÷":
+    case '÷':
       return firstValue / secondValue;
     default:
       return secondValue;
   }
 }
 
-// Helper function to input digit
-function inputDigit(digit: string) {
-  console.log("inputDigit called with:", digit);
-  console.log("Current displayValue:", displayValue.value);
-  console.log("waitingForOperand:", waitingForOperand.value);
+/**
+ * Adds a digit to the current display value
+ * @param digit The digit to add
+ */
+export function inputDigit(digit: string) {
+  console.log('inputDigit called with:', digit);
+  console.log('Current displayValue:', displayValue.value);
+  console.log('waitingForOperand:', waitingForOperand.value);
 
   if (waitingForOperand.value) {
-    console.log("Setting displayValue to digit (waitingForOperand was true)");
+    console.log('Setting displayValue to digit (waitingForOperand was true)');
     batch(() => {
       displayValue.value = digit;
       waitingForOperand.value = false;
     });
   } else {
-    if (displayValue.value === "0") {
+    if (displayValue.value === '0') {
       console.log('displayValue was "0", setting to digit');
       displayValue.value = digit;
     } else {
       const newValue = displayValue.value + digit;
       console.log(
-        "Concatenating:",
+        'Concatenating:',
         displayValue.value,
-        "+",
+        '+',
         digit,
-        "=",
-        newValue,
+        '=',
+        newValue
       );
       displayValue.value = newValue;
     }
   }
 
-  console.log("Final displayValue:", displayValue.value);
+  console.log('Final displayValue:', displayValue.value);
 }
 
-// Helper function to input decimal point
-function inputDecimal() {
+/**
+ * Adds a decimal point to the current display value if not already present
+ */
+export function inputDecimal() {
   if (waitingForOperand.value) {
     batch(() => {
-      displayValue.value = "0.";
+      displayValue.value = '0.';
       waitingForOperand.value = false;
     });
-  } else if (displayValue.value.indexOf(".") === -1) {
-    displayValue.value = displayValue.value + ".";
+  } else if (displayValue.value.indexOf('.') === -1) {
+    displayValue.value = displayValue.value + '.';
   }
 }
 
-// Helper function to clear
-function clear() {
+/**
+ * Resets the calculator to its initial state
+ */
+export function clear() {
   batch(() => {
-    displayValue.value = "0";
+    displayValue.value = '0';
     previousValue.value = null;
     operation.value = null;
     waitingForOperand.value = false;
   });
 }
 
-// Helper function to perform calculation
-function performOperation(nextOperation: string) {
+/**
+ * Performs the pending operation and sets up for the next one
+ * @param nextOperation The operation to perform next
+ */
+export function performOperation(nextOperation: string) {
   const inputValue = parseFloat(displayValue.value);
 
   if (previousValue.value === null) {
@@ -98,8 +125,10 @@ function performOperation(nextOperation: string) {
   operation.value = nextOperation;
 }
 
-// Helper function to handle equals
-function handleEquals() {
+/**
+ * Calculates and displays the result of the current operation
+ */
+export function handleEquals() {
   if (!previousValue.value || !operation.value) {
     return;
   }
@@ -113,23 +142,29 @@ function handleEquals() {
   waitingForOperand.value = true;
 }
 
-// Helper function to handle percentage
-function handlePercentage() {
+/**
+ * Converts the current display value to a percentage (divides by 100)
+ */
+export function handlePercentage() {
   const inputValue = parseFloat(displayValue.value);
   const newValue = inputValue / 100;
   displayValue.value = String(newValue);
   waitingForOperand.value = true;
 }
 
-// Helper function to handle plus/minus
-function handlePlusMinus() {
+/**
+ * Toggles the sign of the current display value
+ */
+export function handlePlusMinus() {
   const inputValue = parseFloat(displayValue.value);
   const newValue = -inputValue;
   displayValue.value = String(newValue);
 }
 
-// Keyboard event handler
-function handleKeyDown(event: KeyboardEvent) {
+/**
+ * Handles keyboard input for calculator operations
+ */
+export function handleKeyDown(event: KeyboardEvent) {
   const key = event.key;
 
   // Number keys (0-9)
@@ -140,50 +175,34 @@ function handleKeyDown(event: KeyboardEvent) {
 
   // Operator keys
   switch (key) {
-    case "+":
-      performOperation("+");
+    case '+':
+      performOperation('+');
       break;
-    case "-":
-      performOperation("-");
+    case '-':
+      performOperation('-');
       break;
-    case "*":
-      performOperation("×");
+    case '*':
+      performOperation('×');
       break;
-    case "/":
-      performOperation("÷");
+    case '/':
+      performOperation('÷');
       break;
-    case "=":
-    case "Enter":
+    case '=':
+    case 'Enter':
       handleEquals();
       break;
-    case ".":
+    case '.':
       inputDecimal();
       break;
-    case "Escape":
+    case 'Escape':
       clear();
       break;
-    case "%":
+    case '%':
       handlePercentage();
       break;
-    case "±":
-    case "p":
+    case '±':
+    case 'p':
       handlePlusMinus();
       break;
   }
 }
-
-// Export all the functions and state for use in components
-export {
-  displayValue,
-  previousValue,
-  operation,
-  waitingForOperand,
-  handleKeyDown,
-  inputDigit,
-  inputDecimal,
-  clear,
-  performOperation,
-  handleEquals,
-  handlePercentage,
-  handlePlusMinus,
-};

@@ -3,71 +3,49 @@ import { useUnderstate } from 'react-understate';
 import { useEffect } from 'react';
 import styles from './styles.module.css';
 import clsx from 'clsx';
-import store from './store';
-
-const {
-  displayValue,
-  previousValue,
-  operation,
-  waitingForOperand,
-  handleKeyDown,
-  inputDigit,
-  inputDecimal,
-  clear,
-  performOperation,
-  handleEquals,
-  handlePercentage,
-  handlePlusMinus,
-} = store;
+import * as store from './store';
 
 // Calculator component
 function Calculator() {
-  // Use useUnderstate hook to automatically subscribe to state changes
-  useUnderstate(displayValue, previousValue, operation, waitingForOperand);
-
-  console.log('render with useUnderstate:', displayValue.value);
+  const {
+    displayValue,
+    previousValue,
+    operation,
+    handleKeyDown,
+    inputDigit,
+    inputDecimal,
+    clear,
+    performOperation,
+    handleEquals,
+    handlePercentage,
+    handlePlusMinus,
+  } = useUnderstate(store);
 
   // Add event listener
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Debug: Log when component actually renders
-  useEffect(() => {
-    console.log('Component rendered with displayValue:', displayValue.value);
-    console.log('DOM should show:', displayValue.value);
-  });
-
-  // Debug: Add subscription debugging
-  useEffect(() => {
-    const unsubscribe = displayValue.subscribe(() => {
-      console.log(
-        'displayValue subscription triggered! New value:',
-        displayValue.value
-      );
-    });
-    return unsubscribe;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className={styles.calculator}>
       <div className={styles.display}>
         <div className={styles.expression}>
-          {previousValue.value !== null &&
-            operation.value &&
-            `${previousValue.value} ${operation.value}`}
+          {previousValue !== null &&
+            operation &&
+            `${previousValue} ${operation}`}
         </div>
         <div
           className={styles.result}
           style={{
             fontSize:
-              displayValue.value.length > 9
-                ? `${Math.max(24, 48 - (displayValue.value.length - 9) * 3)}px`
+              displayValue.length > 9
+                ? `${Math.max(24, 48 - (displayValue.length - 9) * 3)}px`
                 : '48px',
           }}
         >
-          {displayValue.value}
+          {displayValue}
         </div>
       </div>
 
