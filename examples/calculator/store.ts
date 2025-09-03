@@ -1,7 +1,7 @@
-import { state, batch } from 'react-understate';
+import { state, batch } from "react-understate";
 
 // Calculator state using states
-const displayValue = state('0');
+const displayValue = state("0");
 const previousValue = state<number | null>(null);
 const operation = state<string | null>(null);
 const waitingForOperand = state(false);
@@ -10,16 +10,16 @@ const waitingForOperand = state(false);
 function calculate(
   firstValue: number,
   secondValue: number,
-  op: string
+  op: string,
 ): number {
   switch (op) {
-    case '+':
+    case "+":
       return firstValue + secondValue;
-    case '-':
+    case "-":
       return firstValue - secondValue;
-    case '×':
+    case "×":
       return firstValue * secondValue;
-    case '÷':
+    case "÷":
       return firstValue / secondValue;
     default:
       return secondValue;
@@ -28,53 +28,53 @@ function calculate(
 
 // Helper function to input digit
 function inputDigit(digit: string) {
-  console.log('inputDigit called with:', digit);
-  console.log('Current displayValue:', displayValue.value);
-  console.log('waitingForOperand:', waitingForOperand.value);
+  console.log("inputDigit called with:", digit);
+  console.log("Current displayValue:", displayValue.value);
+  console.log("waitingForOperand:", waitingForOperand.value);
 
   if (waitingForOperand.value) {
-    console.log('Setting displayValue to digit (waitingForOperand was true)');
+    console.log("Setting displayValue to digit (waitingForOperand was true)");
     batch(() => {
       displayValue.value = digit;
       waitingForOperand.value = false;
     });
   } else {
-    if (displayValue.value === '0') {
+    if (displayValue.value === "0") {
       console.log('displayValue was "0", setting to digit');
       displayValue.value = digit;
     } else {
       const newValue = displayValue.value + digit;
       console.log(
-        'Concatenating:',
+        "Concatenating:",
         displayValue.value,
-        '+',
+        "+",
         digit,
-        '=',
-        newValue
+        "=",
+        newValue,
       );
       displayValue.value = newValue;
     }
   }
 
-  console.log('Final displayValue:', displayValue.value);
+  console.log("Final displayValue:", displayValue.value);
 }
 
 // Helper function to input decimal point
 function inputDecimal() {
   if (waitingForOperand.value) {
     batch(() => {
-      displayValue.value = '0.';
+      displayValue.value = "0.";
       waitingForOperand.value = false;
     });
-  } else if (displayValue.value.indexOf('.') === -1) {
-    displayValue.value = displayValue.value + '.';
+  } else if (displayValue.value.indexOf(".") === -1) {
+    displayValue.value = displayValue.value + ".";
   }
 }
 
 // Helper function to clear
 function clear() {
   batch(() => {
-    displayValue.value = '0';
+    displayValue.value = "0";
     previousValue.value = null;
     operation.value = null;
     waitingForOperand.value = false;
@@ -140,44 +140,45 @@ function handleKeyDown(event: KeyboardEvent) {
 
   // Operator keys
   switch (key) {
-    case '+':
-      performOperation('+');
+    case "+":
+      performOperation("+");
       break;
-    case '-':
-      performOperation('-');
+    case "-":
+      performOperation("-");
       break;
-    case '*':
-      performOperation('×');
+    case "*":
+      performOperation("×");
       break;
-    case '/':
-      performOperation('÷');
+    case "/":
+      performOperation("÷");
       break;
-    case '=':
-    case 'Enter':
+    case "=":
+    case "Enter":
       handleEquals();
       break;
-    case '.':
+    case ".":
       inputDecimal();
       break;
-    case 'Escape':
+    case "Escape":
       clear();
       break;
-    case '%':
+    case "%":
       handlePercentage();
       break;
-    case '±':
-    case 'p':
+    case "±":
+    case "p":
       handlePlusMinus();
       break;
   }
 }
 
-// Export as default
-export default {
+// Export all the functions and state for use in components
+export {
   displayValue,
   previousValue,
   operation,
   waitingForOperand,
+  handleKeyDown,
   inputDigit,
   inputDecimal,
   clear,
@@ -185,5 +186,4 @@ export default {
   handleEquals,
   handlePercentage,
   handlePlusMinus,
-  handleKeyDown,
 };
