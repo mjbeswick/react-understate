@@ -28,17 +28,20 @@ npm install react-understate
 ```tsx
 import { state, useUnderstate } from "react-understate";
 
-// Create a state
-const count = state(0);
+// Create a store object (preferred approach)
+const store = {
+  count: state(0),
+  increment: () => store.count.value++,
+};
 
 function Counter() {
-  // Subscribe to state changes
-  useUnderstate(count);
+  // Get current values and functions from store
+  const { count, increment } = useUnderstate(store);
 
   return (
     <div>
-      <p>Count: {count.value}</p>
-      <button onClick={() => count.value++}>Increment</button>
+      <p>Count: {count}</p>
+      <button onClick={increment}>Increment</button>
     </div>
   );
 }
@@ -277,7 +280,37 @@ The library automatically works with React 18+ using `use-sync-external-store/sh
 
 The `useUnderstate` hook subscribes to state changes and triggers re-renders when states update.
 
-**Important:** The hook does NOT return a value. Access the state's `.value` property directly in your component.
+**Important:** The hook supports two patterns. The store object pattern is preferred for better organization and ergonomics.
+
+```tsx
+import { state, useUnderstate } from "react-understate";
+
+// ✅ PREFERRED: Store object pattern
+const store = {
+  userCount: state(0),
+  userName: state("Guest"),
+  addUser: () => store.userCount.value++,
+  setName: (name: string) => (store.userName.value = name),
+};
+
+function UserDisplay() {
+  // Get current values and functions from store
+  const { userCount, userName, addUser, setName } = useUnderstate(store);
+
+  return (
+    <div>
+      <h1>Welcome, {userName}!</h1>
+      <p>Active users: {userCount}</p>
+      <button onClick={addUser}>Add User</button>
+      <button onClick={() => setName("John")}>Set Name to John</button>
+    </div>
+  );
+}
+```
+
+#### Alternative: Array Pattern
+
+You can also use the array pattern for individual states:
 
 ```tsx
 import { state, useUnderstate } from "react-understate";
@@ -286,13 +319,13 @@ const userCount = state(0);
 const userName = state("Guest");
 
 function UserDisplay() {
-  // ✅ CORRECT: Use the hook to establish subscription
-  useUnderstate(userCount, userName);
+  // Array pattern - returns array of values
+  const [count, name] = useUnderstate(userCount, userName);
 
   return (
     <div>
-      <h1>Welcome, {name.value}!</h1>
-      <p>Active users: {count.value}</p>
+      <h1>Welcome, {name}!</h1>
+      <p>Active users: {count}</p>
       <button onClick={() => userCount.value++}>Add User</button>
       <button onClick={() => (userName.value = "John")}>
         Set Name to John
@@ -301,6 +334,14 @@ function UserDisplay() {
   );
 }
 ```
+
+**Why prefer the store object pattern?**
+
+- **Better organization**: Groups related state and actions together
+- **Cleaner components**: No need to access `.value` properties
+- **Type safety**: Full TypeScript support with proper inference
+- **Easier refactoring**: Actions are co-located with their state
+- **Better performance**: Single subscription to the entire store
 
 ### Loading States in React
 
@@ -312,7 +353,7 @@ import { state, useUnderstate } from "react-understate";
 const userData = state(null);
 
 function UserProfile({ userId }) {
-  useUnderstate(userData);
+  const [data] = useUnderstate(userData);
 
   const loadUser = async () => {
     await userData.update(async () => {
@@ -327,10 +368,10 @@ function UserProfile({ userId }) {
 
       {userData.pending && <p>Loading...</p>}
 
-      {userData.value && (
+      {data && (
         <div>
-          <h2>{userData.value.name}</h2>
-          <p>{userData.value.email}</p>
+          <h2>{data.name}</h2>
+          <p>{data.email}</p>
         </div>
       )}
     </div>
@@ -345,53 +386,76 @@ Here's a more complex example with multiple signals and derived values:
 ```tsx
 import { state, derived, useUnderstate } from "react-understate";
 
-// State
-const todos = state([]);
-const filter = state("all"); // 'all', 'active', 'completed'
-const newTodo = state("");
+// Create store with state and actions
+const store = {
+  // State
+  todos: state([]),
+  filter: state("all"), // 'all', 'active', 'completed'
+  newTodo: state(""),
 
-// Computed values
-const filteredTodos = derived(() => {
-  switch (filter.value) {
-    case "active":
-      return todos.value.filter((todo) => !todo.completed);
-    case "completed":
-      return todos.value.filter((todo) => todo.completed);
-    default:
-      return todos.value;
-  }
-});
+  // Computed values
+  filteredTodos: derived(() => {
+    switch (store.filter.value) {
+      case "active":
+        return store.todos.value.filter((todo) => !todo.completed);
+      case "completed":
+        return store.todos.value.filter((todo) => todo.completed);
+      default:
+        return store.todos.value;
+    }
+  }),
 
-const activeCount = derived(
-  () => todos.value.filter((todo) => !todo.completed).length,
-);
+  activeCount: derived(
+    () => store.todos.value.filter((todo) => !todo.completed).length,
+  ),
 
-function TodoApp() {
-  useUnderstate(todos, filter, newTodo, filteredTodos, activeCount);
-
-  const addTodo = () => {
-    if (newTodo.value.trim()) {
-      todos.value = [
-        ...todos.value,
+  // Actions
+  addTodo: () => {
+    if (store.newTodo.value.trim()) {
+      store.todos.value = [
+        ...store.todos.value,
         {
           id: Date.now(),
-          text: newTodo.value.trim(),
+          text: store.newTodo.value.trim(),
           completed: false,
         },
       ];
-      newTodo.value = "";
+      store.newTodo.value = "";
     }
-  };
+  },
 
-  const toggleTodo = (id) => {
-    todos.value = todos.value.map((todo) =>
+  toggleTodo: (id: number) => {
+    store.todos.value = store.todos.value.map((todo) =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo,
     );
-  };
+  },
 
-  const removeTodo = (id) => {
-    todos.value = todos.value.filter((todo) => todo.id !== id);
-  };
+  removeTodo: (id: number) => {
+    store.todos.value = store.todos.value.filter((todo) => todo.id !== id);
+  },
+
+  setFilter: (filter: string) => {
+    store.filter.value = filter;
+  },
+
+  setNewTodo: (text: string) => {
+    store.newTodo.value = text;
+  },
+};
+
+function TodoApp() {
+  const {
+    todos,
+    filter,
+    newTodo,
+    filteredTodos,
+    activeCount,
+    addTodo,
+    toggleTodo,
+    removeTodo,
+    setFilter,
+    setNewTodo,
+  } = useUnderstate(store);
 
   return (
     <div>
@@ -399,8 +463,8 @@ function TodoApp() {
 
       <div>
         <input
-          value={newTodo.value}
-          onChange={(e) => (newTodo.value = e.target.value)}
+          value={newTodo}
+          onChange={(e) => setNewTodo(e.target.value)}
           onKeyPress={(e) => e.key === "Enter" && addTodo()}
           placeholder="Add a todo..."
         />
@@ -409,21 +473,21 @@ function TodoApp() {
 
       <div>
         <button
-          onClick={() => (filter.value = "all")}
-          style={{ fontWeight: filter.value === "all" ? "bold" : "normal" }}
+          onClick={() => setFilter("all")}
+          style={{ fontWeight: filter === "all" ? "bold" : "normal" }}
         >
           All
         </button>
         <button
-          onClick={() => (filter.value = "active")}
-          style={{ fontWeight: filter.value === "active" ? "bold" : "normal" }}
+          onClick={() => setFilter("active")}
+          style={{ fontWeight: filter === "active" ? "bold" : "normal" }}
         >
-          Active ({activeCount.value})
+          Active ({activeCount})
         </button>
         <button
-          onClick={() => (filter.value = "completed")}
+          onClick={() => setFilter("completed")}
           style={{
-            fontWeight: filter.value === "completed" ? "bold" : "normal",
+            fontWeight: filter === "completed" ? "bold" : "normal",
           }}
         >
           Completed
@@ -431,7 +495,7 @@ function TodoApp() {
       </div>
 
       <ul>
-        {filteredTodos.value.map((todo) => (
+        {filteredTodos.map((todo) => (
           <li key={todo.id}>
             <input
               type="checkbox"
@@ -529,58 +593,87 @@ y.value = 4;
 ### Form Validation
 
 ```tsx
-import { state, derived } from "react-understate";
+import { state, derived, useUnderstate } from "react-understate";
 
-const email = state("");
-const password = state("");
-const confirmPassword = state("");
+// Create form store
+const formStore = {
+  email: state(""),
+  password: state(""),
+  confirmPassword: state(""),
 
-const emailValid = derived(() =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value),
-);
+  emailValid: derived(() =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formStore.email.value),
+  ),
 
-const passwordValid = derived(() => password.value.length >= 8);
+  passwordValid: derived(() => formStore.password.value.length >= 8),
 
-const passwordsMatch = derived(() => password.value === confirmPassword.value);
+  passwordsMatch: derived(
+    () => formStore.password.value === formStore.confirmPassword.value,
+  ),
 
-const formValid = derived(
-  () => emailValid.value && passwordValid.value && passwordsMatch.value,
-);
+  formValid: derived(
+    () =>
+      formStore.emailValid.value &&
+      formStore.passwordValid.value &&
+      formStore.passwordsMatch.value,
+  ),
+
+  setEmail: (email: string) => {
+    formStore.email.value = email;
+  },
+
+  setPassword: (password: string) => {
+    formStore.password.value = password;
+  },
+
+  setConfirmPassword: (password: string) => {
+    formStore.confirmPassword.value = password;
+  },
+};
 
 function SignupForm() {
-  useUnderstate(email, password, confirmPassword, formValid);
+  const {
+    email,
+    password,
+    confirmPassword,
+    emailValid,
+    passwordValid,
+    passwordsMatch,
+    formValid,
+    setEmail,
+    setPassword,
+    setConfirmPassword,
+  } = useUnderstate(formStore);
 
   return (
     <form>
       <input
         type="email"
-        value={email.value}
-        onChange={(e) => (email.value = e.target.value)}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         placeholder="Email"
       />
-      {!emailValid.value && email.value && <p>Please enter a valid email</p>}
+      {!emailValid && email && <p>Please enter a valid email</p>}
 
       <input
         type="password"
-        value={password.value}
-        onChange={(e) => (password.value = e.target.value)}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
         placeholder="Password"
       />
-      {!passwordValid.value && password.value && (
+      {!passwordValid && password && (
         <p>Password must be at least 8 characters</p>
       )}
 
       <input
         type="password"
-        value={confirmPassword.value}
-        onChange={(e) => (confirmPassword.value = e.target.value)}
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
         placeholder="Confirm Password"
       />
-      {!passwordsMatch.value && confirmPassword.value && (
-        <p>Passwords do not match</p>
-      )}
+      {!passwordsMatch && confirmPassword && <p>Passwords do not match</p>}
 
-      <button type="submit" disabled={!formValid.value}>
+      <button type="submit" disabled={!formValid}>
         Sign Up
       </button>
     </form>
@@ -610,9 +703,9 @@ Batches multiple state updates into a single effect flush.
 
 ### React Integration
 
-#### `useUnderstate<T>(signal: State<T>): void`
+#### `useUnderstate<T extends readonly State<unknown>[]>(...signals: T): { [K in keyof T]: T[K] extends State<infer U> ? U : never }`
 
-React hook to subscribe to state changes and trigger re-renders.
+React hook to subscribe to state changes and trigger re-renders. Returns an array of current state values.
 
 ### State Properties
 
@@ -644,7 +737,7 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
 
 1. **Always use `.value`** - Never assign signals to variables for storage
 2. **Create signals at module level** - Don't create signals inside components
-3. **Use `useUnderstate` in React** - Always call it for signals used in components
+3. **Use `useUnderstate` in React** - Prefer the store object pattern for better organization and ergonomics
 4. **Batch related updates** - Use `batch()` for multiple simultaneous updates
 5. **Prefer derived over effects** - Use derived for derived state, effects for side effects
 6. **Clean up effects** - Always call the disposal function when appropriate

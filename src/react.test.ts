@@ -49,34 +49,37 @@ describe("React Integration", () => {
     it("should call useSyncExternalStore with correct parameters for single state", () => {
       const testState = state(42);
 
-      useUnderstate(testState);
+      const result = useUnderstate(testState);
 
       expect(mockUseSyncExternalStore).toHaveBeenCalledWith(
         expect.any(Function),
         expect.any(Function),
       );
+      expect(result).toEqual([42]);
     });
 
     it("should return current state value in getSnapshot for single state", () => {
       const testState = state(42);
 
-      useUnderstate(testState);
+      const result = useUnderstate(testState);
 
       const [, getSnapshot] = mockUseSyncExternalStore.mock.calls[0];
       const snapshot = getSnapshot();
       expect(snapshot).toEqual("[42]");
+      expect(result).toEqual([42]);
     });
 
-    it("should work with basic states", () => {
+    it("should work with basic states and return array of values", () => {
       const testState = state(42);
 
-      useUnderstate(testState);
+      const result = useUnderstate(testState);
 
       const [, getSnapshot] = mockUseSyncExternalStore.mock.calls[0];
       expect(typeof getSnapshot).toBe("function");
       // Call getSnapshot to get the actual value
       const snapshotValue = getSnapshot();
       expect(snapshotValue).toEqual("[42]");
+      expect(result).toEqual([42]);
     });
 
     it("should call useSyncExternalStore with proper subscription function", () => {
@@ -92,22 +95,23 @@ describe("React Integration", () => {
       expect(typeof unsubscribe).toBe("function");
     });
 
-    it("should work with multiple states", () => {
+    it("should work with multiple states and return array of values", () => {
       const state1 = state(42);
       const state2 = state("hello");
 
-      useUnderstate(state1, state2);
+      const result = useUnderstate(state1, state2);
 
       const [, getSnapshot] = mockUseSyncExternalStore.mock.calls[0];
       const snapshot = getSnapshot();
       expect(snapshot).toEqual('[42,"hello"]');
+      expect(result).toEqual([42, "hello"]);
     });
 
     it("should subscribe to all provided states", () => {
       const state1 = state(0);
       const state2 = state("test");
 
-      useUnderstate(state1, state2);
+      const result = useUnderstate(state1, state2);
 
       const [subscribe] = mockUseSyncExternalStore.mock.calls[0];
       const unsubscribe = subscribe(() => {});
@@ -117,6 +121,9 @@ describe("React Integration", () => {
 
       // Verify we can call unsubscribe without errors
       expect(() => unsubscribe()).not.toThrow();
+
+      // Verify result is array of values
+      expect(result).toEqual([0, "test"]);
     });
 
     describe("store object pattern", () => {

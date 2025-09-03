@@ -71,7 +71,7 @@ function createStoreWithValues<T extends Record<string, unknown>>(
  * cleans up subscriptions when the component unmounts.
  *
  * Two usage patterns:
- * 1. Individual states: Returns void, access state values via .value
+ * 1. Individual states: Returns array of current state values
  * 2. Store object: Returns an object with current state values and functions
  *
  * Requires React 18+ - This hook uses useSyncExternalStore for optimal
@@ -83,19 +83,7 @@ function createStoreWithValues<T extends Record<string, unknown>>(
  *
  * @example
  * ```tsx
- * // Individual states pattern
- * const count = state(0);
- * const name = state('John');
- *
- * function Component() {
- *   useUnderstate(count, name);
- *   return <div>{count.value} - {name.value}</div>;
- * }
- * ```
- *
- * @example
- * ```tsx
- * // Store object pattern
+ * // Store object pattern (preferred)
  * const store = {
  *   count: state(0),
  *   name: state('John'),
@@ -107,16 +95,31 @@ function createStoreWithValues<T extends Record<string, unknown>>(
  *   return <div>{count} - {name}</div>;
  * }
  * ```
+ *
+ * @example
+ * ```tsx
+ * // Array pattern (alternative)
+ * const count = state(0);
+ * const name = state('John');
+ *
+ * function Component() {
+ *   const [countValue, nameValue] = useUnderstate(count, name);
+ *   return <div>{countValue} - {nameValue}</div>;
+ * }
+ * ```
  */
-export function useUnderstate<T>(signal: State<T>): void;
-export function useUnderstate(...signals: State<unknown>[]): void;
+export function useUnderstate<T extends readonly State<unknown>[]>(
+  ...signals: T
+): { [K in keyof T]: T[K] extends State<infer U> ? U : never };
 export function useUnderstate<T extends Record<string, unknown>>(
   store: T,
 ): ExtractStateValues<T>;
 export function useUnderstate<T extends Record<string, unknown>>(
   storeOrSignals: T | State<unknown>,
   ...additionalSignals: State<unknown>[]
-): ExtractStateValues<T> | void {
+):
+  | ExtractStateValues<T>
+  | { [K in keyof T]: T[K] extends State<infer U> ? U : never } {
   // Check if first argument is a store object (has properties that aren't State objects)
   const isStoreObject =
     storeOrSignals &&
@@ -152,7 +155,7 @@ export function useUnderstate<T extends Record<string, unknown>>(
     // Return an object with current values for states
     return createStoreWithValues(store);
   } else {
-    // Individual states pattern (backward compatible)
+    // Individual states pattern - return array of values
     const signals = [storeOrSignals as State<unknown>, ...additionalSignals];
 
     useSyncExternalStore(
@@ -174,6 +177,9 @@ export function useUnderstate<T extends Record<string, unknown>>(
         return JSON.stringify(signals.map((signal) => signal.value));
       },
     );
+
+    // Return array of current values
+    return signals.map((signal) => signal.value) as any;
   }
 }
 
