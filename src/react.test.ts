@@ -118,5 +118,93 @@ describe("React Integration", () => {
       // Verify we can call unsubscribe without errors
       expect(() => unsubscribe()).not.toThrow();
     });
+
+    describe("store object pattern", () => {
+      it("should handle store objects with state properties", () => {
+        const count = state(42);
+        const name = state("John");
+        const store = {
+          count,
+          name,
+          increment: () => count.value++,
+        };
+
+        const result = useUnderstate(store);
+
+        expect(mockUseSyncExternalStore).toHaveBeenCalledWith(
+          expect.any(Function),
+          expect.any(Function),
+        );
+        expect(result).toEqual({
+          count: 42,
+          name: "John",
+          increment: store.increment,
+        });
+      });
+
+      it("should return current values from store object", () => {
+        const count = state(10);
+        const name = state("Alice");
+        const store = {
+          count,
+          name,
+          greet: () => `Hello ${name.value}`,
+        };
+
+        const result = useUnderstate(store);
+
+        const [, getSnapshot] = mockUseSyncExternalStore.mock.calls[0];
+        const snapshot = getSnapshot();
+        expect(snapshot).toEqual('[10,"Alice"]');
+        expect(result).toEqual({
+          count: 10,
+          name: "Alice",
+          greet: store.greet,
+        });
+      });
+
+      it("should subscribe to all states in store object", () => {
+        const count = state(0);
+        const name = state("test");
+        const store = { count, name };
+
+        useUnderstate(store);
+
+        const [subscribe] = mockUseSyncExternalStore.mock.calls[0];
+        const unsubscribe = subscribe(() => {});
+
+        expect(typeof unsubscribe).toBe("function");
+        expect(() => unsubscribe()).not.toThrow();
+      });
+
+      it("should handle store objects with mixed properties", () => {
+        const count = state(5);
+        const store = {
+          count,
+          multiplier: 2,
+          calculate: () => count.value * 2,
+        };
+
+        const result = useUnderstate(store);
+
+        expect(result).toEqual({
+          count: 5,
+          multiplier: 2,
+          calculate: store.calculate,
+        });
+      });
+
+      it("should handle empty store objects", () => {
+        const store = {};
+
+        const result = useUnderstate(store);
+
+        expect(result).toEqual({});
+        expect(mockUseSyncExternalStore).toHaveBeenCalledWith(
+          expect.any(Function),
+          expect.any(Function),
+        );
+      });
+    });
   });
 });
