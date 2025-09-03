@@ -759,14 +759,296 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
 
 ## Best Practices
 
+### Core Principles
+
 1. **Always use `.value`** - Never assign signals to variables for storage
+
+   ```tsx
+   // ✅ CORRECT
+   const count = state(0);
+   console.log(count.value); // 0
+   count.value = 42;
+
+   // ❌ INCORRECT - breaks reactivity
+   const badCount = count; // Don't do this!
+   const badValue = count.value; // This doesn't track changes!
+   ```
+
 2. **Create signals at module level** - Don't create signals inside components
-3. **Use `useUnderstate` in React** - Prefer the store object pattern for better organization and ergonomics
+
+   ```tsx
+   // ✅ CORRECT - at module level
+   const userStore = {
+     name: state(""),
+     email: state(""),
+     setName: (name: string) => (userStore.name.value = name),
+   };
+
+   function UserComponent() {
+     const { name, setName } = useUnderstate(userStore);
+     return <input value={name} onChange={(e) => setName(e.target.value)} />;
+   }
+
+   // ❌ INCORRECT - inside component
+   function BadComponent() {
+     const count = state(0); // Creates new signal on every render!
+     return <div>{count.value}</div>;
+   }
+   ```
+
+3. **Use the store object pattern** - Prefer `useUnderstate(store)` over individual signals
+
+   ```tsx
+   // ✅ PREFERRED - store object pattern
+   const store = {
+     count: state(0),
+     increment: () => store.count.value++,
+   };
+
+   function Counter() {
+     const { count, increment } = useUnderstate(store);
+     return <button onClick={increment}>{count}</button>;
+   }
+
+   // ⚠️ ACCEPTABLE - but less ergonomic
+   const count = state(0);
+   function Counter() {
+     const [countValue] = useUnderstate(count);
+     return <button onClick={() => count.value++}>{countValue}</button>;
+   }
+   ```
+
+### Performance Optimization
+
 4. **Batch related updates** - Use `batch()` for multiple simultaneous updates
-5. **Prefer derived over effects** - Use derived for derived state, effects for side effects
-6. **Clean up effects** - Always call the disposal function when appropriate
-7. **Use TypeScript** - Take advantage of full type safety
-8. **Use the ESLint plugin** - Catch issues early and enforce best practices
+
+   ```tsx
+   const firstName = state("John");
+   const lastName = state("Doe");
+   const age = state(30);
+
+   // ❌ INEFFICIENT - triggers 3 separate updates
+   firstName.value = "Jane";
+   lastName.value = "Smith";
+   age.value = 25;
+
+   // ✅ EFFICIENT - single update cycle
+   batch(() => {
+     firstName.value = "Jane";
+     lastName.value = "Smith";
+     age.value = 25;
+   });
+   ```
+
+5. **Prefer derived over effects** - Use derived for computed state, effects for side effects
+
+   ```tsx
+   const firstName = state("John");
+   const lastName = state("Doe");
+
+   // ✅ CORRECT - derived for computed values
+   const fullName = derived(() => `${firstName.value} ${lastName.value}`);
+
+   // ✅ CORRECT - effects for side effects
+   effect(() => {
+     document.title = `Welcome, ${fullName.value}!`;
+   });
+
+   // ❌ INCORRECT - using effect for computed state
+   const badFullName = state("");
+   effect(() => {
+     badFullName.value = `${firstName.value} ${lastName.value}`;
+   });
+   ```
+
+6. **Use object spread for updates** - Maintain immutability with object/array updates
+
+   ```tsx
+   const user = state({ name: "John", age: 30 });
+   const items = state(["apple", "banana"]);
+
+   // ✅ CORRECT - immutable updates
+   user.value = { ...user.value, age: 31 };
+   items.value = [...items.value, "cherry"];
+
+   // ❌ INCORRECT - direct mutations (TypeScript will catch these)
+   // user.value.age = 31; // TypeScript error!
+   // items.value.push('cherry'); // TypeScript error!
+   ```
+
+### Async Operations
+
+7. **Use the `update` method for async operations** - Built-in loading state management
+
+   ```tsx
+   const userData = state(null);
+
+   // ✅ CORRECT - async update with loading state
+   const loadUser = async (id: number) => {
+     await userData.update(async () => {
+       const response = await fetch(`/api/users/${id}`);
+       return response.json();
+     });
+   };
+
+   // Check loading state
+   if (userData.pending) {
+     return <div>Loading...</div>;
+   }
+   ```
+
+8. **Handle errors in async updates** - Always wrap async operations in try-catch
+
+   ```tsx
+   const data = state(null);
+   const error = state(null);
+
+   const fetchData = async () => {
+     try {
+       await data.update(async () => {
+         const response = await fetch("/api/data");
+         if (!response.ok) throw new Error("Failed to fetch");
+         return response.json();
+       });
+       error.value = null; // Clear previous errors
+     } catch (err) {
+       error.value = err.message;
+     }
+   };
+   ```
+
+### React Integration
+
+9. **Clean up effects when needed** - Always call the disposal function for long-lived effects
+
+   ```tsx
+   useEffect(() => {
+     const dispose = effect(() => {
+       // Effect logic here
+     });
+
+     return dispose; // Cleanup on unmount
+   }, []);
+   ```
+
+10. **Use loading states in React** - Leverage the `pending` property for better UX
+
+    ```tsx
+    function UserProfile() {
+      const [userData] = useUnderstate(userDataState);
+
+      return (
+        <div>
+          {userDataState.pending && <div>Loading...</div>}
+          {userData && <div>{userData.name}</div>}
+        </div>
+      );
+    }
+    ```
+
+### Development & Maintenance
+
+11. **Use TypeScript** - Take advantage of full type safety and immutability
+
+    ```tsx
+    // ✅ TypeScript provides compile-time immutability
+    const user = state({ name: "John", age: 30 });
+    // user.value.name = 'Jane'; // TypeScript error: Cannot assign to 'name'
+
+    // ✅ Proper typing for complex state
+    type Todo = { id: number; text: string; completed: boolean };
+    const todos = state<Todo[]>([]);
+    ```
+
+12. **Use the ESLint plugin** - Catch issues early and enforce best practices
+
+    ```bash
+    npm install --save-dev eslint-plugin-react-understate
+    ```
+
+    ```js
+    // eslint.config.js
+    export default [
+      {
+        plugins: {
+          "react-understate": require("eslint-plugin-react-understate"),
+        },
+        rules: {
+          "react-understate/require-use-subscribe": "error",
+          "react-understate/no-direct-state-assignment": "error",
+          "react-understate/prefer-batch-for-multiple-updates": "warn",
+        },
+      },
+    ];
+    ```
+
+### Architecture Patterns
+
+13. **Organize stores by feature** - Group related state and actions together
+
+    ```tsx
+    // ✅ GOOD - feature-based organization
+    // stores/user.ts
+    export const userStore = {
+      profile: state(null),
+      preferences: state({ theme: "light" }),
+      updateProfile: (profile) => (userStore.profile.value = profile),
+      setTheme: (theme) =>
+        (userStore.preferences.value = {
+          ...userStore.preferences.value,
+          theme,
+        }),
+    };
+
+    // stores/todos.ts
+    export const todoStore = {
+      items: state([]),
+      filter: state("all"),
+      addTodo: (text) => {
+        /* ... */
+      },
+      toggleTodo: (id) => {
+        /* ... */
+      },
+    };
+    ```
+
+14. **Use derived values for computed state** - Keep your state minimal and derive what you need
+
+    ```tsx
+    const todos = state([]);
+    const filter = state("all");
+
+    // ✅ GOOD - derived computed values
+    const filteredTodos = derived(() => {
+      switch (filter.value) {
+        case "active":
+          return todos.value.filter((t) => !t.completed);
+        case "completed":
+          return todos.value.filter((t) => t.completed);
+        default:
+          return todos.value;
+      }
+    });
+
+    const activeCount = derived(
+      () => todos.value.filter((t) => !t.completed).length,
+    );
+    ```
+
+15. **Avoid nested effects and derived values** - Keep your dependency graph flat
+
+    ```tsx
+    // ❌ AVOID - nested derived values
+    const a = state(1);
+    const b = derived(() => a.value * 2);
+    const c = derived(() => b.value * 3); // Nested dependency
+
+    // ✅ PREFER - flat dependency graph
+    const a = state(1);
+    const b = derived(() => a.value * 2);
+    const c = derived(() => a.value * 6); // Direct dependency
+    ```
 
 ## License
 
