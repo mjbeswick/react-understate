@@ -30,7 +30,7 @@ function TodoApp() {
             className={styles.newTodo}
             value={newTodo}
             onChange={(e) => setNewTodo(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && addTodo()}
+            onKeyDown={(e) => e.key === 'Enter' && addTodo()}
             placeholder="What needs to be done?"
             autoFocus
           />
@@ -54,9 +54,10 @@ function TodoApp() {
             {filteredTodos.map((todo) => (
               <li
                 key={todo.id}
-                className={clsx(styles.todoItem, {
-                  [styles.completed]: todo.completed,
-                })}
+                className={clsx(
+                  styles.todoItem,
+                  styles.completed && todo.completed
+                )}
               >
                 <div className={styles.view}>
                   <input
@@ -89,7 +90,7 @@ function TodoApp() {
           <ul className={styles.filters}>
             <li>
               <button
-                className={clsx({ [styles.selected]: filter === 'all' })}
+                className={clsx(styles.selected && filter === 'all')}
                 onClick={() => setFilter('all')}
               >
                 All
@@ -97,7 +98,7 @@ function TodoApp() {
             </li>
             <li>
               <button
-                className={clsx({ [styles.selected]: filter === 'active' })}
+                className={clsx(styles.selected && filter === 'active')}
                 onClick={() => setFilter('active')}
               >
                 Active
@@ -105,7 +106,7 @@ function TodoApp() {
             </li>
             <li>
               <button
-                className={clsx({ [styles.selected]: filter === 'completed' })}
+                className={clsx(styles.selected && filter === 'completed')}
                 onClick={() => setFilter('completed')}
               >
                 Completed
