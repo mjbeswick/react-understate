@@ -25,10 +25,34 @@ npm install react-understate
 
 ## Quick Start
 
+**Simple atomic state:**
+
 ```tsx
 import { state, useUnderstate } from "react-understate";
 
-// Create a store object (preferred approach)
+// Create a state
+const count = state(0);
+
+function Counter() {
+  // Subscribe to state changes and get current value
+  const [countValue] = useUnderstate(count);
+
+  return (
+    <div>
+      <p>Count: {countValue}</p>
+      <button onClick={() => count.value++}>Increment</button>
+    </div>
+  );
+}
+```
+
+**Store object pattern:**
+
+```tsx
+import { state, useUnderstate } from "react-understate";
+
+// Create a store object
+// in practive this would be the "* as store" exports from your store file
 const store = {
   count: state(0),
   increment: () => store.count.value++,
@@ -747,3 +771,7 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
 ## License
 
 MIT © [mjbeswick](https://github.com/mjbeswick)
+
+---
+
+**Note**: This library is actively maintained and follows semantic versioning. For the latest updates and breaking changes, please check the [CHANGELOG.md](CHANGELOG.md).
