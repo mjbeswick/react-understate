@@ -22,7 +22,6 @@ module.exports = {
 
   create(context) {
     let isInReactComponent = false;
-    let _currentFunctionName = null;
 
     // Check if we're in a React component function
     function isReactComponent(node) {
@@ -66,7 +65,6 @@ module.exports = {
       FunctionDeclaration(node) {
         if (isReactComponent(node)) {
           isInReactComponent = true;
-          _currentFunctionName = node.id?.name;
         }
       },
 
@@ -78,7 +76,6 @@ module.exports = {
           isReactComponent(node)
         ) {
           isInReactComponent = true;
-          _currentFunctionName = node.id?.name;
         }
       },
 
@@ -96,7 +93,6 @@ module.exports = {
       'FunctionDeclaration:exit'(node) {
         if (isReactComponent(node)) {
           isInReactComponent = false;
-          _currentFunctionName = null;
         }
       },
 
@@ -107,7 +103,6 @@ module.exports = {
           isReactComponent(node)
         ) {
           isInReactComponent = false;
-          _currentFunctionName = null;
         }
       },
     };

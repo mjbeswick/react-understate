@@ -22,7 +22,7 @@ module.exports = {
 
   create(context) {
     let isInReactComponent = false;
-    let _currentFunctionName = null;
+
     const stateUsages = new Set();
 
     // Check if we're in a React component function
@@ -98,7 +98,6 @@ module.exports = {
       FunctionDeclaration(node) {
         if (isReactComponent(node)) {
           isInReactComponent = true;
-          _currentFunctionName = node.id?.name;
           stateUsages.clear();
         }
       },
@@ -112,7 +111,6 @@ module.exports = {
           isReactComponent(node)
         ) {
           isInReactComponent = true;
-          _currentFunctionName = node.id?.name;
           stateUsages.clear();
         }
 
@@ -158,7 +156,6 @@ module.exports = {
       'FunctionDeclaration:exit'(node) {
         if (isReactComponent(node)) {
           isInReactComponent = false;
-          _currentFunctionName = null;
           stateUsages.clear();
         }
       },
@@ -170,7 +167,6 @@ module.exports = {
           isReactComponent(node)
         ) {
           isInReactComponent = false;
-          _currentFunctionName = null;
           stateUsages.clear();
         }
       },

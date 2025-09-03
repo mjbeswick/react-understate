@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-react-understate",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "type": "module",
   "description": "ESLint plugin to check for missing useUnderstate calls when using state.value in React components",
   "main": "index.js",

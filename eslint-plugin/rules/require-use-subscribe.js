@@ -21,10 +21,8 @@ module.exports = {
   },
 
   create(context) {
-    const _stateUsages = new Map();
     const useUnderstateCalls = new Set();
     let isInReactComponent = false;
-    let _currentFunctionName = null;
 
     // Check if we're in a React component function
     function isReactComponent(node) {
@@ -61,7 +59,6 @@ module.exports = {
       FunctionDeclaration(node) {
         if (isReactComponent(node)) {
           isInReactComponent = true;
-          _currentFunctionName = node.id?.name;
         }
       },
 
@@ -72,7 +69,6 @@ module.exports = {
           isReactComponent(node)
         ) {
           isInReactComponent = true;
-          _currentFunctionName = node.id?.name;
         }
       },
 
@@ -120,7 +116,7 @@ module.exports = {
       'FunctionDeclaration:exit'(node) {
         if (isReactComponent(node)) {
           isInReactComponent = false;
-          _currentFunctionName = null;
+
           useUnderstateCalls.clear();
         }
       },
@@ -132,7 +128,7 @@ module.exports = {
           isReactComponent(node)
         ) {
           isInReactComponent = false;
-          _currentFunctionName = null;
+
           useUnderstateCalls.clear();
         }
       },

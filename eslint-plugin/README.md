@@ -24,7 +24,7 @@ Or in your `.eslintrc.js`:
 
 ```javascript
 module.exports = {
-  extends: ["plugin:react-understate/recommended"],
+  extends: ['plugin:react-understate/recommended'],
 };
 ```
 
@@ -50,14 +50,14 @@ Or in your `.eslintrc.js`:
 
 ```javascript
 module.exports = {
-  plugins: ["react-understate"],
+  plugins: ['react-understate'],
   rules: {
-    "react-understate/require-use-subscribe": "error",
-    "react-understate/prefer-batch-for-multiple-updates": "warn",
-    "react-understate/no-direct-state-assignment": "error",
-    "react-understate/no-state-creation-in-components": "error",
-    "react-understate/no-nested-effects": "error",
-    "react-understate/no-nested-derived": "error",
+    'react-understate/require-use-subscribe': 'error',
+    'react-understate/prefer-batch-for-multiple-updates': 'warn',
+    'react-understate/no-direct-state-assignment': 'error',
+    'react-understate/no-state-creation-in-components': 'error',
+    'react-understate/no-nested-effects': 'error',
+    'react-understate/no-nested-derived': 'error',
   },
 };
 ```
@@ -71,7 +71,7 @@ Ensures that when you use `state.value` in a React component, you also call `use
 #### ❌ Incorrect
 
 ```tsx
-import { state, useUnderstate } from "react-understate";
+import { state, useUnderstate } from 'react-understate';
 
 const count = state(0);
 
@@ -84,7 +84,7 @@ function Counter() {
 #### ✅ Correct
 
 ```tsx
-import { state, useUnderstate } from "react-understate";
+import { state, useUnderstate } from 'react-understate';
 
 const count = state(0);
 
@@ -102,8 +102,8 @@ Suggests using `batch()` when multiple state updates happen in sequence to avoid
 
 ```tsx
 const handleSubmit = () => {
-  firstName.value = "John";
-  lastName.value = "Doe";
+  firstName.value = 'John';
+  lastName.value = 'Doe';
   age.value = 30;
 };
 ```
@@ -113,8 +113,8 @@ const handleSubmit = () => {
 ```tsx
 const handleSubmit = () => {
   batch(() => {
-    firstName.value = "John";
-    lastName.value = "Doe";
+    firstName.value = 'John';
+    lastName.value = 'Doe';
     age.value = 30;
   });
 };
@@ -169,9 +169,9 @@ Prevents nested `effect()` calls which can cause performance issues and unexpect
 
 ```tsx
 effect(() => {
-  console.log("Outer effect");
+  console.log('Outer effect');
   effect(() => {
-    console.log("Nested effect"); // Not allowed
+    console.log('Nested effect'); // Not allowed
   });
 });
 ```
@@ -180,11 +180,11 @@ effect(() => {
 
 ```tsx
 effect(() => {
-  console.log("Outer effect");
+  console.log('Outer effect');
 });
 
 effect(() => {
-  console.log("Separate effect");
+  console.log('Separate effect');
 });
 ```
 
@@ -242,7 +242,7 @@ Suggests using `effect()` instead of `useEffect()` for state-related side effect
 function MyComponent() {
   useUnderstate(count);
   useEffect(() => {
-    console.log("Count changed:", count.value);
+    console.log('Count changed:', count.value);
   }, [count.value]);
 }
 ```
@@ -251,7 +251,7 @@ function MyComponent() {
 
 ```tsx
 effect(() => {
-  console.log("Count changed:", count.value);
+  console.log('Count changed:', count.value);
 });
 ```
 
@@ -280,7 +280,7 @@ Ensures async state updates have proper error handling.
 
 ```tsx
 await userData.update(async () => {
-  const response = await fetch("/api/user");
+  const response = await fetch('/api/user');
   return response.json();
 });
 ```
@@ -290,11 +290,11 @@ await userData.update(async () => {
 ```tsx
 await userData.update(async () => {
   try {
-    const response = await fetch("/api/user");
-    if (!response.ok) throw new Error("Failed to fetch");
+    const response = await fetch('/api/user');
+    if (!response.ok) throw new Error('Failed to fetch');
     return response.json();
   } catch (error) {
-    console.error("Update failed:", error);
+    console.error('Update failed:', error);
     return userData.value; // Return current value on error
   }
 });
@@ -307,13 +307,13 @@ Encourages immutable updates for object states.
 #### ❌ Incorrect
 
 ```tsx
-user.value.name = "John"; // Mutates the object
+user.value.name = 'John'; // Mutates the object
 ```
 
 #### ✅ Correct
 
 ```tsx
-user.value = { ...user.value, name: "John" };
+user.value = { ...user.value, name: 'John' };
 ```
 
 ## Configuration Options

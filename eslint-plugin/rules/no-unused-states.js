@@ -21,7 +21,6 @@ module.exports = {
 
   create(context) {
     const stateDeclarations = new Map(); // Track state declarations
-    const _stateUsages = new Set(); // Track state usage
 
     // Check if this is a state() call
     function isStateCall(node) {
