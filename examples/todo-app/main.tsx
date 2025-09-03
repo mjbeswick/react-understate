@@ -1,38 +1,23 @@
 import { createRoot } from 'react-dom/client';
-import { state, derived, useUnderstate } from 'react-understate';
+import { useUnderstate } from 'react-understate';
 import styles from './styles.module.css';
+import store from './store';
 
-// Define the Todo type
-type Todo = {
-  id: number;
-  text: string;
-  completed: boolean;
-};
-
-// State
-const todos = state<Todo[]>([]);
-const filter = state<'all' | 'active' | 'completed'>('all');
-const newTodo = state('');
-
-// Computed values
-const filteredTodos = derived(() => {
-  switch (filter.value) {
-    case 'active':
-      return todos.value.filter((todo) => !todo.completed);
-    case 'completed':
-      return todos.value.filter((todo) => todo.completed);
-    default:
-      return todos.value;
-  }
-});
-
-const activeCount = derived(
-  () => todos.value.filter((todo) => !todo.completed).length
-);
-
-const completedCount = derived(
-  () => todos.value.filter((todo) => todo.completed).length
-);
+const {
+  todos,
+  filter,
+  newTodo,
+  filteredTodos,
+  activeCount,
+  completedCount,
+  setNewTodo,
+  setFilter,
+  addTodo,
+  toggleTodo,
+  removeTodo,
+  clearCompleted,
+  toggleAll,
+} = store;
 
 function TodoApp() {
   useUnderstate(
@@ -44,42 +29,6 @@ function TodoApp() {
     completedCount
   );
 
-  const addTodo = () => {
-    if (newTodo.value.trim()) {
-      todos.value = [
-        ...todos.value,
-        {
-          id: Date.now(),
-          text: newTodo.value.trim(),
-          completed: false,
-        },
-      ];
-      newTodo.value = '';
-    }
-  };
-
-  const toggleTodo = (id: number) => {
-    todos.value = todos.value.map((todo) =>
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    );
-  };
-
-  const removeTodo = (id: number) => {
-    todos.value = todos.value.filter((todo) => todo.id !== id);
-  };
-
-  const clearCompleted = () => {
-    todos.value = todos.value.filter((todo) => !todo.completed);
-  };
-
-  const toggleAll = () => {
-    const allCompleted = todos.value.every((todo) => todo.completed);
-    todos.value = todos.value.map((todo) => ({
-      ...todo,
-      completed: !allCompleted,
-    }));
-  };
-
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -88,7 +37,7 @@ function TodoApp() {
           <input
             className={styles.newTodo}
             value={newTodo.value}
-            onChange={(e) => (newTodo.value = e.target.value)}
+            onChange={(e) => setNewTodo(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && addTodo()}
             placeholder="What needs to be done?"
             autoFocus
@@ -149,7 +98,7 @@ function TodoApp() {
             <li>
               <button
                 className={filter.value === 'all' ? styles.selected : ''}
-                onClick={() => (filter.value = 'all')}
+                onClick={() => setFilter('all')}
               >
                 All
               </button>
@@ -157,7 +106,7 @@ function TodoApp() {
             <li>
               <button
                 className={filter.value === 'active' ? styles.selected : ''}
-                onClick={() => (filter.value = 'active')}
+                onClick={() => setFilter('active')}
               >
                 Active
               </button>
@@ -165,7 +114,7 @@ function TodoApp() {
             <li>
               <button
                 className={filter.value === 'completed' ? styles.selected : ''}
-                onClick={() => (filter.value = 'completed')}
+                onClick={() => setFilter('completed')}
               >
                 Completed
               </button>
