@@ -92,6 +92,125 @@ function Counter() {
 }
 ```
 
+## Philosophy & Architecture
+
+React Understate is designed to make it easy to completely separate business logic from the presentation layer. This architectural approach provides several key benefits:
+
+- **🧪 Easier Testing** - Business logic can be tested independently of React components
+- **🔄 Better Reusability** - State logic can be shared across different UI frameworks
+- **📦 Cleaner Components** - UI components focus purely on presentation
+- **🛠️ Better Maintainability** - Business logic changes don't require touching UI code
+
+### Recommended Architecture
+
+**Construct state atomically** and update it through dedicated action functions, similar to Redux actions:
+
+```tsx
+// ✅ GOOD - Atomic state construction with action functions
+const store = {
+  // State (data)
+  todos: state<Todo[]>([]),
+  filter: state<"all" | "active" | "completed">("all"),
+  loading: state(false),
+
+  // Actions (business logic)
+  addTodo: (text: string) => {
+    if (text.trim()) {
+      store.todos.value = [
+        ...store.todos.value,
+        { id: Date.now(), text: text.trim(), completed: false },
+      ];
+    }
+  },
+
+  toggleTodo: (id: number) => {
+    store.todos.value = store.todos.value.map((todo) =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo,
+    );
+  },
+
+  setFilter: (filter: typeof store.filter.value) => {
+    store.filter.value = filter;
+  },
+
+  loadTodos: async () => {
+    store.loading.value = true;
+    try {
+      const response = await fetch("/api/todos");
+      store.todos.value = await response.json();
+    } finally {
+      store.loading.value = false;
+    }
+  },
+};
+
+// UI components only call actions
+function TodoApp() {
+  const { todos, filter, loading, addTodo, toggleTodo, setFilter, loadTodos } =
+    useUnderstate(store);
+
+  return (
+    <div>
+      <button onClick={loadTodos}>Load Todos</button>
+      {/* UI implementation */}
+    </div>
+  );
+}
+```
+
+**Benefits of this approach:**
+
+- **Testable** - You can test `addTodo`, `toggleTodo`, etc. without React
+- **Reusable** - The same store can work with Vue, Angular, or vanilla JS
+- **Predictable** - State changes happen through well-defined actions
+- **Debuggable** - Easy to trace state changes and add logging
+
+### Testing Business Logic
+
+Since business logic is separated from UI, you can test it independently:
+
+```tsx
+// test/store.test.ts
+import { store } from "./store";
+
+describe("Todo Store", () => {
+  beforeEach(() => {
+    // Reset state before each test
+    store.todos.value = [];
+    store.filter.value = "all";
+  });
+
+  it("should add todos", () => {
+    store.addTodo("Learn React Understate");
+
+    expect(store.todos.value).toHaveLength(1);
+    expect(store.todos.value[0].text).toBe("Learn React Understate");
+    expect(store.todos.value[0].completed).toBe(false);
+  });
+
+  it("should toggle todo completion", () => {
+    store.addTodo("Test todo");
+    const todoId = store.todos.value[0].id;
+
+    store.toggleTodo(todoId);
+    expect(store.todos.value[0].completed).toBe(true);
+
+    store.toggleTodo(todoId);
+    expect(store.todos.value[0].completed).toBe(false);
+  });
+
+  it("should filter todos correctly", () => {
+    store.addTodo("Active todo");
+    store.addTodo("Completed todo");
+    store.toggleTodo(store.todos.value[1].id); // Mark second as completed
+
+    store.setFilter("active");
+    expect(store.filteredTodos.value).toHaveLength(1);
+    expect(store.filteredTodos.value[0].text).toBe("Active todo");
+  });
+});
+```
+
 ## Core Concepts
 
 ### States
@@ -1108,9 +1227,70 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
    }
    ```
 
+4. **Separate business logic from UI** - Keep state and actions together, UI only calls actions
+
+   ```tsx
+   // ✅ GOOD - Business logic in store
+   const store = {
+     // State
+     user: state(null),
+     loading: state(false),
+
+     // Actions (business logic)
+     login: async (email: string, password: string) => {
+       store.loading.value = true;
+       try {
+         const response = await fetch("/api/login", {
+           method: "POST",
+           body: JSON.stringify({ email, password }),
+         });
+         store.user.value = await response.json();
+       } finally {
+         store.loading.value = false;
+       }
+     },
+
+     logout: () => {
+       store.user.value = null;
+     },
+   };
+
+   // UI only calls actions
+   function LoginForm() {
+     const { user, loading, login } = useUnderstate(store);
+
+     const handleSubmit = (e: FormEvent) => {
+       e.preventDefault();
+       const formData = new FormData(e.target);
+       login(formData.get("email"), formData.get("password"));
+     };
+
+     return <form onSubmit={handleSubmit}>{/* Form fields */}</form>;
+   }
+
+   // ❌ BAD - Business logic mixed with UI
+   function BadLoginForm() {
+     const user = state(null);
+     const loading = state(false);
+
+     const handleSubmit = async (e: FormEvent) => {
+       // Business logic in component - hard to test!
+       loading.value = true;
+       try {
+         const response = await fetch("/api/login", {
+           /* ... */
+         });
+         user.value = await response.json();
+       } finally {
+         loading.value = false;
+       }
+     };
+   }
+   ```
+
 ### Performance Optimization
 
-4. **Batch related updates** - Use `batch()` for multiple simultaneous updates
+5. **Batch related updates** - Use `batch()` for multiple simultaneous updates
 
    ```tsx
    const firstName = state("John");
@@ -1130,7 +1310,7 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
    });
    ```
 
-5. **Prefer derived over effects** - Use derived for computed state, effects for side effects
+6. **Prefer derived over effects** - Use derived for computed state, effects for side effects
 
    ```tsx
    const firstName = state("John");
@@ -1151,7 +1331,7 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
    });
    ```
 
-6. **Use object spread for updates** - Maintain immutability with object/array updates
+7. **Use object spread for updates** - Maintain immutability with object/array updates
 
    ```tsx
    const user = state({ name: "John", age: 30 });
@@ -1168,7 +1348,7 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
 
 ### Async Operations
 
-7. **Use the `update` method for async operations** - Built-in loading state management
+8. **Use the `update` method for async operations** - Built-in loading state management
 
    ```tsx
    const userData = state(null);
@@ -1187,7 +1367,7 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
    }
    ```
 
-8. **Handle errors in async updates** - Always wrap async operations in try-catch
+9. **Handle errors in async updates** - Always wrap async operations in try-catch
 
    ```tsx
    const data = state(null);
@@ -1209,19 +1389,19 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
 
 ### React Integration
 
-9. **Clean up effects when needed** - Always call the disposal function for long-lived effects
+10. **Clean up effects when needed** - Always call the disposal function for long-lived effects
 
-   ```tsx
-   useEffect(() => {
-     const dispose = effect(() => {
-       // Effect logic here
-     });
+```tsx
+useEffect(() => {
+  const dispose = effect(() => {
+    // Effect logic here
+  });
 
-     return dispose; // Cleanup on unmount
-   }, []);
-   ```
+  return dispose; // Cleanup on unmount
+}, []);
+```
 
-10. **Use loading states in React** - Leverage the `pending` property for better UX
+11. **Use loading states in React** - Leverage the `pending` property for better UX
 
     ```tsx
     function UserProfile() {
@@ -1238,7 +1418,7 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
 
 ### Development & Maintenance
 
-11. **Use TypeScript** - Take advantage of full type safety and immutability
+12. **Use TypeScript** - Take advantage of full type safety and immutability
 
     ```tsx
     // ✅ TypeScript provides compile-time immutability
@@ -1250,7 +1430,7 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
     const todos = state<Todo[]>([]);
     ```
 
-12. **Use the ESLint plugin** - Catch issues early and enforce best practices
+13. **Use the ESLint plugin** - Catch issues early and enforce best practices
 
     ```bash
     npm install --save-dev eslint-plugin-react-understate
@@ -1274,7 +1454,7 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
 
 ### Architecture Patterns
 
-13. **Organize stores by feature** - Group related state and actions together
+14. **Organize stores by feature** - Group related state and actions together
 
     ```tsx
     // ✅ GOOD - feature-based organization
@@ -1303,7 +1483,7 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
     };
     ```
 
-14. **Use derived values for computed state** - Keep your state minimal and derive what you need
+15. **Use derived values for computed state** - Keep your state minimal and derive what you need
 
     ```tsx
     const todos = state([]);
@@ -1326,7 +1506,7 @@ Use the official ESLint plugin to enforce best practices: eslint-plugin-react-un
     );
     ```
 
-15. **Avoid nested effects and derived values** - Keep your dependency graph flat
+16. **Avoid nested effects and derived values** - Keep your dependency graph flat
 
     ```tsx
     // ❌ AVOID - nested derived values
