@@ -12,6 +12,7 @@ The state management library that's so lightweight, it makes Redux feel like you
 - ⚡ **Automatic dependency tracking** - Effects and derived values update automatically
 - 🔄 **React 18+ integration** - Built with `useSyncExternalStore` for optimal performance
 - 🚀 **Async support** - Built-in async update methods with loading states
+- 💾 **State persistence** - Built-in localStorage/sessionStorage persistence with cross-tab sync
 - 📦 **Lightweight** - Minimal bundle size with zero dependencies
 - 🎨 **TypeScript first** - Full type safety out of the box
 - ⚙️ **Batching support** - Optimize performance with batched updates
@@ -68,6 +69,26 @@ function Counter() {
       <button onClick={increment}>Increment</button>
     </div>
   );
+}
+```
+
+**With persistence:**
+
+```tsx
+import { state, useUnderstate, persistLocalStorage } from "react-understate";
+
+// Create a store object with persistence
+const store = {
+  count: state(0),
+  increment: () => store.count.value++,
+};
+
+// Persist the count to localStorage
+persistLocalStorage(store.count, "counter");
+
+function Counter() {
+  const { count, increment } = useUnderstate(store);
+  return <button onClick={increment}>{count}</button>;
 }
 ```
 
@@ -703,6 +724,275 @@ function SignupForm() {
     </form>
   );
 }
+```
+
+## State Persistence
+
+React Understate includes built-in persistence utilities that automatically save and restore state to browser storage. This makes it easy to create apps that remember user data across sessions.
+
+### Basic Persistence
+
+The simplest way to persist state is using `persistLocalStorage` or `persistSessionStorage`:
+
+```tsx
+import {
+  state,
+  persistLocalStorage,
+  persistSessionStorage,
+} from "react-understate";
+
+// Persist to localStorage (survives browser restart)
+const user = state({ name: "John", email: "john@example.com" });
+persistLocalStorage(user, "user-data");
+
+// Persist to sessionStorage (only for current session)
+const theme = state("light");
+persistSessionStorage(theme, "app-theme");
+```
+
+### Advanced Persistence Options
+
+For more control, use the generic `persistStorage` function:
+
+```tsx
+import { state, persistStorage } from "react-understate";
+
+const settings = state({
+  notifications: true,
+  language: "en",
+  darkMode: false,
+});
+
+// Custom persistence with error handling
+persistStorage(settings, "app-settings", localStorage, {
+  serialize: (value) => JSON.stringify(value, null, 2), // Pretty print
+  deserialize: (data) => JSON.parse(data),
+  onError: (error) => console.error("Failed to persist settings:", error),
+  loadInitial: true, // Load from storage on first call
+  syncAcrossTabs: true, // Sync changes across browser tabs
+});
+```
+
+### Persisting Multiple States
+
+Use `persistStates` to persist multiple states with a single key prefix:
+
+```tsx
+import { state, persistStates } from "react-understate";
+
+// Create your states
+const todos = state([]);
+const filter = state("all");
+const user = state(null);
+
+// Persist all states at once
+const dispose = persistStates(
+  { todos, filter, user },
+  "todo-app", // Key prefix: 'todo-app.todos', 'todo-app.filter', etc.
+  localStorage,
+);
+
+// Later, clean up all persistence
+dispose();
+```
+
+### Cross-Tab Synchronization
+
+Changes automatically sync across browser tabs when using localStorage or sessionStorage:
+
+```tsx
+// Tab 1
+const count = state(0);
+persistLocalStorage(count, "counter");
+count.value = 42; // This will sync to other tabs
+
+// Tab 2 (same page)
+const count = state(0);
+persistLocalStorage(count, "counter");
+// count.value will automatically become 42
+```
+
+### Custom Storage Implementation
+
+You can persist to any storage that implements the Storage interface:
+
+```tsx
+// Custom storage implementation
+class CustomStorage implements Storage {
+  private data = new Map<string, string>();
+
+  getItem(key: string): string | null {
+    return this.data.get(key) || null;
+  }
+
+  setItem(key: string, value: string): void {
+    this.data.set(key, value);
+  }
+
+  removeItem(key: string): void {
+    this.data.delete(key);
+  }
+
+  clear(): void {
+    this.data.clear();
+  }
+
+  get length(): number {
+    return this.data.size;
+  }
+
+  key(index: number): string | null {
+    return Array.from(this.data.keys())[index] || null;
+  }
+}
+
+// Use custom storage
+const customStorage = new CustomStorage();
+const data = state({ message: "Hello" });
+persistStorage(data, "custom-key", customStorage);
+```
+
+### Error Handling
+
+All persistence functions include built-in error handling:
+
+```tsx
+const user = state({ name: "John" });
+
+persistLocalStorage(user, "user", {
+  onError: (error) => {
+    console.error("Persistence failed:", error);
+    // Handle error (e.g., show user notification, fallback to memory)
+  },
+});
+```
+
+### Server-Side Rendering (SSR) Support
+
+Persistence functions are SSR-safe and will gracefully handle missing storage:
+
+```tsx
+// This works in both browser and Node.js environments
+const data = state({ value: "default" });
+persistLocalStorage(data, "key"); // No errors in SSR
+```
+
+### Complete Example: Persistent Todo App
+
+Here's a complete example showing how to build a persistent todo app:
+
+```tsx
+import {
+  state,
+  derived,
+  useUnderstate,
+  persistLocalStorage,
+} from "react-understate";
+
+// Define types
+type Todo = {
+  id: number;
+  text: string;
+  completed: boolean;
+};
+
+// Create states
+const todos = state<Todo[]>([]);
+const filter = state<"all" | "active" | "completed">("all");
+const newTodo = state("");
+
+// Persist important state
+persistLocalStorage(todos, "todos");
+persistLocalStorage(filter, "todos-filter");
+// Note: We don't persist newTodo as it's temporary input
+
+// Derived values
+const filteredTodos = derived(() => {
+  switch (filter.value) {
+    case "active":
+      return todos.value.filter((todo) => !todo.completed);
+    case "completed":
+      return todos.value.filter((todo) => todo.completed);
+    default:
+      return todos.value;
+  }
+});
+
+const activeCount = derived(
+  () => todos.value.filter((todo) => !todo.completed).length,
+);
+
+// Actions
+const addTodo = () => {
+  if (newTodo.value.trim()) {
+    todos.value = [
+      ...todos.value,
+      {
+        id: Date.now(),
+        text: newTodo.value.trim(),
+        completed: false,
+      },
+    ];
+    newTodo.value = "";
+  }
+};
+
+const toggleTodo = (id: number) => {
+  todos.value = todos.value.map((todo) =>
+    todo.id === id ? { ...todo, completed: !todo.completed } : todo,
+  );
+};
+
+const removeTodo = (id: number) => {
+  todos.value = todos.value.filter((todo) => todo.id !== id);
+};
+
+const setFilter = (newFilter: typeof filter.value) => {
+  filter.value = newFilter;
+};
+
+// Export store
+export const store = {
+  todos,
+  filter,
+  newTodo,
+  filteredTodos,
+  activeCount,
+  addTodo,
+  toggleTodo,
+  removeTodo,
+  setFilter,
+};
+```
+
+### Persistence API Reference
+
+#### `persistLocalStorage<T>(state: State<T>, key: string, options?: PersistOptions): () => void`
+
+Persists state to localStorage with cross-tab synchronization.
+
+#### `persistSessionStorage<T>(state: State<T>, key: string, options?: PersistOptions): () => void`
+
+Persists state to sessionStorage with cross-tab synchronization.
+
+#### `persistStorage<T>(state: State<T>, key: string, storage: Storage, options?: PersistOptions): () => void`
+
+Generic persistence function for any storage implementation.
+
+#### `persistStates<T>(states: T, keyPrefix: string, storage?: Storage): () => void`
+
+Persists multiple states with a single key prefix.
+
+#### PersistOptions
+
+```tsx
+type PersistOptions = {
+  loadInitial?: boolean; // Load initial value from storage (default: true)
+  syncAcrossTabs?: boolean; // Sync changes across tabs (default: true)
+  serialize?: (value: T) => string; // Custom serializer (default: JSON.stringify)
+  deserialize?: (value: string) => T; // Custom deserializer (default: JSON.parse)
+  onError?: (error: Error) => void; // Error handler
+};
 ```
 
 ## API Reference
