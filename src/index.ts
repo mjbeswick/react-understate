@@ -14,14 +14,14 @@
  */
 
 // Core exports
-export { state } from "./core";
-export type { State } from "./core";
+export { state } from './core';
+export type { State } from './core';
 
 // Reactive exports
-export { derived, effect, batch } from "./state";
+export { derived, effect, batch } from './state';
 
 // React integration exports
-export { useUnderstate, setReact } from "./react";
+export { useUnderstate, setReact } from './react';
 
 // Persistence exports
 export {
@@ -29,4 +29,4 @@ export {
   persistLocalStorage,
   persistSessionStorage,
   persistStates,
-} from "./persistence";
+} from './persistence';

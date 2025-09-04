@@ -9,6 +9,6 @@ export const testFunction = () => {
     displayValue.value = '0';
     previousValue.value = null;
     operation.value = null;
-    waitingForOperand.value = false
+    waitingForOperand.value = false;
   });
 };

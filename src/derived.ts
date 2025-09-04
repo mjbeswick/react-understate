@@ -5,7 +5,7 @@
  * Derived values are read-only signals that automatically update when their dependencies change.
  */
 
-import { setActiveEffect, State } from "./core";
+import { setActiveEffect, type State } from './core';
 
 /**
  * Creates a read-only signal that automatically updates when dependencies change.
@@ -71,12 +71,12 @@ export function derived<T>(computeFn: () => T): State<T> {
   const markDirty = () => {
     dirty = true;
     // Notify subscribers and dependent effects
-    subscribers.forEach((sub) => {
+    subscribers.forEach(sub => {
       if (sub !== markDirty) {
         sub();
       }
     });
-    dependencies.forEach((dep) => {
+    dependencies.forEach(dep => {
       if (dep !== markDirty) {
         dep();
       }
@@ -132,7 +132,7 @@ export function derived<T>(computeFn: () => T): State<T> {
   return {
     rawValue: cachedValue,
     update: () => {
-      throw new Error("Cannot update derived values directly");
+      throw new Error('Cannot update derived values directly');
     },
     subscribe,
     get pending() {
@@ -150,7 +150,7 @@ export function derived<T>(computeFn: () => T): State<T> {
       return computeValue();
     },
     set value(_newValue: T) {
-      throw new Error("Cannot update derived values directly");
+      throw new Error('Cannot update derived values directly');
     },
   } as State<T>;
 }

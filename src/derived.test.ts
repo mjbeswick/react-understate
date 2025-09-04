@@ -5,12 +5,12 @@
  * for derived.ts which currently has 68.88% coverage.
  */
 
-import { state } from "./core";
-import { derived } from "./derived";
+import { state } from './core';
+import { derived } from './derived';
 
-describe("Derived Values", () => {
-  describe("Basic Functionality", () => {
-    it("should create a derived value that updates when dependencies change", () => {
+describe('Derived Values', () => {
+  describe('Basic Functionality', () => {
+    it('should create a derived value that updates when dependencies change', () => {
       const base = state(10);
       const doubled = derived(() => base.value * 2);
 
@@ -20,21 +20,21 @@ describe("Derived Values", () => {
       expect(doubled.value).toBe(30);
     });
 
-    it("should work with multiple dependencies", () => {
-      const firstName = state("John");
-      const lastName = state("Doe");
+    it('should work with multiple dependencies', () => {
+      const firstName = state('John');
+      const lastName = state('Doe');
       const fullName = derived(() => `${firstName.value} ${lastName.value}`);
 
-      expect(fullName.value).toBe("John Doe");
+      expect(fullName.value).toBe('John Doe');
 
-      firstName.value = "Jane";
-      expect(fullName.value).toBe("Jane Doe");
+      firstName.value = 'Jane';
+      expect(fullName.value).toBe('Jane Doe');
 
-      lastName.value = "Smith";
-      expect(fullName.value).toBe("Jane Smith");
+      lastName.value = 'Smith';
+      expect(fullName.value).toBe('Jane Smith');
     });
 
-    it("should be read-only (setter should throw)", () => {
+    it('should be read-only (setter should throw)', () => {
       const base = state(10);
       const doubled = derived(() => base.value * 2);
 
@@ -43,7 +43,7 @@ describe("Derived Values", () => {
       }).toThrow(); // Should throw since it's a getter-only property
     });
 
-    it("should provide rawValue property", () => {
+    it('should provide rawValue property', () => {
       const base = state(10);
       const doubled = derived(() => base.value * 2);
 
@@ -54,7 +54,7 @@ describe("Derived Values", () => {
       expect(doubled.value).toBe(10);
     });
 
-    it("should return false for pending property", () => {
+    it('should return false for pending property', () => {
       const base = state(10);
       const doubled = derived(() => base.value * 2);
 
@@ -65,8 +65,8 @@ describe("Derived Values", () => {
     });
   });
 
-  describe("Lazy Evaluation", () => {
-    it("should not recompute until value is accessed", () => {
+  describe('Lazy Evaluation', () => {
+    it('should not recompute until value is accessed', () => {
       const base = state(10);
       let computeCount = 0;
 
@@ -84,7 +84,7 @@ describe("Derived Values", () => {
       expect(computeCount).toBe(2); // Now recomputed
     });
 
-    it("should not recompute if dependencies have not changed", () => {
+    it('should not recompute if dependencies have not changed', () => {
       const base = state(10);
       let computeCount = 0;
 
@@ -102,8 +102,8 @@ describe("Derived Values", () => {
     });
   });
 
-  describe("Subscription", () => {
-    it("should notify subscribers when value changes", () => {
+  describe('Subscription', () => {
+    it('should notify subscribers when value changes', () => {
       const base = state(10);
       const doubled = derived(() => base.value * 2);
 
@@ -120,7 +120,7 @@ describe("Derived Values", () => {
       unsubscribe();
     });
 
-    it("should properly cleanup subscriptions", () => {
+    it('should properly cleanup subscriptions', () => {
       const base = state(10);
       const doubled = derived(() => base.value * 2);
 
@@ -138,13 +138,13 @@ describe("Derived Values", () => {
     });
   });
 
-  describe("Error Handling", () => {
-    it("should handle errors during initial computation", () => {
+  describe('Error Handling', () => {
+    it('should handle errors during initial computation', () => {
       const base = state(10);
 
       const errorDerived = derived(() => {
         if (base.value === 10) {
-          throw new Error("Test error");
+          throw new Error('Test error');
         }
         return base.value * 2;
       });
@@ -157,12 +157,12 @@ describe("Derived Values", () => {
       expect(errorDerived.value).toBe(10);
     });
 
-    it("should handle errors during recomputation", () => {
+    it('should handle errors during recomputation', () => {
       const base = state(5);
 
       const errorDerived = derived(() => {
         if (base.value === 10) {
-          throw new Error("Test error");
+          throw new Error('Test error');
         }
         return base.value * 2;
       });
@@ -170,12 +170,12 @@ describe("Derived Values", () => {
       expect(errorDerived.value).toBe(10); // Initial computation works
 
       base.value = 10;
-      expect(() => errorDerived.value).toThrow("Test error");
+      expect(() => errorDerived.value).toThrow('Test error');
     });
   });
 
-  describe("Complex Scenarios", () => {
-    it("should handle multiple independent derived values", () => {
+  describe('Complex Scenarios', () => {
+    it('should handle multiple independent derived values', () => {
       const base = state(10);
       const doubled = derived(() => base.value * 2);
       const tripled = derived(() => base.value * 3);
@@ -189,8 +189,8 @@ describe("Derived Values", () => {
     });
   });
 
-  describe("Conditional Dependencies", () => {
-    it("should handle conditional logic", () => {
+  describe('Conditional Dependencies', () => {
+    it('should handle conditional logic', () => {
       const flag = state(true);
       const a = state(10);
       const b = state(20);
@@ -206,8 +206,8 @@ describe("Derived Values", () => {
     });
   });
 
-  describe("Performance", () => {
-    it("should handle many subscriptions efficiently", () => {
+  describe('Performance', () => {
+    it('should handle many subscriptions efficiently', () => {
       const base = state(10);
       const doubled = derived(() => base.value * 2);
 
@@ -219,7 +219,7 @@ describe("Derived Values", () => {
       }
 
       // Cleanup all subscriptions
-      unsubscribers.forEach((unsub) => unsub());
+      unsubscribers.forEach(unsub => unsub());
 
       // Should still work normally
       expect(doubled.value).toBe(20);
@@ -228,8 +228,8 @@ describe("Derived Values", () => {
     });
   });
 
-  describe("Dependency Tracking", () => {
-    it("should track dependencies correctly during computation", () => {
+  describe('Dependency Tracking', () => {
+    it('should track dependencies correctly during computation', () => {
       const count = state(0);
       const multiplier = state(2);
 
@@ -254,7 +254,7 @@ describe("Derived Values", () => {
       expect(computationCount).toBe(3);
     });
 
-    it("should handle circular dependencies gracefully", () => {
+    it('should handle circular dependencies gracefully', () => {
       const count = state(0);
 
       const derived1 = derived(() => count.value + 1);
@@ -266,8 +266,8 @@ describe("Derived Values", () => {
     });
   });
 
-  describe("Subscription Management", () => {
-    it("should manage subscriptions correctly", () => {
+  describe('Subscription Management', () => {
+    it('should manage subscriptions correctly', () => {
       const count = state(0);
       const derivedValue = derived(() => count.value * 2);
 
@@ -287,7 +287,7 @@ describe("Derived Values", () => {
       expect(notifications).toBe(1); // Should not increase
     });
 
-    it("should handle multiple subscriptions", () => {
+    it('should handle multiple subscriptions', () => {
       const count = state(0);
       const derivedValue = derived(() => count.value * 2);
 

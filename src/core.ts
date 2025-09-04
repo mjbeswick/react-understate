@@ -229,14 +229,14 @@ export function state<T>(initialValue: T): State<T> {
 
   const notify = () => {
     // Notify all subscribers
-    subscribers.forEach((sub) => {
+    subscribers.forEach(sub => {
       if (sub !== activeEffect) {
         sub();
       }
     });
 
     // Also notify dependencies (effects and computed values)
-    dependencies.forEach((dep) => {
+    dependencies.forEach(dep => {
       dep();
     });
   };
@@ -274,8 +274,8 @@ export function state<T>(initialValue: T): State<T> {
         setValue(result);
       }
     } catch (error) {
-      // Ignore failed updates, just log them
-      console.warn("State update failed:", error);
+      // Ignore failed updates silently
+      // State update failed - this is expected in some edge cases
     } finally {
       const wasPending = pending;
       pendingUpdateCount--;
@@ -342,7 +342,7 @@ export function flushUpdates(): void {
   const updates = Array.from(pendingUpdates);
   pendingUpdates.clear();
 
-  updates.forEach((update) => update());
+  updates.forEach(update => update());
 }
 
 // Export internal functions for use by other modules

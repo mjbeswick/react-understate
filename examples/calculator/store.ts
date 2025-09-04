@@ -27,7 +27,7 @@ const waitingForOperand = state(false);
 function calculate(
   firstValue: number,
   secondValue: number,
-  op: string
+  op: string,
 ): number {
   switch (op) {
     case '+':
@@ -70,7 +70,7 @@ export function inputDigit(digit: string) {
         '+',
         digit,
         '=',
-        newValue
+        newValue,
       );
       displayValue.value = newValue;
     }

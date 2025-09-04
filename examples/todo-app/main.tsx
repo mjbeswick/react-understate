@@ -29,8 +29,8 @@ function TodoApp() {
           <input
             className={styles.newTodo}
             value={newTodo}
-            onChange={(e) => setNewTodo(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addTodo()}
+            onChange={e => setNewTodo(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && addTodo()}
             placeholder="What needs to be done?"
             autoFocus
           />
@@ -44,19 +44,19 @@ function TodoApp() {
               id="toggle-all"
               className={styles.toggleAll}
               type="checkbox"
-              checked={todos.every((todo) => todo.completed)}
+              checked={todos.every(todo => todo.completed)}
               onChange={toggleAll}
             />
             <label htmlFor="toggle-all">Mark all as complete</label>
           </div>
 
           <ul className={styles.todoList}>
-            {filteredTodos.map((todo) => (
+            {filteredTodos.map(todo => (
               <li
                 key={todo.id}
                 className={clsx(
                   styles.todoItem,
-                  styles.completed && todo.completed
+                  styles.completed && todo.completed,
                 )}
               >
                 <div className={styles.view}>

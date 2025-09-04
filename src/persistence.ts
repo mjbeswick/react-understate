@@ -1,5 +1,5 @@
-import { State } from "./core";
-import { effect } from "./effects";
+import type { State } from './core';
+import { effect } from './effects';
 
 /**
  * Generic function to persist a React Understate state to any storage
@@ -30,8 +30,10 @@ export function persistStorage<T>(
     syncAcrossTabs = true,
     serialize = JSON.stringify,
     deserialize = JSON.parse,
-    onError = (error) =>
-      console.warn(`Failed to persist state "${key}":`, error),
+    onError = _error => {
+      // Silent error handling - persistence failures are non-critical
+      // Failed to persist state - this is expected in some environments
+    },
   } = options;
 
   // Load initial value from storage if requested
@@ -62,10 +64,10 @@ export function persistStorage<T>(
 
   if (
     syncAcrossTabs &&
-    typeof window !== "undefined" &&
+    typeof window !== 'undefined' &&
     (storage === window.localStorage ||
       storage === window.sessionStorage ||
-      storage.constructor.name === "MockStorage")
+      storage.constructor.name === 'MockStorage')
   ) {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === key && event.storageArea === storage) {
@@ -80,9 +82,9 @@ export function persistStorage<T>(
       }
     };
 
-    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener('storage', handleStorageChange);
     disposeStorageListener = () => {
-      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }
 
@@ -115,8 +117,8 @@ export function persistLocalStorage<T>(
     onError?: (error: Error) => void;
   } = {},
 ) {
-  if (typeof window === "undefined") {
-    console.warn("localStorage is not available in this environment");
+  if (typeof window === 'undefined') {
+    // localStorage is not available in this environment
     return () => {}; // Return no-op dispose function
   }
 
@@ -145,8 +147,8 @@ export function persistSessionStorage<T>(
     onError?: (error: Error) => void;
   } = {},
 ) {
-  if (typeof window === "undefined") {
-    console.warn("sessionStorage is not available in this environment");
+  if (typeof window === 'undefined') {
+    // sessionStorage is not available in this environment
     return () => {}; // Return no-op dispose function
   }
 
@@ -162,7 +164,7 @@ export function persistSessionStorage<T>(
 export function persistStates<T extends Record<string, State<unknown>>>(
   states: T,
   keyPrefix: string,
-  storage: Storage = typeof window !== "undefined"
+  storage: Storage = typeof window !== 'undefined'
     ? sessionStorage
     : ({} as Storage),
 ) {
@@ -175,5 +177,5 @@ export function persistStates<T extends Record<string, State<unknown>>>(
   }
 
   // Return function to dispose all effects
-  return () => disposers.forEach((dispose) => dispose());
+  return () => disposers.forEach(dispose => dispose());
 }

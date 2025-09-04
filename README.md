@@ -29,7 +29,7 @@ npm install react-understate
 **Basic usage with store pattern:**
 
 ```tsx
-import { state, useUnderstate } from "react-understate";
+import { state, useUnderstate } from 'react-understate';
 
 // Create a store object
 const store = {
@@ -51,7 +51,7 @@ function Counter() {
 **With persistence:**
 
 ```tsx
-import { state, useUnderstate, persistLocalStorage } from "react-understate";
+import { state, useUnderstate, persistLocalStorage } from 'react-understate';
 
 const store = {
   count: state(0),
@@ -59,7 +59,7 @@ const store = {
 };
 
 // Persist the count to localStorage
-persistLocalStorage(store.count, "counter");
+persistLocalStorage(store.count, 'counter');
 
 function Counter() {
   const { count, increment } = useUnderstate(store);
@@ -74,7 +74,7 @@ function Counter() {
 States are reactive containers that hold values and notify subscribers when they change. Always use the `.value` property to read and write state values.
 
 ```tsx
-import { state } from "react-understate";
+import { state } from 'react-understate';
 
 const count = state(0);
 console.log(count.value); // 0
@@ -88,10 +88,10 @@ console.log(count.value); // 5
 Derived values automatically update when their dependencies change:
 
 ```tsx
-import { state, derived } from "react-understate";
+import { state, derived } from 'react-understate';
 
-const firstName = state("John");
-const lastName = state("Doe");
+const firstName = state('John');
+const lastName = state('Doe');
 
 // Create a derived state
 const fullName = derived(() => `${firstName.value} ${lastName.value}`);
@@ -99,7 +99,7 @@ const fullName = derived(() => `${firstName.value} ${lastName.value}`);
 console.log(fullName.value); // "John Doe"
 
 // Update dependencies - derived automatically updates
-firstName.value = "Jane";
+firstName.value = 'Jane';
 console.log(fullName.value); // "Jane Doe"
 ```
 
@@ -108,10 +108,10 @@ console.log(fullName.value); // "Jane Doe"
 Effects run side effects when dependencies change:
 
 ```tsx
-import { state, effect } from "react-understate";
+import { state, effect } from 'react-understate';
 
 const count = state(0);
-const name = state("John");
+const name = state('John');
 
 // Simple effect that logs changes
 effect(() => {
@@ -119,7 +119,7 @@ effect(() => {
 });
 
 count.value = 5; // Logs: "Count: 5, Name: John"
-name.value = "Jane"; // Logs: "Count: 5, Name: Jane"
+name.value = 'Jane'; // Logs: "Count: 5, Name: Jane"
 ```
 
 ### Async Updates
@@ -127,12 +127,12 @@ name.value = "Jane"; // Logs: "Count: 5, Name: Jane"
 Use the `update` method for async operations with built-in loading states:
 
 ```tsx
-import { state } from "react-understate";
+import { state } from 'react-understate';
 
 const userData = state(null);
 
 // Async update with loading state
-const loadUser = async (id) => {
+const loadUser = async id => {
   await userData.update(async () => {
     const response = await fetch(`/api/users/${id}`);
     return response.json();
@@ -150,16 +150,16 @@ if (userData.pending) {
 Group multiple updates for better performance:
 
 ```tsx
-import { state, batch } from "react-understate";
+import { state, batch } from 'react-understate';
 
-const firstName = state("John");
-const lastName = state("Doe");
+const firstName = state('John');
+const lastName = state('Doe');
 const age = state(30);
 
 // Batch related updates
 batch(() => {
-  firstName.value = "Jane";
-  lastName.value = "Smith";
+  firstName.value = 'Jane';
+  lastName.value = 'Smith';
   age.value = 25;
 });
 ```
@@ -171,7 +171,7 @@ batch(() => {
 The `useUnderstate` hook subscribes to state changes and re-renders components when values change:
 
 ```tsx
-import { state, useUnderstate } from "react-understate";
+import { state, useUnderstate } from 'react-understate';
 
 const store = {
   count: state(0),
@@ -192,16 +192,16 @@ Organize related state and actions together:
 const todoStore = {
   // State
   todos: state<Todo[]>([]),
-  filter: state<"all" | "active" | "completed">("all"),
-  newTodo: state(""),
+  filter: state<'all' | 'active' | 'completed'>('all'),
+  newTodo: state(''),
 
   // Computed values
   filteredTodos: derived(() => {
     switch (todoStore.filter.value) {
-      case "active":
-        return todoStore.todos.value.filter((todo) => !todo.completed);
-      case "completed":
-        return todoStore.todos.value.filter((todo) => todo.completed);
+      case 'active':
+        return todoStore.todos.value.filter(todo => !todo.completed);
+      case 'completed':
+        return todoStore.todos.value.filter(todo => todo.completed);
       default:
         return todoStore.todos.value;
     }
@@ -218,12 +218,12 @@ const todoStore = {
           completed: false,
         },
       ];
-      todoStore.newTodo.value = "";
+      todoStore.newTodo.value = '';
     }
   },
 
   toggleTodo: (id: number) => {
-    todoStore.todos.value = todoStore.todos.value.map((todo) =>
+    todoStore.todos.value = todoStore.todos.value.map(todo =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo,
     );
   },
@@ -245,33 +245,33 @@ import {
   state,
   persistLocalStorage,
   persistSessionStorage,
-} from "react-understate";
+} from 'react-understate';
 
 // Persist to localStorage (survives browser restart)
-const user = state({ name: "John", email: "john@example.com" });
-persistLocalStorage(user, "user-data");
+const user = state({ name: 'John', email: 'john@example.com' });
+persistLocalStorage(user, 'user-data');
 
 // Persist to sessionStorage (only for current session)
-const theme = state("light");
-persistSessionStorage(theme, "app-theme");
+const theme = state('light');
+persistSessionStorage(theme, 'app-theme');
 ```
 
 ### Advanced Persistence
 
 ```tsx
-import { state, persistStorage } from "react-understate";
+import { state, persistStorage } from 'react-understate';
 
 const settings = state({
   notifications: true,
-  language: "en",
+  language: 'en',
   darkMode: false,
 });
 
 // Custom persistence with error handling
-persistStorage(settings, "app-settings", localStorage, {
-  serialize: (value) => JSON.stringify(value, null, 2),
-  deserialize: (data) => JSON.parse(data),
-  onError: (error) => console.error("Failed to persist settings:", error),
+persistStorage(settings, 'app-settings', localStorage, {
+  serialize: value => JSON.stringify(value, null, 2),
+  deserialize: data => JSON.parse(data),
+  onError: error => console.error('Failed to persist settings:', error),
   loadInitial: true,
   syncAcrossTabs: true,
 });
@@ -280,16 +280,16 @@ persistStorage(settings, "app-settings", localStorage, {
 ### Persisting Multiple States
 
 ```tsx
-import { state, persistStates } from "react-understate";
+import { state, persistStates } from 'react-understate';
 
 const todos = state([]);
-const filter = state("all");
+const filter = state('all');
 const user = state(null);
 
 // Persist all states at once
 const dispose = persistStates(
   { todos, filter, user },
-  "todo-app", // Key prefix: 'todo-app.todos', 'todo-app.filter', etc.
+  'todo-app', // Key prefix: 'todo-app.todos', 'todo-app.filter', etc.
   localStorage,
 );
 
@@ -314,8 +314,8 @@ const store = {
   login: async (email: string, password: string) => {
     store.loading.value = true;
     try {
-      const response = await fetch("/api/login", {
-        method: "POST",
+      const response = await fetch('/api/login', {
+        method: 'POST',
         body: JSON.stringify({ email, password }),
       });
       store.user.value = await response.json();
@@ -336,7 +336,7 @@ function LoginForm() {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    login(formData.get("email"), formData.get("password"));
+    login(formData.get('email'), formData.get('password'));
   };
 
   return <form onSubmit={handleSubmit}>{/* Form fields */}</form>;
@@ -356,22 +356,22 @@ Since business logic is separated from UI, you can test it independently:
 
 ```tsx
 // test/store.test.ts
-import { store } from "./store";
+import { store } from './store';
 
-describe("Todo Store", () => {
+describe('Todo Store', () => {
   beforeEach(() => {
     store.todos.value = [];
-    store.filter.value = "all";
+    store.filter.value = 'all';
   });
 
-  it("should add todos", () => {
-    store.addTodo("Learn React Understate");
+  it('should add todos', () => {
+    store.addTodo('Learn React Understate');
     expect(store.todos.value).toHaveLength(1);
-    expect(store.todos.value[0].text).toBe("Learn React Understate");
+    expect(store.todos.value[0].text).toBe('Learn React Understate');
   });
 
-  it("should toggle todo completion", () => {
-    store.addTodo("Test todo");
+  it('should toggle todo completion', () => {
+    store.addTodo('Test todo');
     const todoId = store.todos.value[0].id;
 
     store.toggleTodo(todoId);
@@ -395,7 +395,7 @@ describe("Todo Store", () => {
 
 ```tsx
 // TypeScript provides compile-time immutability
-const user = state({ name: "John", age: 30 });
+const user = state({ name: 'John', age: 30 });
 // user.value.name = 'Jane'; // TypeScript error: Cannot assign to 'name'
 
 // Proper typing for complex state

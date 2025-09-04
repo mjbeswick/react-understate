@@ -50,9 +50,9 @@ function getBuildSizes(): void {
   console.log('─'.repeat(80));
 
   // Group files by type
-  const bundleFiles = files.filter((f) => f.startsWith('react-understate.'));
+  const bundleFiles = files.filter(f => f.startsWith('react-understate.'));
   const moduleFiles = files.filter(
-    (f) => !f.startsWith('react-understate.') && f.endsWith('.js')
+    f => !f.startsWith('react-understate.') && f.endsWith('.js'),
   );
 
   let totalSize = 0;
@@ -75,7 +75,7 @@ function getBuildSizes(): void {
       totalBrotliSize += brotliSize;
 
       console.log(
-        `  ${file.padEnd(35)} ${formatBytes(size).padStart(12)} (gzip: ${formatBytes(gzipSize).padStart(8)}, brotli: ${formatBytes(brotliSize).padStart(8)})`
+        `  ${file.padEnd(35)} ${formatBytes(size).padStart(12)} (gzip: ${formatBytes(gzipSize).padStart(8)}, brotli: ${formatBytes(brotliSize).padStart(8)})`,
       );
     });
     console.log('');
@@ -95,7 +95,7 @@ function getBuildSizes(): void {
       totalBrotliSize += brotliSize;
 
       console.log(
-        `  ${file.padEnd(35)} ${formatBytes(size).padStart(12)} (gzip: ${formatBytes(gzipSize).padStart(8)}, brotli: ${formatBytes(brotliSize).padStart(8)})`
+        `  ${file.padEnd(35)} ${formatBytes(size).padStart(12)} (gzip: ${formatBytes(gzipSize).padStart(8)}, brotli: ${formatBytes(brotliSize).padStart(8)})`,
       );
     });
     console.log('');
@@ -116,7 +116,7 @@ function getBuildSizes(): void {
       console.log(`  ${file.padEnd(35)} ${formatBytes(size).padStart(12)}`);
     });
     console.log(
-      `  Total Source Maps:${' '.repeat(20)} ${formatBytes(sourceMapSize).padStart(12)}`
+      `  Total Source Maps:${' '.repeat(20)} ${formatBytes(sourceMapSize).padStart(12)}`,
     );
     console.log('');
   }
@@ -136,17 +136,17 @@ function getBuildSizes(): void {
       console.log(`  ${file.padEnd(35)} ${formatBytes(size).padStart(12)}`);
     });
     console.log(
-      `  Total Declarations:${' '.repeat(20)} ${formatBytes(declarationSize).padStart(12)}`
+      `  Total Declarations:${' '.repeat(20)} ${formatBytes(declarationSize).padStart(12)}`,
     );
     console.log('');
   }
 
   console.log('─'.repeat(80));
   console.log(
-    `  Bundle Total:${' '.repeat(22)} ${formatBytes(bundleSize).padStart(12)} (gzip: ${formatBytes(estimateGzipSize(bundleSize)).padStart(8)}, brotli: ${formatBytes(estimateBrotliSize(bundleSize)).padStart(8)})`
+    `  Bundle Total:${' '.repeat(22)} ${formatBytes(bundleSize).padStart(12)} (gzip: ${formatBytes(estimateGzipSize(bundleSize)).padStart(8)}, brotli: ${formatBytes(estimateBrotliSize(bundleSize)).padStart(8)})`,
   );
   console.log(
-    `  All Files Total:${' '.repeat(19)} ${formatBytes(totalSize).padStart(12)} (gzip: ${formatBytes(totalGzipSize).padStart(8)}, brotli: ${formatBytes(totalBrotliSize).padStart(8)})`
+    `  All Files Total:${' '.repeat(19)} ${formatBytes(totalSize).padStart(12)} (gzip: ${formatBytes(totalGzipSize).padStart(8)}, brotli: ${formatBytes(totalBrotliSize).padStart(8)})`,
   );
 
   // Optimization recommendations

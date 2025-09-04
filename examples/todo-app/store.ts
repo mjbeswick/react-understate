@@ -21,20 +21,20 @@ persistLocalStorage(filter, 'todos-filter');
 export const filteredTodos = derived(() => {
   switch (filter.value) {
     case 'active':
-      return todos.value.filter((todo) => !todo.completed);
+      return todos.value.filter(todo => !todo.completed);
     case 'completed':
-      return todos.value.filter((todo) => todo.completed);
+      return todos.value.filter(todo => todo.completed);
     default:
       return todos.value;
   }
 });
 
 export const activeCount = derived(
-  () => todos.value.filter((todo) => !todo.completed).length
+  () => todos.value.filter(todo => !todo.completed).length,
 );
 
 export const completedCount = derived(
-  () => todos.value.filter((todo) => todo.completed).length
+  () => todos.value.filter(todo => todo.completed).length,
 );
 
 // Actions
@@ -61,22 +61,22 @@ function addTodo() {
 }
 
 function toggleTodo(id: number) {
-  todos.value = todos.value.map((todo) =>
-    todo.id === id ? { ...todo, completed: !todo.completed } : todo
+  todos.value = todos.value.map(todo =>
+    todo.id === id ? { ...todo, completed: !todo.completed } : todo,
   );
 }
 
 function removeTodo(id: number) {
-  todos.value = todos.value.filter((todo) => todo.id !== id);
+  todos.value = todos.value.filter(todo => todo.id !== id);
 }
 
 function clearCompleted() {
-  todos.value = todos.value.filter((todo) => !todo.completed);
+  todos.value = todos.value.filter(todo => !todo.completed);
 }
 
 function toggleAll() {
-  const allCompleted = todos.value.every((todo) => todo.completed);
-  todos.value = todos.value.map((todo) => ({
+  const allCompleted = todos.value.every(todo => todo.completed);
+  todos.value = todos.value.map(todo => ({
     ...todo,
     completed: !allCompleted,
   }));

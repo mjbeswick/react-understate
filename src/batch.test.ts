@@ -217,8 +217,8 @@ describe('Batching', () => {
       const states = Array.from({ length: 10 }, (_, i) => state(i));
 
       let totalNotifications = 0;
-      const unsubscribers = states.map((s) =>
-        s.subscribe(() => totalNotifications++)
+      const unsubscribers = states.map(s =>
+        s.subscribe(() => totalNotifications++),
       );
 
       batch(() => {
@@ -235,7 +235,7 @@ describe('Batching', () => {
         expect(s.value).toBe(i + 100);
       });
 
-      unsubscribers.forEach((unsub) => unsub());
+      unsubscribers.forEach(unsub => unsub());
     });
   });
 });

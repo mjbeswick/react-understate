@@ -5,8 +5,8 @@
  * using use-sync-external-store for optimal compatibility.
  */
 
-import type { State } from "./core";
-import { useSyncExternalStore } from "use-sync-external-store/shim";
+import type { State } from './core';
+import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
 /**
  * Type utility to extract values from State objects in a store
@@ -26,9 +26,9 @@ function extractStatesFromStore(
   for (const value of Object.values(store)) {
     if (
       value &&
-      typeof value === "object" &&
-      "value" in value &&
-      "subscribe" in value
+      typeof value === 'object' &&
+      'value' in value &&
+      'subscribe' in value
     ) {
       states.push(value as unknown as State<unknown>);
     }
@@ -49,9 +49,9 @@ function createStoreWithValues<T extends Record<string, unknown>>(
     // If it's a State object, return its current value
     if (
       value &&
-      typeof value === "object" &&
-      "value" in value &&
-      "subscribe" in value
+      typeof value === 'object' &&
+      'value' in value &&
+      'subscribe' in value
     ) {
       (result as any)[key] = (value as unknown as State<unknown>).value;
     } else {
@@ -123,19 +123,19 @@ export function useUnderstate<T extends Record<string, unknown>>(
   // Check if first argument is a store object (has properties that aren't State objects)
   const isStoreObject =
     storeOrSignals &&
-    typeof storeOrSignals === "object" &&
-    !("value" in storeOrSignals) &&
-    !("subscribe" in storeOrSignals);
+    typeof storeOrSignals === 'object' &&
+    !('value' in storeOrSignals) &&
+    !('subscribe' in storeOrSignals);
 
   if (isStoreObject) {
     // Store object pattern
-    const store = storeOrSignals as T;
+    const store = storeOrSignals;
     const states = extractStatesFromStore(store);
 
     useSyncExternalStore(
-      (callback) => {
+      callback => {
         // Subscribe to all states in the store
-        const unsubscribes = states.map((state) =>
+        const unsubscribes = states.map(state =>
           state.subscribe(() => {
             callback(); // Trigger re-render when any state changes
           }),
@@ -143,12 +143,12 @@ export function useUnderstate<T extends Record<string, unknown>>(
 
         // Return cleanup function that unsubscribes from all states
         return () => {
-          unsubscribes.forEach((unsubscribe) => unsubscribe());
+          unsubscribes.forEach(unsubscribe => unsubscribe());
         };
       },
       () => {
         // Return a stable snapshot that only changes when state values actually change
-        return JSON.stringify(states.map((state) => state.value));
+        return JSON.stringify(states.map(state => state.value));
       },
     );
 
@@ -159,9 +159,9 @@ export function useUnderstate<T extends Record<string, unknown>>(
     const signals = [storeOrSignals as State<unknown>, ...additionalSignals];
 
     useSyncExternalStore(
-      (callback) => {
+      callback => {
         // Subscribe to all signals
-        const unsubscribes = signals.map((signal) =>
+        const unsubscribes = signals.map(signal =>
           signal.subscribe(() => {
             callback(); // Trigger re-render when any signal changes
           }),
@@ -169,17 +169,17 @@ export function useUnderstate<T extends Record<string, unknown>>(
 
         // Return cleanup function that unsubscribes from all signals
         return () => {
-          unsubscribes.forEach((unsubscribe) => unsubscribe());
+          unsubscribes.forEach(unsubscribe => unsubscribe());
         };
       },
       () => {
         // Return a stable snapshot that only changes when signal values actually change
-        return JSON.stringify(signals.map((signal) => signal.value));
+        return JSON.stringify(signals.map(signal => signal.value));
       },
     );
 
     // Return array of current values
-    return signals.map((signal) => signal.value) as any;
+    return signals.map(signal => signal.value) as any;
   }
 }
 
@@ -189,8 +189,6 @@ export function useUnderstate<T extends Record<string, unknown>>(
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function setReact(_reactModule: unknown): void {
-  console.warn(
-    "setReact() is deprecated and no longer needed. " +
-      "react-understate now uses use-sync-external-store/shim for automatic React compatibility.",
-  );
+  // setReact() is deprecated and no longer needed
+  // react-understate now uses use-sync-external-store/shim for automatic React compatibility
 }

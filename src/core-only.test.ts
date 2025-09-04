@@ -5,34 +5,34 @@
  * without React integration for bundle size optimization.
  */
 
-import * as CoreOnly from "./core-only";
+import * as CoreOnly from './core-only';
 
-describe("Core-Only Module", () => {
-  describe("Exports", () => {
-    it("should export state function", () => {
-      expect(typeof CoreOnly.state).toBe("function");
+describe('Core-Only Module', () => {
+  describe('Exports', () => {
+    it('should export state function', () => {
+      expect(typeof CoreOnly.state).toBe('function');
     });
 
-    it("should export derived function", () => {
-      expect(typeof CoreOnly.derived).toBe("function");
+    it('should export derived function', () => {
+      expect(typeof CoreOnly.derived).toBe('function');
     });
 
-    it("should export effect function", () => {
-      expect(typeof CoreOnly.effect).toBe("function");
+    it('should export effect function', () => {
+      expect(typeof CoreOnly.effect).toBe('function');
     });
 
-    it("should export batch function", () => {
-      expect(typeof CoreOnly.batch).toBe("function");
+    it('should export batch function', () => {
+      expect(typeof CoreOnly.batch).toBe('function');
     });
 
-    it("should not export React-specific functions", () => {
+    it('should not export React-specific functions', () => {
       expect((CoreOnly as any).useUnderstate).toBeUndefined();
       expect((CoreOnly as any).setReact).toBeUndefined();
     });
   });
 
-  describe("Functionality", () => {
-    it("should provide working state functionality", () => {
+  describe('Functionality', () => {
+    it('should provide working state functionality', () => {
       const count = CoreOnly.state(0);
 
       expect(count.value).toBe(0);
@@ -41,7 +41,7 @@ describe("Core-Only Module", () => {
       expect(count.value).toBe(42);
     });
 
-    it("should provide working derived functionality", () => {
+    it('should provide working derived functionality', () => {
       const base = CoreOnly.state(10);
       const doubled = CoreOnly.derived(() => base.value * 2);
 
@@ -51,7 +51,7 @@ describe("Core-Only Module", () => {
       expect(doubled.value).toBe(30);
     });
 
-    it("should provide working effect functionality", () => {
+    it('should provide working effect functionality', () => {
       const count = CoreOnly.state(0);
 
       const effectFn = jest.fn();
@@ -65,7 +65,7 @@ describe("Core-Only Module", () => {
       expect(effectFn).toHaveBeenCalledWith(1);
     });
 
-    it("should provide working batch functionality", () => {
+    it('should provide working batch functionality', () => {
       const count = CoreOnly.state(0);
 
       let notifications = 0;
@@ -84,13 +84,13 @@ describe("Core-Only Module", () => {
     });
   });
 
-  describe("TypeScript Types", () => {
-    it("should provide State type", () => {
+  describe('TypeScript Types', () => {
+    it('should provide State type', () => {
       const count: CoreOnly.State<number> = CoreOnly.state(0);
       expect(count.value).toBe(0);
     });
 
-    it("should provide derived state type", () => {
+    it('should provide derived state type', () => {
       const base = CoreOnly.state(10);
       const doubled: CoreOnly.State<number> = CoreOnly.derived(
         () => base.value * 2,
@@ -99,8 +99,8 @@ describe("Core-Only Module", () => {
     });
   });
 
-  describe("Integration", () => {
-    it("should work with simple derived interactions", () => {
+  describe('Integration', () => {
+    it('should work with simple derived interactions', () => {
       const base = CoreOnly.state(10);
       const doubled = CoreOnly.derived(() => base.value * 2);
 
@@ -110,7 +110,7 @@ describe("Core-Only Module", () => {
       expect(doubled.value).toBe(30);
     });
 
-    it("should handle multiple effects correctly", () => {
+    it('should handle multiple effects correctly', () => {
       const source = CoreOnly.state(1);
 
       const effect1Fn = jest.fn();
@@ -133,7 +133,7 @@ describe("Core-Only Module", () => {
       expect(effect2Fn).toHaveBeenCalledWith(15);
     });
 
-    it("should handle simple state changes", () => {
+    it('should handle simple state changes', () => {
       const a = CoreOnly.state(1);
       const b = CoreOnly.state(2);
 
@@ -148,54 +148,54 @@ describe("Core-Only Module", () => {
     });
   });
 
-  describe("Bundle Size Optimization", () => {
-    it("should provide minimal API surface", () => {
-      const expectedExports = ["state", "derived", "effect", "batch"];
+  describe('Bundle Size Optimization', () => {
+    it('should provide minimal API surface', () => {
+      const expectedExports = ['state', 'derived', 'effect', 'batch'];
       const actualExports = Object.keys(CoreOnly);
 
       // Should only export the core functionality
-      expectedExports.forEach((exportName) => {
+      expectedExports.forEach(exportName => {
         expect(actualExports).toContain(exportName);
       });
 
       // Should not have any React-specific exports
-      expect(actualExports).not.toContain("useUnderstate");
-      expect(actualExports).not.toContain("setReact");
+      expect(actualExports).not.toContain('useUnderstate');
+      expect(actualExports).not.toContain('setReact');
     });
 
-    it("should work without any React dependencies", () => {
+    it('should work without any React dependencies', () => {
       // This test verifies that core-only module doesn't depend on React
       // by ensuring basic functionality works without any React setup
 
-      const state1 = CoreOnly.state("hello");
-      const state2 = CoreOnly.state("world");
+      const state1 = CoreOnly.state('hello');
+      const state2 = CoreOnly.state('world');
 
-      expect(state1.value).toBe("hello");
-      expect(state2.value).toBe("world");
+      expect(state1.value).toBe('hello');
+      expect(state2.value).toBe('world');
 
-      state1.value = "goodbye";
-      state2.value = "universe";
+      state1.value = 'goodbye';
+      state2.value = 'universe';
 
-      expect(state1.value).toBe("goodbye");
-      expect(state2.value).toBe("universe");
+      expect(state1.value).toBe('goodbye');
+      expect(state2.value).toBe('universe');
     });
   });
 
-  describe("State Properties", () => {
-    it("should handle toString method", () => {
+  describe('State Properties', () => {
+    it('should handle toString method', () => {
       const testState = CoreOnly.state(42);
-      expect(testState.toString()).toBe("42");
+      expect(testState.toString()).toBe('42');
 
-      const stringState = CoreOnly.state("hello");
-      expect(stringState.toString()).toBe("hello");
+      const stringState = CoreOnly.state('hello');
+      expect(stringState.toString()).toBe('hello');
 
-      const objectState = CoreOnly.state({ name: "test" });
-      expect(objectState.toString()).toBe("[object Object]");
+      const objectState = CoreOnly.state({ name: 'test' });
+      expect(objectState.toString()).toBe('[object Object]');
     });
   });
 
-  describe("Internal Functions", () => {
-    it("should export internal functions", () => {
+  describe('Internal Functions', () => {
+    it('should export internal functions', () => {
       const {
         activeEffect,
         isBatching,
@@ -204,19 +204,19 @@ describe("Core-Only Module", () => {
         setIsBatching,
         flushUpdates,
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-      } = require("./core");
+      } = require('./core');
 
-      expect(typeof activeEffect).toBe("object");
-      expect(typeof isBatching).toBe("boolean");
-      expect(typeof pendingUpdates).toBe("object");
-      expect(typeof setActiveEffect).toBe("function");
-      expect(typeof setIsBatching).toBe("function");
-      expect(typeof flushUpdates).toBe("function");
+      expect(typeof activeEffect).toBe('object');
+      expect(typeof isBatching).toBe('boolean');
+      expect(typeof pendingUpdates).toBe('object');
+      expect(typeof setActiveEffect).toBe('function');
+      expect(typeof setIsBatching).toBe('function');
+      expect(typeof flushUpdates).toBe('function');
     });
 
-    it("should handle setActiveEffect", () => {
+    it('should handle setActiveEffect', () => {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { setActiveEffect } = require("./core");
+      const { setActiveEffect } = require('./core');
 
       const testEffect = () => {};
       const prev = setActiveEffect(testEffect);
@@ -227,9 +227,9 @@ describe("Core-Only Module", () => {
       expect(prev2).toBe(testEffect);
     });
 
-    it("should handle setIsBatching", () => {
+    it('should handle setIsBatching', () => {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { setIsBatching } = require("./core");
+      const { setIsBatching } = require('./core');
 
       const prev = setIsBatching(true);
       expect(prev).toBe(false);
@@ -238,9 +238,9 @@ describe("Core-Only Module", () => {
       expect(prev2).toBe(true);
     });
 
-    it("should handle flushUpdates", () => {
+    it('should handle flushUpdates', () => {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { flushUpdates } = require("./core");
+      const { flushUpdates } = require('./core');
 
       // Should not throw when no updates are pending
       expect(() => flushUpdates()).not.toThrow();
