@@ -353,7 +353,7 @@ describe('States', () => {
         [1, 2, 3],
         ['a', 'b', 'c'],
         [{ x: 1, y: 2 }],
-      ]);
+      ] as const);
 
       // All levels should be accessible
       expect(nestedArrayState.value[0][0]).toBe(1);
