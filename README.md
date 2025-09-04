@@ -1,4 +1,4 @@
-# React Understate
+`# React Understate
 
 The state management library that's so lightweight, it makes Redux feel like you're carrying a backpack full of bricks. No more wrestling with weight of useless boilerplate - just pure, unadulterated reactivity.
 
@@ -402,6 +402,142 @@ const user = state({ name: 'John', age: 30 });
 type Todo = { id: number; text: string; completed: boolean };
 const todos = state<Todo[]>([]);
 ```
+
+## Recommended Pattern: Functional Store Architecture
+
+The todo example demonstrates the recommended pattern for organizing React Understate applications. This approach provides excellent separation of concerns, testability, and maintainability.
+
+### Pattern Overview
+
+```tsx
+// 1. Define types
+export type Todo = {
+  id: number;
+  text: string;
+  completed: boolean;
+};
+
+// 2. Create state variables
+const todos = state<Todo[]>([]);
+const filter = state<'all' | 'active' | 'completed'>('all');
+const newTodo = state('');
+
+// 3. Add persistence
+persistLocalStorage(todos, 'todos');
+persistLocalStorage(filter, 'todos-filter');
+
+// 4. Create computed values
+export const filteredTodos = derived(() => {
+  switch (filter.value) {
+    case 'active':
+      return todos.value.filter(todo => !todo.completed);
+    case 'completed':
+      return todos.value.filter(todo => todo.completed);
+    default:
+      return todos.value;
+  }
+});
+
+// 5. Define action functions
+function addTodo() {
+  if (newTodo.value.trim()) {
+    todos.value = [
+      ...todos.value,
+      {
+        id: Date.now(),
+        text: newTodo.value.trim(),
+        completed: false,
+      },
+    ];
+    newTodo.value = '';
+  }
+}
+
+function toggleTodo(id: number) {
+  todos.value = todos.value.map(todo =>
+    todo.id === id ? { ...todo, completed: !todo.completed } : todo,
+  );
+}
+
+// 6. Export everything
+export {
+  todos,
+  filter,
+  newTodo,
+  addTodo,
+  toggleTodo,
+  // ... other exports
+};
+```
+
+### Why This Pattern Works
+
+**🎯 Clear Separation of Concerns**
+
+- **State**: Raw reactive values
+- **Computed**: Derived values that automatically update
+- **Actions**: Pure functions that modify state
+- **Persistence**: Declarative storage configuration
+
+**🧪 Excellent Testability**
+
+```tsx
+// Test actions independently
+describe('Todo Actions', () => {
+  beforeEach(() => {
+    todos.value = [];
+    newTodo.value = '';
+  });
+
+  it('should add a todo', () => {
+    newTodo.value = 'Test todo';
+    addTodo();
+    expect(todos.value).toHaveLength(1);
+    expect(todos.value[0].text).toBe('Test todo');
+  });
+});
+```
+
+**🔄 Easy Component Integration**
+
+```tsx
+function TodoApp() {
+  const { todos, newTodo, addTodo, toggleTodo } = useUnderstate({
+    todos,
+    newTodo,
+    addTodo,
+    toggleTodo,
+  });
+
+  return <div>{/* Clean, simple component logic */}</div>;
+}
+```
+
+**📦 Perfect Tree-Shaking**
+
+- Import only what you need
+- Unused actions are eliminated from the bundle
+- Computed values are only created when used
+
+**🛠️ Maintainable Architecture**
+
+- Easy to add new features
+- Clear data flow
+- Predictable state updates
+- Type-safe throughout
+
+### Pattern Benefits
+
+| Aspect          | Benefit                                     |
+| --------------- | ------------------------------------------- |
+| **Testing**     | Actions can be tested without React         |
+| **Reusability** | Logic works in any framework                |
+| **Performance** | Only used code is bundled                   |
+| **Type Safety** | Full TypeScript support                     |
+| **Debugging**   | Clear separation makes issues easy to trace |
+| **Scaling**     | Pattern scales from simple to complex apps  |
+
+This pattern is used in both the [Calculator](examples/calculator/) and [Todo App](examples/todo-app/) examples, demonstrating its versatility across different application types.
 
 ## Examples
 
