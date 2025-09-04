@@ -101,8 +101,9 @@ export function derived<T>(computeFn: () => T): State<T> {
     }
 
     // Track this derived value as a dependency if we're in an effect
-    if (setActiveEffect(null)) {
-      dependencies.add(setActiveEffect(null)!);
+    const activeEffect = setActiveEffect(null);
+    if (activeEffect) {
+      dependencies.add(activeEffect);
     }
 
     return cachedValue;
@@ -137,15 +138,17 @@ export function derived<T>(computeFn: () => T): State<T> {
     subscribe,
     get pending() {
       // Derived values are never pending, but we need to track dependencies
-      if (setActiveEffect(null)) {
-        dependencies.add(setActiveEffect(null)!);
+      const activeEffect = setActiveEffect(null);
+      if (activeEffect) {
+        dependencies.add(activeEffect);
       }
       return false;
     },
     get value() {
       // Track this derived value as a dependency if we're in an effect
-      if (setActiveEffect(null)) {
-        dependencies.add(setActiveEffect(null)!);
+      const activeEffect = setActiveEffect(null);
+      if (activeEffect) {
+        dependencies.add(activeEffect);
       }
       return computeValue();
     },
