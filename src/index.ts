@@ -25,7 +25,6 @@ export { useUnderstate, setReact } from './react';
 
 // Persistence exports
 export {
-  persistStorage,
   persistLocalStorage,
   persistSessionStorage,
   persistStates,

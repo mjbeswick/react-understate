@@ -2,100 +2,6 @@ import type { State } from './core';
 import { effect } from './effects';
 
 /**
- * Generic function to persist a React Understate state to any storage
- * @param state - The state to persist
- * @param key - The key to store the state under
- * @param storage - Storage implementation (localStorage, sessionStorage, or custom)
- * @param options - Optional configuration
- */
-export function persistStorage<T>(
-  state: State<T>,
-  key: string,
-  storage: Storage,
-  options: {
-    /** Whether to load initial value from storage on first call */
-    loadInitial?: boolean;
-    /** Whether to sync changes from other tabs/windows */
-    syncAcrossTabs?: boolean;
-    /** Custom serializer (defaults to JSON.stringify) */
-    serialize?: (value: T) => string;
-    /** Custom deserializer (defaults to JSON.parse) */
-    deserialize?: (value: string) => T;
-    /** Error handler for persistence failures */
-    onError?: (error: Error) => void;
-  } = {},
-) {
-  const {
-    loadInitial = true,
-    syncAcrossTabs = true,
-    serialize = JSON.stringify,
-    deserialize = JSON.parse,
-    onError = _error => {
-      // Silent error handling - persistence failures are non-critical
-      // Failed to persist state - this is expected in some environments
-    },
-  } = options;
-
-  // Load initial value from storage if requested
-  if (loadInitial) {
-    try {
-      const saved = storage.getItem(key);
-      if (saved !== null) {
-        const parsedValue = deserialize(saved);
-        state.value = parsedValue;
-      }
-    } catch (error) {
-      onError(error as Error);
-    }
-  }
-
-  // Set up effect to persist changes
-  const disposeEffect = effect(() => {
-    try {
-      const serialized = serialize(state.value);
-      storage.setItem(key, serialized);
-    } catch (error) {
-      onError(error as Error);
-    }
-  });
-
-  // Set up storage event listener to sync across tabs (only for localStorage/sessionStorage)
-  let disposeStorageListener: (() => void) | undefined;
-
-  if (
-    syncAcrossTabs &&
-    typeof window !== 'undefined' &&
-    (storage === window.localStorage ||
-      storage === window.sessionStorage ||
-      storage.constructor.name === 'MockStorage')
-  ) {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === key && event.storageArea === storage) {
-        try {
-          if (event.newValue !== null) {
-            const parsedValue = deserialize(event.newValue);
-            state.value = parsedValue;
-          }
-        } catch (error) {
-          onError(error as Error);
-        }
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    disposeStorageListener = () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }
-
-  // Return dispose function for cleanup
-  return () => {
-    disposeEffect();
-    disposeStorageListener?.();
-  };
-}
-
-/**
  * Persists a React Understate state to localStorage
  * @param state - The state to persist
  * @param key - The key to store the state under in localStorage
@@ -122,7 +28,67 @@ export function persistLocalStorage<T>(
     return () => {}; // Return no-op dispose function
   }
 
-  return persistStorage(state, key, localStorage, options);
+  const {
+    loadInitial = true,
+    syncAcrossTabs = true,
+    serialize = JSON.stringify,
+    deserialize = JSON.parse,
+    onError = _error => {
+      // Silent error handling - persistence failures are non-critical
+    },
+  } = options;
+
+  // Load initial value from storage if requested
+  if (loadInitial) {
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved !== null) {
+        const parsedValue = deserialize(saved);
+        state.value = parsedValue;
+      }
+    } catch (error) {
+      onError(error as Error);
+    }
+  }
+
+  // Set up effect to persist changes
+  const disposeEffect = effect(() => {
+    try {
+      const serialized = serialize(state.value);
+      localStorage.setItem(key, serialized);
+    } catch (error) {
+      onError(error as Error);
+    }
+  });
+
+  // Set up storage event listener to sync across tabs
+  let disposeStorageListener: (() => void) | undefined;
+
+  if (syncAcrossTabs) {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === key && event.storageArea === localStorage) {
+        try {
+          if (event.newValue !== null) {
+            const parsedValue = deserialize(event.newValue);
+            state.value = parsedValue;
+          }
+        } catch (error) {
+          onError(error as Error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    disposeStorageListener = () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }
+
+  // Return dispose function for cleanup
+  return () => {
+    disposeEffect();
+    disposeStorageListener?.();
+  };
 }
 
 /**
@@ -152,7 +118,67 @@ export function persistSessionStorage<T>(
     return () => {}; // Return no-op dispose function
   }
 
-  return persistStorage(state, key, sessionStorage, options);
+  const {
+    loadInitial = true,
+    syncAcrossTabs = true,
+    serialize = JSON.stringify,
+    deserialize = JSON.parse,
+    onError = _error => {
+      // Silent error handling - persistence failures are non-critical
+    },
+  } = options;
+
+  // Load initial value from storage if requested
+  if (loadInitial) {
+    try {
+      const saved = sessionStorage.getItem(key);
+      if (saved !== null) {
+        const parsedValue = deserialize(saved);
+        state.value = parsedValue;
+      }
+    } catch (error) {
+      onError(error as Error);
+    }
+  }
+
+  // Set up effect to persist changes
+  const disposeEffect = effect(() => {
+    try {
+      const serialized = serialize(state.value);
+      sessionStorage.setItem(key, serialized);
+    } catch (error) {
+      onError(error as Error);
+    }
+  });
+
+  // Set up storage event listener to sync across tabs
+  let disposeStorageListener: (() => void) | undefined;
+
+  if (syncAcrossTabs) {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === key && event.storageArea === sessionStorage) {
+        try {
+          if (event.newValue !== null) {
+            const parsedValue = deserialize(event.newValue);
+            state.value = parsedValue;
+          }
+        } catch (error) {
+          onError(error as Error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    disposeStorageListener = () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }
+
+  // Return dispose function for cleanup
+  return () => {
+    disposeEffect();
+    disposeStorageListener?.();
+  };
 }
 
 /**
@@ -172,8 +198,58 @@ export function persistStates<T extends Record<string, State<unknown>>>(
 
   for (const [name, state] of Object.entries(states)) {
     const key = `${keyPrefix}.${name}`;
-    const dispose = persistStorage(state, key, storage, { loadInitial: true });
-    disposers.push(dispose);
+
+    // Load initial value from storage
+    try {
+      const saved = storage.getItem(key);
+      if (saved !== null) {
+        const parsedValue = JSON.parse(saved);
+        state.value = parsedValue;
+      }
+    } catch (error) {
+      // Silent error handling - persistence failures are non-critical
+    }
+
+    // Set up effect to persist changes
+    const disposeEffect = effect(() => {
+      try {
+        const serialized = JSON.stringify(state.value);
+        storage.setItem(key, serialized);
+      } catch (error) {
+        // Silent error handling - persistence failures are non-critical
+      }
+    });
+
+    // Set up storage event listener to sync across tabs
+    let disposeStorageListener: (() => void) | undefined;
+
+    if (
+      typeof window !== 'undefined' &&
+      (storage === window.localStorage || storage === window.sessionStorage)
+    ) {
+      const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === key && event.storageArea === storage) {
+          try {
+            if (event.newValue !== null) {
+              const parsedValue = JSON.parse(event.newValue);
+              state.value = parsedValue;
+            }
+          } catch (error) {
+            // Silent error handling - persistence failures are non-critical
+          }
+        }
+      };
+
+      window.addEventListener('storage', handleStorageChange);
+      disposeStorageListener = () => {
+        window.removeEventListener('storage', handleStorageChange);
+      };
+    }
+
+    disposers.push(() => {
+      disposeEffect();
+      disposeStorageListener?.();
+    });
   }
 
   // Return function to dispose all effects

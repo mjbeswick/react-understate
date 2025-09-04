@@ -256,27 +256,6 @@ const theme = state('light');
 persistSessionStorage(theme, 'app-theme');
 ```
 
-### Advanced Persistence
-
-```tsx
-import { state, persistStorage } from 'react-understate';
-
-const settings = state({
-  notifications: true,
-  language: 'en',
-  darkMode: false,
-});
-
-// Custom persistence with error handling
-persistStorage(settings, 'app-settings', localStorage, {
-  serialize: value => JSON.stringify(value, null, 2),
-  deserialize: data => JSON.parse(data),
-  onError: error => console.error('Failed to persist settings:', error),
-  loadInitial: true,
-  syncAcrossTabs: true,
-});
-```
-
 ### Persisting Multiple States
 
 ```tsx
@@ -470,6 +449,21 @@ export {
 };
 ```
 
+### Component Example
+
+```tsx
+function TodoApp() {
+  const { todos, newTodo, addTodo, toggleTodo } = useUnderstate({
+    todos,
+    newTodo,
+    addTodo,
+    toggleTodo,
+  });
+}
+
+return <div>{/* Clean, simple component logic */}</div>;
+```
+
 ### Why This Pattern Works
 
 **🎯 Clear Separation of Concerns**
@@ -564,7 +558,6 @@ Check out the complete examples in the `examples/` directory:
 
 - `persistLocalStorage<T>(state: State<T>, key: string, options?: PersistOptions): () => void`
 - `persistSessionStorage<T>(state: State<T>, key: string, options?: PersistOptions): () => void`
-- `persistStorage<T>(state: State<T>, key: string, storage: Storage, options?: PersistOptions): () => void`
 - `persistStates<T>(states: T, keyPrefix: string, storage?: Storage): () => void`
 
 ### Types
