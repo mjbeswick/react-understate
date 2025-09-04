@@ -22,3 +22,11 @@ export { derived, effect, batch } from "./state";
 
 // React integration exports
 export { useUnderstate, setReact } from "./react";
+
+// Persistence exports
+export {
+  persistStorage,
+  persistLocalStorage,
+  persistSessionStorage,
+  persistStates,
+} from "./persistence";
