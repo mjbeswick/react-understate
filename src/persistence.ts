@@ -206,7 +206,7 @@ export function persistStates<T extends Record<string, State<unknown>>>(
         const parsedValue = JSON.parse(saved);
         state.value = parsedValue;
       }
-    } catch (error) {
+    } catch {
       // Silent error handling - persistence failures are non-critical
     }
 
@@ -215,7 +215,7 @@ export function persistStates<T extends Record<string, State<unknown>>>(
       try {
         const serialized = JSON.stringify(state.value);
         storage.setItem(key, serialized);
-      } catch (error) {
+      } catch {
         // Silent error handling - persistence failures are non-critical
       }
     });
@@ -234,7 +234,7 @@ export function persistStates<T extends Record<string, State<unknown>>>(
               const parsedValue = JSON.parse(event.newValue);
               state.value = parsedValue;
             }
-          } catch (error) {
+          } catch {
             // Silent error handling - persistence failures are non-critical
           }
         }

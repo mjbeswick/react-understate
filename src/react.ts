@@ -108,12 +108,15 @@ function createStoreWithValues<T extends Record<string, unknown>>(
  * }
  * ```
  */
+
 export function useUnderstate<T extends readonly State<unknown>[]>(
   ...signals: T
 ): { [K in keyof T]: T[K] extends State<infer U> ? U : never };
+// eslint-disable-next-line no-redeclare
 export function useUnderstate<T extends Record<string, unknown>>(
   store: T,
 ): ExtractStateValues<T>;
+// eslint-disable-next-line no-redeclare
 export function useUnderstate<T extends Record<string, unknown>>(
   storeOrSignals: T | State<unknown>,
   ...additionalSignals: State<unknown>[]
@@ -187,7 +190,7 @@ export function useUnderstate<T extends Record<string, unknown>>(
  * @deprecated This function is no longer needed as React is automatically detected via use-sync-external-store/shim.
  * The library now works out of the box without any manual setup.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export function setReact(_reactModule: unknown): void {
   // setReact() is deprecated and no longer needed
   // react-understate now uses use-sync-external-store/shim for automatic React compatibility

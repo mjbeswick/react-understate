@@ -273,7 +273,7 @@ export function state<T>(initialValue: T): State<T> {
         // Update the state with the sync value
         setValue(result);
       }
-    } catch (error) {
+    } catch {
       // Ignore failed updates silently
       // State update failed - this is expected in some edge cases
     } finally {

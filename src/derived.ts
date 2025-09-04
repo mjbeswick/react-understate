@@ -117,7 +117,7 @@ export function derived<T>(computeFn: () => T): State<T> {
     } finally {
       setActiveEffect(prevEffect);
     }
-  } catch (error) {
+  } catch {
     // If there's an error during initialization, set a default value
     cachedValue = undefined as T;
     dirty = true;
