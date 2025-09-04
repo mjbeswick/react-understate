@@ -48,25 +48,6 @@ function Counter() {
 }
 ```
 
-**With persistence:**
-
-```tsx
-import { state, useUnderstate, persistLocalStorage } from 'react-understate';
-
-const store = {
-  count: state(0),
-  increment: () => store.count.value++,
-};
-
-// Persist the count to localStorage
-persistLocalStorage(store.count, 'counter');
-
-function Counter() {
-  const { count, increment } = useUnderstate(store);
-  return <button onClick={increment}>{count}</button>;
-}
-```
-
 ## Core Concepts
 
 ### States
