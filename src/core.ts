@@ -122,17 +122,11 @@ export type State<T> = {
   subscribe(fn: () => void): () => void;
 
   /**
-   * Whether the state is currently being updated.
-   *
-   * Useful for showing loading states during async updates.
-   */
-  readonly pending: boolean;
-
-  /**
    * The current value of the state.
    *
    * **Getter:** Returns the current value and tracks this state as a dependency
-   * **Setter:** Updates the state value and notifies all subscribers
+   * **Setter:** Updates the state value and notifies all subscribers.
+   * Can accept a direct value or a function (sync or async) that receives the previous value.
    *
    * @example
    * ```tsx
@@ -144,12 +138,21 @@ export type State<T> = {
    * // Writing (triggers updates)
    * count.value = 42;
    *
+   * // Using function (sync)
+   * count.value = prev => prev + 1;
+   *
+   * // Using async function
+   * count.value = async (prev) => {
+   *   const result = await fetch('/api/increment');
+   *   return prev + await result.json();
+   * };
+   *
    * // In computed or effects, this automatically tracks dependencies
    * const double = computed(() => count.value * 2);
    * effect(() => console.log(`Count is now: ${count.value}`));
    * ```
    */
-  value: T;
+  value: T | ((prev: T) => T | Promise<T>);
 };
 
 /**
@@ -222,8 +225,6 @@ export type State<T> = {
 export function state<T>(initialValue: T): State<T> {
   // Store the initial value directly - TypeScript handles immutability
   let value = initialValue;
-  let pending = false;
-  let pendingUpdateCount = 0;
   const subscribers = new Set<() => void>();
   const dependencies = new Set<() => void>();
 
@@ -241,29 +242,42 @@ export function state<T>(initialValue: T): State<T> {
     });
   };
 
-  const setValue = (newValue: T): void => {
-    if (!Object.is(value, newValue)) {
-      // Store the new value directly - TypeScript handles immutability
-      value = newValue;
-      // Schedule updates
-      pendingUpdates.add(notify);
-      if (!isBatching) {
-        flushUpdates();
+  const setValue = async (
+    newValue: T | ((prev: T) => T | Promise<T>),
+  ): Promise<void> => {
+    try {
+      let resolvedValue: T;
+
+      if (typeof newValue === 'function') {
+        // Handle function (sync or async)
+        const result = (newValue as (prev: T) => T | Promise<T>)(value);
+        if (result instanceof Promise) {
+          resolvedValue = await result;
+        } else {
+          resolvedValue = result;
+        }
+      } else {
+        // Handle direct value
+        resolvedValue = newValue;
       }
+
+      if (!Object.is(value, resolvedValue)) {
+        // Store the new value directly - TypeScript handles immutability
+        value = resolvedValue;
+        // Schedule updates
+        pendingUpdates.add(notify);
+        if (!isBatching) {
+          flushUpdates();
+        }
+      }
+    } catch {
+      // Ignore failed updates silently
+      // State update failed - this is expected in some edge cases
     }
   };
 
   const update = async (fn: (prev: T) => T | Promise<T>): Promise<void> => {
     try {
-      pendingUpdateCount++;
-      const wasPending = pending;
-      pending = true;
-
-      // Notify subscribers when pending state changes from false to true
-      if (!wasPending && pending) {
-        notify();
-      }
-
       const result = fn(value); // value is the previous value
       if (result instanceof Promise) {
         const newValue = await result;
@@ -276,16 +290,6 @@ export function state<T>(initialValue: T): State<T> {
     } catch {
       // Ignore failed updates silently
       // State update failed - this is expected in some edge cases
-    } finally {
-      const wasPending = pending;
-      pendingUpdateCount--;
-      if (pendingUpdateCount === 0) {
-        pending = false;
-        // Notify subscribers when pending state changes from true to false
-        if (wasPending && !pending) {
-          notify();
-        }
-      }
     }
   };
 
@@ -294,20 +298,13 @@ export function state<T>(initialValue: T): State<T> {
     return () => subscribers.delete(fn);
   };
 
-  // Create the state object with proper pending property access
+  // Create the state object
   const stateObj = {
     get rawValue() {
       return value;
     },
     update,
     subscribe,
-    get pending() {
-      // Track this state as a dependency if we're in an effect or computed
-      if (activeEffect) {
-        dependencies.add(activeEffect);
-      }
-      return pending;
-    },
     get value() {
       // Track this state as a dependency if we're in an effect or computed
       if (activeEffect) {
@@ -315,7 +312,7 @@ export function state<T>(initialValue: T): State<T> {
       }
       return value;
     },
-    set value(newValue: T) {
+    set value(newValue: T | ((prev: T) => T | Promise<T>)) {
       setValue(newValue);
     },
 

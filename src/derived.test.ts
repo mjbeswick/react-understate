@@ -53,16 +53,6 @@ describe('Derived Values', () => {
       // rawValue might be stale until value is accessed
       expect(doubled.value).toBe(10);
     });
-
-    it('should return false for pending property', () => {
-      const base = state(10);
-      const doubled = derived(() => base.value * 2);
-
-      expect(doubled.pending).toBe(false);
-
-      base.value = 15;
-      expect(doubled.pending).toBe(false);
-    });
   });
 
   describe('Lazy Evaluation', () => {

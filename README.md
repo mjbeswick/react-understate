@@ -62,6 +62,15 @@ console.log(count.value); // 0
 
 count.value = 5;
 console.log(count.value); // 5
+
+// Update with function (sync)
+count.value = prev => prev + 1;
+
+// Update with async function
+count.value = async prev => {
+  const result = await fetch('/api/increment');
+  return prev + (await result.json());
+};
 ```
 
 ### Derived Values
@@ -120,8 +129,8 @@ const loadUser = async id => {
   });
 };
 
-// Check loading state
-if (userData.pending) {
+// Handle loading state in your component
+if (userData.value === null) {
   return <div>Loading...</div>;
 }
 ```

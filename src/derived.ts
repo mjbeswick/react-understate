@@ -136,14 +136,6 @@ export function derived<T>(computeFn: () => T): State<T> {
       throw new Error('Cannot update derived values directly');
     },
     subscribe,
-    get pending() {
-      // Derived values are never pending, but we need to track dependencies
-      const activeEffect = setActiveEffect(null);
-      if (activeEffect) {
-        dependencies.add(activeEffect);
-      }
-      return false;
-    },
     get value() {
       // Track this derived value as a dependency if we're in an effect
       const activeEffect = setActiveEffect(null);

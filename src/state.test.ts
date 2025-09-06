@@ -34,6 +34,22 @@ describe('States', () => {
       expect(testState.value).toBe(1);
     });
 
+    it('should update signal using async setter function', async () => {
+      const testState = state(0);
+      testState.value = async prev => {
+        await new Promise(resolve => setTimeout(resolve, 10));
+        return prev + 1;
+      };
+      await new Promise(resolve => setTimeout(resolve, 20)); // Wait for async to complete
+      expect(testState.value).toBe(1);
+    });
+
+    it('should update signal using sync setter function', () => {
+      const testState = state(0);
+      testState.value = prev => prev + 1;
+      expect(testState.value).toBe(1);
+    });
+
     it('should handle multiple rapid updates', () => {
       const testState = state(0);
       testState.value = 1;
@@ -161,25 +177,6 @@ describe('States', () => {
 
       // Clean up
       unsubscribe();
-    });
-  });
-
-  describe('Pending state', () => {
-    it('should track pending state during updates', async () => {
-      const testState = state(0);
-
-      expect(testState.pending).toBe(false);
-
-      const updatePromise = testState.update(async prev => {
-        expect(testState.pending).toBe(true);
-        await new Promise(resolve => setTimeout(resolve, 10));
-        return prev + 1;
-      });
-
-      expect(testState.pending).toBe(true);
-
-      await updatePromise;
-      expect(testState.pending).toBe(false);
     });
   });
 
