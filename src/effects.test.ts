@@ -5,7 +5,7 @@
  */
 
 import { effect } from './effects';
-import { state } from './core';
+import { state, configureDebug } from './core';
 
 describe('Effects', () => {
   describe('Basic Functionality', () => {
@@ -280,6 +280,81 @@ describe('Effects', () => {
       expect(effectRuns).toBe(2); // Effect may not run again after cleanup error
 
       dispose();
+    });
+  });
+
+  describe('Debug Logging', () => {
+    beforeEach(() => {
+      // Reset debug config before each test
+      configureDebug({ enabled: false, logger: undefined });
+    });
+
+    it('should log effect runs when debug is enabled', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      configureDebug({ enabled: true, logger: console.log });
+
+      const testState = state(0, 'testState');
+      const dispose = effect(() => {
+        testState.value; // Access the state to create dependency
+      }, 'testEffect');
+
+      // Effect should run immediately
+      expect(consoleSpy).toHaveBeenCalledWith("Effect 'testEffect' running");
+
+      // Clear previous calls and change the dependency to trigger effect again
+      consoleSpy.mockClear();
+      testState.value = 5;
+      expect(consoleSpy).toHaveBeenCalledWith("Effect 'testEffect' running");
+
+      dispose();
+      consoleSpy.mockRestore();
+    });
+
+    it('should not log effect runs when debug is disabled', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      configureDebug({ enabled: false });
+
+      const testState = state(0, 'testState');
+      const dispose = effect(() => {
+        testState.value; // Access the state to create dependency
+      }, 'testEffect');
+
+      // Clear any previous calls
+      consoleSpy.mockClear();
+
+      testState.value = 5;
+
+      expect(consoleSpy).not.toHaveBeenCalled();
+
+      dispose();
+      consoleSpy.mockRestore();
+    });
+
+    it('should not log effect runs when no name is provided', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      configureDebug({ enabled: true, logger: console.log });
+
+      const testState = state(0, 'testState');
+      const dispose = effect(() => {
+        testState.value; // Access the state to create dependency
+      }); // No name provided
+
+      // Clear any previous calls
+      consoleSpy.mockClear();
+
+      testState.value = 5;
+
+      // Should not have any calls related to effect runs
+      const effectCalls = consoleSpy.mock.calls.filter(
+        call => call[0] && call[0].includes('Effect'),
+      );
+      expect(effectCalls).toHaveLength(0);
+
+      dispose();
+      consoleSpy.mockRestore();
     });
   });
 });

@@ -1,4 +1,12 @@
-import { state, derived, persistLocalStorage } from 'react-understate';
+import {
+  state,
+  derived,
+  action,
+  persistLocalStorage,
+  configureDebug,
+} from 'react-understate';
+
+configureDebug({ enabled: true });
 
 // Define the Todo type
 export type Todo = {
@@ -8,9 +16,9 @@ export type Todo = {
 };
 
 // State
-const todos = state<Todo[]>([]);
-const filter = state<'all' | 'active' | 'completed'>('all');
-const newTodo = state('');
+const todos = state<Todo[]>([], 'todos');
+const filter = state<'all' | 'active' | 'completed'>('all', 'todos-filter');
+const newTodo = state('', 'newTodo');
 
 // Persist state to localStorage (survives browser restart)
 persistLocalStorage(todos, 'todos');
@@ -27,26 +35,28 @@ export const filteredTodos = derived(() => {
     default:
       return todos.value;
   }
-});
+}, 'filteredTodos');
 
 export const activeCount = derived(
   () => todos.value.filter(todo => !todo.completed).length,
+  'activeCount',
 );
 
 export const completedCount = derived(
   () => todos.value.filter(todo => todo.completed).length,
+  'completedCount',
 );
 
 // Actions
-function setNewTodo(text: string) {
+export const setNewTodo = action((text: string) => {
   newTodo.value = text;
-}
+}, 'setNewTodo');
 
-function setFilter(newFilter: 'all' | 'active' | 'completed') {
+export const setFilter = action((newFilter: 'all' | 'active' | 'completed') => {
   filter.value = newFilter;
-}
+}, 'setFilter');
 
-function addTodo() {
+export const addTodo = action(() => {
   if (newTodo.value.trim()) {
     todos.value = [
       ...todos.value,
@@ -58,40 +68,29 @@ function addTodo() {
     ];
     newTodo.value = '';
   }
-}
+}, 'addTodo');
 
-function toggleTodo(id: number) {
+export const toggleTodo = action((id: number) => {
   todos.value = todos.value.map(todo =>
     todo.id === id ? { ...todo, completed: !todo.completed } : todo,
   );
-}
+}, 'toggleTodo');
 
-function removeTodo(id: number) {
+export const removeTodo = action((id: number) => {
   todos.value = todos.value.filter(todo => todo.id !== id);
-}
+}, 'removeTodo');
 
-function clearCompleted() {
+export const clearCompleted = action(() => {
   todos.value = todos.value.filter(todo => !todo.completed);
-}
+}, 'clearCompleted');
 
-function toggleAll() {
+export const toggleAll = action(() => {
   const allCompleted = todos.value.every(todo => todo.completed);
   todos.value = todos.value.map(todo => ({
     ...todo,
     completed: !allCompleted,
   }));
-}
+}, 'toggleAll');
 
-// Export all the state variables and functions for use in components
-export {
-  todos,
-  filter,
-  newTodo,
-  setNewTodo,
-  setFilter,
-  addTodo,
-  toggleTodo,
-  removeTodo,
-  clearCompleted,
-  toggleAll,
-};
+// Export all the state variables for use in components
+export { todos, filter, newTodo };

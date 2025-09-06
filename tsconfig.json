@@ -11,8 +11,6 @@
     "forceConsistentCasingInFileNames": true,
     "lib": ["ES2020", "DOM"],
     "allowSyntheticDefaultImports": true,
-    "removeComments": true,
-    "noEmitOnError": true,
     "importHelpers": true,
     "isolatedModules": true,
     // Additional optimizations

@@ -5,10 +5,24 @@
  * It provides the foundation for the reactive states system.
  */
 
+import { batch } from './batch';
+
 // Global state for tracking active effects and batching
 let activeEffect: (() => void) | null = null;
 let isBatching = false;
 const pendingUpdates = new Set<() => void>();
+
+// Debug configuration
+type DebugOptions = {
+  enabled?: boolean;
+  logger?: (message: string, ...args: any[]) => void;
+};
+
+let debugConfig: DebugOptions = {
+  enabled: false,
+  // eslint-disable-next-line no-console
+  logger: (...args: any[]) => console.log(...args),
+};
 
 /**
  * TypeScript utility type for deep immutability.
@@ -62,7 +76,7 @@ export type DeepReadonly<T> = T extends (infer R)[]
  * // const badValue = count.value; // This doesn't track changes!
  * ```
  */
-export type State<T> = {
+export interface State<T> {
   /**
    * The raw internal value of the state.
    *
@@ -70,7 +84,7 @@ export type State<T> = {
    * Use `.rawValue` only when you need the current value without
    * establishing a dependency (e.g., in cleanup functions).
    */
-  rawValue: T;
+  readonly rawValue: T;
 
   /**
    * Updates the state using a function that receives the previous value.
@@ -152,8 +166,97 @@ export type State<T> = {
    * effect(() => console.log(`Count is now: ${count.value}`));
    * ```
    */
-  value: T | ((prev: T) => T | Promise<T>);
-};
+  value: T;
+}
+
+/**
+ * Configures debug logging for the reactive system.
+ *
+ * When called with no arguments, returns the current debug configuration.
+ * When called with options, updates the debug configuration.
+ *
+ * @param options - Optional debug configuration options
+ * @returns Current debug configuration
+ *
+ * @example
+ * ```tsx
+ * import { configureDebug } from 'react-understate';
+ *
+ * // Get current configuration
+ * const config = configureDebug();
+ * console.log('Debug enabled:', config.enabled);
+ *
+ * // Enable debug logging
+ * configureDebug({ enabled: true });
+ *
+ * // Custom logger
+ * configureDebug({
+ *   enabled: true,
+ *   logger: (msg, ...args) => console.info(`[DEBUG] ${msg}`, ...args)
+ * });
+ *
+ * // Disable debug logging
+ * configureDebug({ enabled: false });
+ * ```
+ */
+export function configureDebug(options?: DebugOptions): Readonly<DebugOptions> {
+  if (options !== undefined) {
+    debugConfig = { ...debugConfig, ...options };
+  }
+  return { ...debugConfig };
+}
+
+/**
+ * Creates an action function that automatically batches updates and logs execution.
+ *
+ * Actions are useful for grouping related state updates and provide better debugging
+ * when debug logging is enabled.
+ *
+ * @param fn - The action function to execute
+ * @param name - Optional name for debugging purposes
+ * @returns The action function
+ *
+ * @example
+ * ```tsx
+ * import { action, state } from 'react-understate';
+ *
+ * const todos = state<Todo[]>([], 'todos');
+ * const filter = state<'all' | 'active' | 'completed'>('all', 'filter');
+ *
+ * const addTodo = action((text: string) => {
+ *   todos.value = [...todos.value, { id: Date.now(), text, completed: false }];
+ *   filter.value = 'all';
+ * }, 'addTodo');
+ *
+ * const toggleTodo = action((id: number) => {
+ *   todos.value = todos.value.map(todo =>
+ *     todo.id === id ? { ...todo, completed: !todo.completed } : todo
+ *   );
+ * }, 'toggleTodo');
+ *
+ * // Usage
+ * addTodo('Learn React');
+ * toggleTodo(1);
+ * ```
+ */
+export function action<T extends (...args: any[]) => any>(
+  fn: T,
+  name?: string,
+): T {
+  return ((...args: Parameters<T>) => {
+    // Debug logging
+    if (debugConfig.enabled && name && debugConfig.logger) {
+      debugConfig.logger(`Action '${name}' executing`);
+    }
+
+    // Automatically batch the action
+    let result: ReturnType<T>;
+    batch(() => {
+      result = fn(...args);
+    });
+    return result!;
+  }) as T;
+}
 
 /**
  * Creates a reactive state with an initial value.
@@ -169,6 +272,7 @@ export type State<T> = {
  * - Don't assign states to variables for storage
  *
  * @param initialValue - The initial value for the state
+ * @param name - Optional name for debugging purposes
  * @returns A reactive state that can be read and written using the .value property
  *
  * @example
@@ -222,7 +326,7 @@ export type State<T> = {
  * // Document title automatically changes to "Hello, Jane Doe!"
  * ```
  */
-export function state<T>(initialValue: T): State<T> {
+export function state<T>(initialValue: T, name?: string): State<T> {
   // Store the initial value directly - TypeScript handles immutability
   let value = initialValue;
   const subscribers = new Set<() => void>();
@@ -262,6 +366,16 @@ export function state<T>(initialValue: T): State<T> {
       }
 
       if (!Object.is(value, resolvedValue)) {
+        // Debug logging
+        if (debugConfig.enabled && name && debugConfig.logger) {
+          debugConfig.logger(
+            `State '${name}' changed:`,
+            value,
+            '->',
+            resolvedValue,
+          );
+        }
+
         // Store the new value directly - TypeScript handles immutability
         value = resolvedValue;
         // Schedule updates
@@ -321,6 +435,11 @@ export function state<T>(initialValue: T): State<T> {
     },
   };
 
+  // Register named states for debugging
+  if (name && typeof window !== 'undefined') {
+    (window as any).understate.states[name] = stateObj;
+  }
+
   return stateObj as State<T>;
 }
 
@@ -355,4 +474,12 @@ export function setIsBatching(batching: boolean): boolean {
   const prev = isBatching;
   isBatching = batching;
   return prev;
+}
+
+// Expose debug API and states on window for browser debugging
+if (typeof window !== 'undefined') {
+  (window as any).understate = {
+    configureDebug,
+    states: {},
+  };
 }

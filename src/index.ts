@@ -14,8 +14,11 @@
  */
 
 // Core exports
-export { state } from './core';
+export { state, action, configureDebug } from './core';
 export type { State } from './core';
+
+// Browser debugging types
+/// <reference path="./browser-debug.d.ts" />
 
 // Reactive exports
 export { derived, effect, batch } from './state';

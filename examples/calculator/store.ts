@@ -1,21 +1,26 @@
-import { state, batch } from 'react-understate';
+import { state, action, configureDebug } from 'react-understate';
+
+// Enable debug logging in development
+if (import.meta.env?.DEV) {
+  configureDebug({ enabled: true });
+}
 
 /**
  * State containing the current display value shown on the calculator
  */
-export const displayValue = state('0');
+export const displayValue = state('0', 'displayValue');
 /**
  * State storing the previous value for calculations
  */
-export const previousValue = state<number | null>(null);
+export const previousValue = state<number | null>(null, 'previousValue');
 /**
  * State storing the current operation to be performed
  */
-export const operation = state<string | null>(null);
+export const operation = state<string | null>(null, 'operation');
 /**
  * State tracking whether the calculator is waiting for a new operand
  */
-const waitingForOperand = state(false);
+const waitingForOperand = state(false, 'waitingForOperand');
 
 /**
  * Performs the specified mathematical operation on two values
@@ -47,17 +52,15 @@ function calculate(
  * Adds a digit to the current display value
  * @param digit The digit to add
  */
-export function inputDigit(digit: string) {
+export const inputDigit = action((digit: string) => {
   console.log('inputDigit called with:', digit);
   console.log('Current displayValue:', displayValue.value);
   console.log('waitingForOperand:', waitingForOperand.value);
 
   if (waitingForOperand.value) {
     console.log('Setting displayValue to digit (waitingForOperand was true)');
-    batch(() => {
-      displayValue.value = digit;
-      waitingForOperand.value = false;
-    });
+    displayValue.value = digit;
+    waitingForOperand.value = false;
   } else {
     if (displayValue.value === '0') {
       console.log('displayValue was "0", setting to digit');
@@ -77,39 +80,35 @@ export function inputDigit(digit: string) {
   }
 
   console.log('Final displayValue:', displayValue.value);
-}
+}, 'inputDigit');
 
 /**
  * Adds a decimal point to the current display value if not already present
  */
-export function inputDecimal() {
+export const inputDecimal = action(() => {
   if (waitingForOperand.value) {
-    batch(() => {
-      displayValue.value = '0.';
-      waitingForOperand.value = false;
-    });
+    displayValue.value = '0.';
+    waitingForOperand.value = false;
   } else if (displayValue.value.indexOf('.') === -1) {
-    displayValue.value = displayValue.value + '.';
+    displayValue.value = `${displayValue.value}.`;
   }
-}
+}, 'inputDecimal');
 
 /**
  * Resets the calculator to its initial state
  */
-export function clear() {
-  batch(() => {
-    displayValue.value = '0';
-    previousValue.value = null;
-    operation.value = null;
-    waitingForOperand.value = false;
-  });
-}
+export const clear = action(() => {
+  displayValue.value = '0';
+  previousValue.value = null;
+  operation.value = null;
+  waitingForOperand.value = false;
+}, 'clear');
 
 /**
  * Performs the pending operation and sets up for the next one
  * @param nextOperation The operation to perform next
  */
-export function performOperation(nextOperation: string) {
+export const performOperation = action((nextOperation: string) => {
   const inputValue = parseFloat(displayValue.value);
 
   if (previousValue.value === null) {
@@ -123,12 +122,12 @@ export function performOperation(nextOperation: string) {
 
   waitingForOperand.value = true;
   operation.value = nextOperation;
-}
+}, 'performOperation');
 
 /**
  * Calculates and displays the result of the current operation
  */
-export function handleEquals() {
+export const handleEquals = action(() => {
   if (!previousValue.value || !operation.value) {
     return;
   }
@@ -140,31 +139,31 @@ export function handleEquals() {
   previousValue.value = null;
   operation.value = null;
   waitingForOperand.value = true;
-}
+}, 'handleEquals');
 
 /**
  * Converts the current display value to a percentage (divides by 100)
  */
-export function handlePercentage() {
+export const handlePercentage = action(() => {
   const inputValue = parseFloat(displayValue.value);
   const newValue = inputValue / 100;
   displayValue.value = String(newValue);
   waitingForOperand.value = true;
-}
+}, 'handlePercentage');
 
 /**
  * Toggles the sign of the current display value
  */
-export function handlePlusMinus() {
+export const handlePlusMinus = action(() => {
   const inputValue = parseFloat(displayValue.value);
   const newValue = -inputValue;
   displayValue.value = String(newValue);
-}
+}, 'handlePlusMinus');
 
 /**
  * Handles keyboard input for calculator operations
  */
-export function handleKeyDown(event: KeyboardEvent) {
+export const handleKeyDown = action((event: KeyboardEvent) => {
   const key = event.key;
 
   // Number keys (0-9)
@@ -205,4 +204,4 @@ export function handleKeyDown(event: KeyboardEvent) {
       handlePlusMinus();
       break;
   }
-}
+}, 'handleKeyDown');

@@ -17,6 +17,9 @@ The state management library that's so lightweight, it makes Redux feel like you
 - 🎨 **TypeScript first** - Full type safety out of the box
 - ⚙️ **Batching support** - Optimize performance with batched updates
 - 🧊 **TypeScript immutability** - Deep readonly types prevent mutations at compile time
+- 🎭 **Named reactive elements** - Give names to states, derived values, and effects for better debugging
+- 🐛 **Debug logging** - Built-in debug system with configurable logging
+- ⚡ **Action functions** - Automatic batching and debug logging for state updates
 
 ## Installation
 
@@ -133,6 +136,69 @@ const loadUser = async id => {
 if (userData.value === null) {
   return <div>Loading...</div>;
 }
+```
+
+### Actions
+
+Actions are functions that automatically batch multiple state updates and provide better debugging:
+
+```tsx
+import { action, state } from 'react-understate';
+
+const todos = state<Todo[]>([], 'todos');
+const filter = state<'all' | 'active' | 'completed'>('all', 'filter');
+
+const addTodo = action((text: string) => {
+  todos.value = [...todos.value, { id: Date.now(), text, completed: false }];
+  filter.value = 'all'; // Reset filter when adding new todo
+}, 'addTodo');
+
+const toggleTodo = action((id: number) => {
+  todos.value = todos.value.map(todo =>
+    todo.id === id ? { ...todo, completed: !todo.completed } : todo,
+  );
+}, 'toggleTodo');
+
+// Usage - all updates are automatically batched
+addTodo('Learn React');
+toggleTodo(1);
+```
+
+### Debugging
+
+Enable debug logging to track state changes, derived value updates, effect runs, and action executions:
+
+```tsx
+import {
+  configureDebug,
+  state,
+  derived,
+  effect,
+  action,
+} from 'react-understate';
+
+// Enable debug logging
+configureDebug({ enabled: true });
+
+// Create named reactive elements for better debugging
+const count = state(0, 'counter');
+const doubled = derived(() => count.value * 2, 'doubled');
+const dispose = effect(() => {
+  console.log(`Count is: ${count.value}`);
+}, 'logCount');
+
+const increment = action((amount: number) => {
+  count.value = count.value + amount;
+}, 'increment');
+
+count.value = 5; // Logs: "State 'counter' changed: 0 -> 5"
+// Logs: "Derived 'doubled' changed: 0 -> 10"
+// Logs: "Effect 'logCount' running"
+
+increment(3); // Logs: "Action 'increment' executing"
+// Logs: "State 'counter' changed: 5 -> 8"
+// Logs: "Derived 'doubled' changed: 10 -> 16"
+// Logs: "Effect 'logCount' running"
 ```
 
 ### Batching Updates
@@ -534,10 +600,11 @@ Check out the complete examples in the `examples/` directory:
 
 ### Core Functions
 
-- `state<T>(initialValue: T): State<T>` - Create a reactive state
-- `derived<T>(fn: () => T): Derived<T>` - Create a derived value
-- `effect(fn: () => void | (() => void)): () => void` - Create an effect
+- `state<T>(initialValue: T, name?: string): State<T>` - Create a reactive state
+- `derived<T>(fn: () => T, name?: string): Derived<T>` - Create a derived value
+- `effect(fn: () => void | (() => void), name?: string): () => void` - Create an effect
 - `batch(fn: () => void): void` - Batch multiple updates
+- `action<T extends any[]>(fn: (...args: T) => void, name?: string): (...args: T) => void` - Create an action function
 
 ### React Integration
 
@@ -549,6 +616,30 @@ Check out the complete examples in the `examples/` directory:
 - `persistLocalStorage<T>(state: State<T>, key: string, options?: PersistOptions): () => void`
 - `persistSessionStorage<T>(state: State<T>, key: string, options?: PersistOptions): () => void`
 - `persistStates<T>(states: T, keyPrefix: string, storage?: Storage): () => void`
+
+### Debug Configuration
+
+- `configureDebug(options?: { enabled: boolean; logger?: (message: string) => void }): { enabled: boolean; logger?: (message: string) => void }` - Configure debug logging or get current configuration
+
+### Browser Debugging
+
+In development, you can access the debug API and all named states through the browser console:
+
+```tsx
+// Access debug configuration
+window.understate.configureDebug({ enabled: true });
+
+// Access all named states
+console.log(window.understate.states);
+// { count: State<number>, user: State<User>, ... }
+
+// Inspect a specific state
+console.log(window.understate.states.count.value);
+// 42
+
+// Update a state from the console
+window.understate.states.count.value = 100;
+```
 
 ### Types
 

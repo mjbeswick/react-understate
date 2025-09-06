@@ -1,4 +1,4 @@
-import { state, derived, effect, batch } from './index';
+import { state, derived, effect, batch, action, configureDebug } from './index';
 
 describe('States', () => {
   beforeEach(() => {
@@ -280,6 +280,195 @@ describe('States', () => {
     });
   });
 
+  describe('Debug Configuration', () => {
+    beforeEach(() => {
+      // Reset debug config before each test
+      configureDebug({ enabled: false, logger: undefined });
+    });
+
+    it('should configure debug options', () => {
+      const customLogger = jest.fn();
+
+      configureDebug({ enabled: true, logger: customLogger });
+
+      const config = configureDebug();
+      expect(config.enabled).toBe(true);
+      expect(config.logger).toBe(customLogger);
+    });
+
+    it('should merge debug options with existing config', () => {
+      const customLogger = jest.fn();
+
+      // Set initial config
+      configureDebug({ enabled: true, logger: customLogger });
+
+      // Update only enabled flag
+      configureDebug({ enabled: false });
+
+      const config = configureDebug();
+      expect(config.enabled).toBe(false);
+      expect(config.logger).toBe(customLogger); // Should preserve existing logger
+    });
+
+    it('should enable/disable debug with configureDebug', () => {
+      configureDebug({ enabled: true });
+      expect(configureDebug().enabled).toBe(true);
+
+      configureDebug({ enabled: false });
+      expect(configureDebug().enabled).toBe(false);
+    });
+
+    it('should return readonly config object', () => {
+      configureDebug({ enabled: true });
+      const config = configureDebug();
+
+      // The returned object should be a copy, not the original
+      expect(config.enabled).toBe(true);
+      expect(config.logger).toBeUndefined();
+
+      // Modifying the returned object should not affect the internal config
+      (config as any).enabled = false;
+      expect(configureDebug().enabled).toBe(true); // Internal config unchanged
+    });
+
+    it('should log state changes when debug is enabled', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      configureDebug({ enabled: true, logger: console.log });
+
+      const testState = state(0, 'testState');
+      testState.value = 5;
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "State 'testState' changed:",
+        0,
+        '->',
+        5,
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should not log state changes when debug is disabled', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      configureDebug({ enabled: false });
+
+      const testState = state(0, 'testState');
+      testState.value = 5;
+
+      expect(consoleSpy).not.toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should not log state changes when no name is provided', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      configureDebug({ enabled: true, logger: console.log });
+
+      const testState = state(0); // No name provided
+      testState.value = 5;
+
+      expect(consoleSpy).not.toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('Actions', () => {
+    it('should create action that batches updates automatically', () => {
+      const testState = state(0);
+      let notificationCount = 0;
+
+      testState.subscribe(() => {
+        notificationCount++;
+      });
+
+      const increment = action((amount: number) => {
+        testState.value = testState.value + amount;
+        testState.value = testState.value + 1;
+      }, 'increment');
+
+      increment(5);
+
+      expect(testState.value).toBe(6);
+      expect(notificationCount).toBe(1); // Only one notification for batched updates
+    });
+
+    it('should log action execution when debug is enabled', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      // Reset debug config and enable debug
+      configureDebug({ enabled: false });
+      configureDebug({ enabled: true, logger: console.log });
+
+      const testState = state(0, 'testState');
+      const increment = action((amount: number) => {
+        testState.value = testState.value + amount;
+      }, 'increment');
+
+      increment(5);
+
+      expect(consoleSpy).toHaveBeenCalledWith("Action 'increment' executing");
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should not log action execution when debug is disabled', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      // Disable debug
+      configureDebug({ enabled: false });
+
+      const testState = state(0, 'testState');
+      const increment = action((amount: number) => {
+        testState.value = testState.value + amount;
+      }, 'increment');
+
+      increment(5);
+
+      expect(consoleSpy).not.toHaveBeenCalledWith(
+        "Action 'increment' executing",
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should not log action execution when no name is provided', () => {
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+
+      configureDebug({ enabled: true, logger: console.log });
+
+      const testState = state(0, 'testState');
+      const increment = action((amount: number) => {
+        testState.value = testState.value + amount;
+      }); // No name provided
+
+      increment(5);
+
+      expect(consoleSpy).not.toHaveBeenCalledWith(
+        "Action 'increment' executing",
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should preserve function signature and return type', () => {
+      const testState = state(0);
+
+      const increment = action((amount: number, multiplier: number = 1) => {
+        testState.value = testState.value + amount * multiplier;
+        return testState.value;
+      }, 'increment');
+
+      const result = increment(5, 2);
+
+      expect(testState.value).toBe(10);
+      expect(result).toBe(10);
+    });
+  });
+
   describe('Edge cases', () => {
     it('should handle circular dependencies gracefully', () => {
       const a = state(1);
@@ -411,6 +600,48 @@ describe('States', () => {
       userState.value = { ...userState.value, name: 'Jane' };
       expect(effectCount).toBe(2);
       expect(userState.value.name).toBe('Jane');
+    });
+  });
+
+  describe('Browser Debugging', () => {
+    beforeEach(() => {
+      // Mock window object
+      (global as any).window = {
+        understate: {
+          configureDebug: jest.fn(),
+          states: {},
+        },
+      };
+    });
+
+    afterEach(() => {
+      delete (global as any).window;
+    });
+
+    it('should register named states on window.understate.states', () => {
+      const testState = state(42, 'testState');
+
+      expect((global as any).window.understate.states.testState).toBeDefined();
+      expect((global as any).window.understate.states.testState.value).toBe(42);
+    });
+
+    it('should not register unnamed states on window.understate.states', () => {
+      const unnamedState = state(42); // No name
+
+      // Check that no state with the name 'unnamedState' exists
+      expect(
+        (global as any).window.understate.states.unnamedState,
+      ).toBeUndefined();
+
+      // The state should still exist but not be registered
+      expect(unnamedState.value).toBe(42);
+    });
+
+    it('should expose configureDebug on window.understate', () => {
+      expect((global as any).window.understate.configureDebug).toBeDefined();
+      expect(typeof (global as any).window.understate.configureDebug).toBe(
+        'function',
+      );
     });
   });
 });

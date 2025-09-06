@@ -5,7 +5,7 @@
  * Derived values are read-only signals that automatically update when their dependencies change.
  */
 
-import { setActiveEffect, type State } from './core';
+import { setActiveEffect, configureDebug, type State } from './core';
 
 /**
  * Creates a read-only signal that automatically updates when dependencies change.
@@ -60,7 +60,7 @@ import { setActiveEffect, type State } from './core';
  * console.log(result.value); // 11 (5 * 2 = 10, isEven = false, so +1)
  * ```
  */
-export function derived<T>(computeFn: () => T): State<T> {
+export function derived<T>(computeFn: () => T, name?: string): State<T> {
   let cachedValue: T;
   let dirty = true;
   let isComputing = false;
@@ -91,7 +91,19 @@ export function derived<T>(computeFn: () => T): State<T> {
       const prevEffect = setActiveEffect(markDirty);
 
       try {
+        const oldValue = cachedValue;
         cachedValue = computeFn();
+
+        // Debug logging
+        const debugConfig = configureDebug();
+        if (debugConfig.enabled && name && debugConfig.logger) {
+          debugConfig.logger(
+            `Derived '${name}' changed:`,
+            oldValue,
+            '->',
+            cachedValue,
+          );
+        }
       } finally {
         setActiveEffect(prevEffect);
         isComputing = false;
@@ -130,7 +142,7 @@ export function derived<T>(computeFn: () => T): State<T> {
   };
 
   // Return a state-like object (read-only)
-  return {
+  const derivedObj = {
     rawValue: cachedValue,
     update: () => {
       throw new Error('Cannot update derived values directly');
@@ -148,4 +160,11 @@ export function derived<T>(computeFn: () => T): State<T> {
       throw new Error('Cannot update derived values directly');
     },
   } as State<T>;
+
+  // Register named derived values for debugging
+  if (name && typeof window !== 'undefined') {
+    (window as any).understate.states[name] = derivedObj;
+  }
+
+  return derivedObj;
 }

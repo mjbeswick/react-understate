@@ -5,10 +5,8 @@ const operation = { value: null };
 const waitingForOperand = { value: false };
 
 export const testFunction = () => {
-  batch(() => {
-    displayValue.value = '0';
-    previousValue.value = null;
-    operation.value = null;
-    waitingForOperand.value = false;
-  });
+  displayValue.value = '0';
+  previousValue.value = null;
+  operation.value = null;
+  waitingForOperand.value = false;
 };

@@ -5,7 +5,7 @@
  * Effects automatically re-execute when their dependencies change.
  */
 
-import { setActiveEffect } from './core';
+import { setActiveEffect, configureDebug } from './core';
 
 /**
  * Runs a side effect that automatically re-executes when dependencies change.
@@ -89,12 +89,21 @@ import { setActiveEffect } from './core';
  * userId.value = 2; // Fetches user with ID 2
  * ```
  */
-export function effect(fn: () => void | (() => void)): () => void {
+export function effect(
+  fn: () => void | (() => void),
+  name?: string,
+): () => void {
   let cleanup: (() => void) | void;
   let disposed = false;
 
   const runEffect = () => {
     if (disposed) return;
+
+    // Debug logging
+    const debugConfig = configureDebug();
+    if (debugConfig.enabled && name && debugConfig.logger) {
+      debugConfig.logger(`Effect '${name}' running`);
+    }
 
     // Call previous cleanup before re-running
     if (cleanup) {
@@ -113,6 +122,20 @@ export function effect(fn: () => void | (() => void)): () => void {
 
   // Run immediately
   runEffect();
+
+  // Register named effects for debugging
+  if (name && typeof window !== 'undefined') {
+    (window as any).understate.states[name] = {
+      value: 'effect',
+      dispose: () => {
+        disposed = true;
+        if (cleanup) {
+          cleanup();
+          cleanup = undefined;
+        }
+      },
+    };
+  }
 
   // Return disposal function
   return () => {
