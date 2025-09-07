@@ -163,3 +163,166 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
 
   return derivedObj;
 }
+
+/**
+ * Creates a read-only signal that automatically updates when dependencies change,
+ * supporting async computation functions.
+ *
+ * @param computeFn - An async function that computes the derived value
+ * @param name - Optional name for debugging
+ * @returns A state object that holds the computed value
+ *
+ * @example
+ * ```tsx
+ * const userId = state(1);
+ * const userData = asyncDerived(async () => {
+ *   const response = await fetch(`/api/users/${userId.value}`);
+ *   return await response.json();
+ * }, 'userData');
+ *
+ * // Access the value (will be a Promise initially)
+ * console.log(userData.value); // Promise<User>
+ * ```
+ */
+export function asyncDerived<T>(
+  computeFn: () => Promise<T>,
+  name?: string,
+): State<Promise<T>> {
+  let cachedValue: Promise<T>;
+  let dirty = true;
+  const subscribers = new Set<() => void>();
+  const dependencies = new Set<() => void>();
+
+  const markDirty = () => {
+    if (!dirty) {
+      dirty = true;
+      subscribers.forEach(sub => sub());
+    }
+  };
+
+  const computeValue = async (): Promise<T> => {
+    if (dirty) {
+      dirty = false;
+
+      // Track dependencies by running the compute function
+      const prevEffect = setActiveEffect(markDirty);
+
+      try {
+        // Debug logging
+        if (name) {
+          const debugConfig = configureDebug();
+          logDebug(`asyncDerived: '${name}' computing`, debugConfig);
+        }
+
+        cachedValue = computeFn();
+        const result = await cachedValue;
+
+        // Log async resolution
+        if (name) {
+          const debugConfig = configureDebug();
+          logDebug(
+            `asyncDerived: '${name}' async resolved: ${result}`,
+            debugConfig,
+          );
+        }
+
+        return result;
+      } catch (error) {
+        // Log async rejection
+        if (name) {
+          const debugConfig = configureDebug();
+          logDebug(
+            `asyncDerived: '${name}' async rejected: ${error}`,
+            debugConfig,
+          );
+        }
+        // eslint-disable-next-line no-console
+        console.error('AsyncDerived computation failed:', error);
+        throw error;
+      } finally {
+        setActiveEffect(prevEffect);
+      }
+    }
+
+    return cachedValue;
+  };
+
+  // Initialize the derived value immediately
+  try {
+    const prevEffect = setActiveEffect(markDirty);
+    try {
+      cachedValue = computeFn();
+      dirty = false;
+
+      // Handle async errors during initialization
+      cachedValue.catch(error => {
+        // Log async rejection during initialization
+        if (name) {
+          const debugConfig = configureDebug();
+          logDebug(
+            `asyncDerived: '${name}' async rejected: ${error}`,
+            debugConfig,
+          );
+        }
+      });
+    } finally {
+      setActiveEffect(prevEffect);
+    }
+  } catch (error) {
+    // If there's a sync error during initialization, set a rejected promise
+    cachedValue = Promise.reject(error);
+    dirty = false;
+
+    // Log sync rejection during initialization
+    if (name) {
+      const debugConfig = configureDebug();
+      logDebug(`asyncDerived: '${name}' async rejected: ${error}`, debugConfig);
+    }
+  }
+
+  const asyncDerivedObj: State<Promise<T>> = {
+    get rawValue() {
+      return cachedValue;
+    },
+
+    get value() {
+      // Track this state as a dependency if we're in an effect or computed
+      const activeEffect = setActiveEffect(null);
+      if (activeEffect) {
+        dependencies.add(activeEffect);
+      }
+
+      // Trigger computation if dirty
+      if (dirty) {
+        computeValue().catch(error => {
+          // eslint-disable-next-line no-console
+          console.error('AsyncDerived computation failed:', error);
+        });
+      }
+
+      return cachedValue;
+    },
+
+    async update(
+      _fn: (prev: Promise<T>) => Promise<T> | Promise<T>,
+    ): Promise<void> {
+      // For async derived values, we can't really update them directly
+      // since they're computed from dependencies. This is a no-op.
+      throw new Error(
+        'Cannot update async derived values directly - they are computed from dependencies',
+      );
+    },
+
+    subscribe(callback: () => void) {
+      subscribers.add(callback);
+      return () => subscribers.delete(callback);
+    },
+  };
+
+  // Register named async derived values for debugging
+  if (name && typeof window !== 'undefined') {
+    (window as any).understate.states[name] = asyncDerivedObj;
+  }
+
+  return asyncDerivedObj;
+}

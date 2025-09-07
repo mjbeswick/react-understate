@@ -91,7 +91,7 @@ import { logDebug } from './debug-utils';
  * ```
  */
 export function effect(
-  fn: () => void | (() => void),
+  fn: () => void | (() => void) | Promise<void> | Promise<() => void>,
   name?: string,
 ): () => void {
   let cleanup: (() => void) | void;
@@ -115,8 +115,40 @@ export function effect(
     const prevEffect = setActiveEffect(runEffect);
 
     try {
-      cleanup = fn();
-    } finally {
+      const result = fn();
+      if (result instanceof Promise) {
+        // Handle async result asynchronously
+        result
+          .then(cleanupResult => {
+            cleanup = cleanupResult;
+            // Log async resolution
+            if (name) {
+              const debugConfig = configureDebug();
+              logDebug(`effect: '${name}' async resolved`, debugConfig);
+            }
+          })
+          .catch(error => {
+            // Log async rejection
+            if (name) {
+              const debugConfig = configureDebug();
+              logDebug(
+                `effect: '${name}' async rejected: ${error}`,
+                debugConfig,
+              );
+            }
+            // eslint-disable-next-line no-console
+            console.error('Effect async function failed:', error);
+          })
+          .finally(() => {
+            setActiveEffect(prevEffect);
+          });
+      } else {
+        cleanup = result;
+        setActiveEffect(prevEffect);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Effect function failed:', error);
       setActiveEffect(prevEffect);
     }
   };

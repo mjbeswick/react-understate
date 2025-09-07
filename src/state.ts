@@ -8,4 +8,3 @@
 
 export { derived } from './derived';
 export { effect } from './effects';
-export { batch } from './batch';

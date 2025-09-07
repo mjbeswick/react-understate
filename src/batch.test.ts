@@ -5,8 +5,7 @@
  * for batch.ts which currently has 80% coverage.
  */
 
-import { state } from './core';
-import { batch } from './batch';
+import { state, batch } from './core';
 
 describe('Batching', () => {
   describe('Basic Functionality', () => {

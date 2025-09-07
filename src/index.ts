@@ -24,7 +24,9 @@ export * from './debug-utils';
 /// <reference path="./browser-debug.d.ts" />
 
 // Reactive exports
-export { derived, effect, batch } from './state';
+export { derived, asyncDerived } from './derived';
+export { effect } from './state';
+export { batch } from './core';
 
 // React integration exports
 export { useUnderstate, setReact } from './react';

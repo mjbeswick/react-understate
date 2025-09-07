@@ -5,7 +5,6 @@
  * It provides the foundation for the reactive states system.
  */
 
-import { batch } from './batch';
 import { logDebug } from './debug-utils';
 
 // Global state for tracking active effects and batching
@@ -358,7 +357,25 @@ export function state<T>(initialValue: T, name?: string): State<T> {
         // Handle function (sync or async)
         const result = (newValue as (prev: T) => T | Promise<T>)(value);
         if (result instanceof Promise) {
-          resolvedValue = await result;
+          try {
+            resolvedValue = await result;
+            // Log async resolution
+            if (name) {
+              logDebug(
+                `state: '${name}' async resolved: ${resolvedValue}`,
+                debugConfig,
+              );
+            }
+          } catch (error) {
+            // Log async rejection
+            if (name) {
+              logDebug(
+                `state: '${name}' async rejected: ${error}`,
+                debugConfig,
+              );
+            }
+            throw error;
+          }
         } else {
           resolvedValue = result;
         }
@@ -391,9 +408,27 @@ export function state<T>(initialValue: T, name?: string): State<T> {
     try {
       const result = fn(value); // value is the previous value
       if (result instanceof Promise) {
-        const newValue = await result;
-        // Update the state with the resolved value
-        setValue(newValue);
+        try {
+          const newValue = await result;
+          // Log async resolution
+          if (name) {
+            logDebug(
+              `state: '${name}' update async resolved: ${newValue}`,
+              debugConfig,
+            );
+          }
+          // Update the state with the resolved value
+          setValue(newValue);
+        } catch (error) {
+          // Log async rejection
+          if (name) {
+            logDebug(
+              `state: '${name}' update async rejected: ${error}`,
+              debugConfig,
+            );
+          }
+          throw error;
+        }
       } else {
         // Update the state with the sync value
         setValue(result);
@@ -471,6 +506,57 @@ export function setIsBatching(batching: boolean): boolean {
   const prev = isBatching;
   isBatching = batching;
   return prev;
+}
+
+/**
+ * Batches multiple signal updates into a single effect flush.
+ *
+ * Batching allows you to perform multiple signal updates without triggering
+ * effects after each individual update. Instead, all effects are batched
+ * together and run once at the end, improving performance and preventing
+ * unnecessary intermediate updates.
+ *
+ * @param fn - A function that performs multiple signal updates
+ *
+ * @example
+ * ```tsx
+ * import { state, effect, batch } from './core';
+ *
+ * const firstName = state('John');
+ * const lastName = state('Doe');
+ * const age = state(30);
+ *
+ * // Effect that depends on multiple signals
+ * effect(() => {
+ *   console.log(`Hello ${firstName.value} ${lastName.value}, age ${age.value}`);
+ * });
+ *
+ * // Without batching - effect runs 3 times
+ * firstName.value = 'Jane';
+ * lastName.value = 'Smith';
+ * age.value = 25;
+ *
+ * // With batching - effect runs only once
+ * batch(() => {
+ *   firstName.value = 'Bob';
+ *   lastName.value = 'Johnson';
+ *   age.value = 35;
+ * });
+ * ```
+ */
+export function batch(fn: () => void): void {
+  if (setIsBatching(false)) {
+    fn();
+    return;
+  }
+
+  setIsBatching(true);
+  try {
+    fn();
+  } finally {
+    setIsBatching(false);
+    flushUpdates();
+  }
 }
 
 // Expose debug API and states on window for browser debugging
