@@ -246,7 +246,7 @@ export function action<T extends (...args: any[]) => any>(
   return ((...args: Parameters<T>) => {
     // Debug logging
     if (debugConfig.enabled && name && debugConfig.logger) {
-      debugConfig.logger(`Action '${name}' executing`);
+      debugConfig.logger(`action: '${name}' executing`);
     }
 
     // Automatically batch the action
@@ -369,7 +369,7 @@ export function state<T>(initialValue: T, name?: string): State<T> {
         // Debug logging
         if (debugConfig.enabled && name && debugConfig.logger) {
           debugConfig.logger(
-            `State '${name}' changed:`,
+            `state: '${name}' changed:`,
             value,
             '->',
             resolvedValue,

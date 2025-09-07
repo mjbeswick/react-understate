@@ -322,7 +322,7 @@ describe('Derived Values', () => {
       expect(doubled.value).toBe(30);
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        "Derived 'doubled' changed:",
+        "derived: 'doubled' changed:",
         20,
         '->',
         30,
@@ -363,7 +363,7 @@ describe('Derived Values', () => {
 
       // Should not have any calls related to derived value changes
       const derivedCalls = consoleSpy.mock.calls.filter(
-        call => call[0] && call[0].includes('Derived'),
+        call => call[0] && call[0].includes('derived:'),
       );
       expect(derivedCalls).toHaveLength(0);
 

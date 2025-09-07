@@ -102,7 +102,7 @@ export function effect(
     // Debug logging
     const debugConfig = configureDebug();
     if (debugConfig.enabled && name && debugConfig.logger) {
-      debugConfig.logger(`Effect '${name}' running`);
+      debugConfig.logger(`effect: '${name}' running`);
     }
 
     // Call previous cleanup before re-running

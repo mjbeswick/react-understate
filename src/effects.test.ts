@@ -300,12 +300,12 @@ describe('Effects', () => {
       }, 'testEffect');
 
       // Effect should run immediately
-      expect(consoleSpy).toHaveBeenCalledWith("Effect 'testEffect' running");
+      expect(consoleSpy).toHaveBeenCalledWith("effect: 'testEffect' running");
 
       // Clear previous calls and change the dependency to trigger effect again
       consoleSpy.mockClear();
       testState.value = 5;
-      expect(consoleSpy).toHaveBeenCalledWith("Effect 'testEffect' running");
+      expect(consoleSpy).toHaveBeenCalledWith("effect: 'testEffect' running");
 
       dispose();
       consoleSpy.mockRestore();
@@ -349,7 +349,7 @@ describe('Effects', () => {
 
       // Should not have any calls related to effect runs
       const effectCalls = consoleSpy.mock.calls.filter(
-        call => call[0] && call[0].includes('Effect'),
+        call => call[0] && call[0].includes('effect:'),
       );
       expect(effectCalls).toHaveLength(0);
 

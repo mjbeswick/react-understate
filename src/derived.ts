@@ -98,7 +98,7 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
         const debugConfig = configureDebug();
         if (debugConfig.enabled && name && debugConfig.logger) {
           debugConfig.logger(
-            `Derived '${name}' changed:`,
+            `derived: '${name}' changed:`,
             oldValue,
             '->',
             cachedValue,

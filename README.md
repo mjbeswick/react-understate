@@ -191,14 +191,14 @@ const increment = action((amount: number) => {
   count.value = count.value + amount;
 }, 'increment');
 
-count.value = 5; // Logs: "State 'counter' changed: 0 -> 5"
-// Logs: "Derived 'doubled' changed: 0 -> 10"
-// Logs: "Effect 'logCount' running"
+count.value = 5; // Logs: "state: 'counter' changed: 0 -> 5"
+// Logs: "derived: 'doubled' changed: 0 -> 10"
+// Logs: "effect: 'logCount' running"
 
-increment(3); // Logs: "Action 'increment' executing"
-// Logs: "State 'counter' changed: 5 -> 8"
-// Logs: "Derived 'doubled' changed: 10 -> 16"
-// Logs: "Effect 'logCount' running"
+increment(3); // Logs: "action: 'increment' executing"
+// Logs: "state: 'counter' changed: 5 -> 8"
+// Logs: "derived: 'doubled' changed: 10 -> 16"
+// Logs: "effect: 'logCount' running"
 ```
 
 ### Batching Updates
