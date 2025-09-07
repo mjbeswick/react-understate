@@ -6,6 +6,7 @@
  */
 
 import { setActiveEffect, configureDebug, type State } from './core';
+import { logDebug } from './debug-utils';
 
 /**
  * Creates a read-only signal that automatically updates when dependencies change.
@@ -91,18 +92,12 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
       const prevEffect = setActiveEffect(markDirty);
 
       try {
-        const oldValue = cachedValue;
         cachedValue = computeFn();
 
         // Debug logging
-        const debugConfig = configureDebug();
-        if (debugConfig.enabled && name && debugConfig.logger) {
-          debugConfig.logger(
-            `derived: '${name}' changed:`,
-            oldValue,
-            '->',
-            cachedValue,
-          );
+        if (name) {
+          const debugConfig = configureDebug();
+          logDebug(`derived: '${name}' ${cachedValue}`, debugConfig);
         }
       } finally {
         setActiveEffect(prevEffect);

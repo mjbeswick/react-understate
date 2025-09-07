@@ -8,10 +8,9 @@ import dts from 'rollup-plugin-dts';
 // Enhanced terser configuration for better compression
 const terserConfig = {
   compress: {
-    drop_console: true,
+    drop_console: false,
     drop_debugger: true,
     pure_funcs: [
-      'console.log',
       'console.warn',
       'console.error',
       'console.info',

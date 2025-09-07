@@ -177,8 +177,8 @@ import {
   action,
 } from 'react-understate';
 
-// Enable debug logging
-configureDebug({ enabled: true });
+// Enable debug logging with file location links
+configureDebug({ enabled: true, showFile: true });
 
 // Create named reactive elements for better debugging
 const count = state(0, 'counter');
@@ -191,14 +191,29 @@ const increment = action((amount: number) => {
   count.value = count.value + amount;
 }, 'increment');
 
-count.value = 5; // Logs: "state: 'counter' changed: 0 -> 5"
-// Logs: "derived: 'doubled' changed: 0 -> 10"
-// Logs: "effect: 'logCount' running"
+count.value = 5; // Logs: "state: 'counter' 5 /path/to/file.ts:123:45"
+// Logs: "derived: 'doubled' 10 /path/to/file.ts:124:46"
+// Logs: "effect: 'logCount' running /path/to/file.ts:125:47"
 
-increment(3); // Logs: "action: 'increment' executing"
-// Logs: "state: 'counter' changed: 5 -> 8"
-// Logs: "derived: 'doubled' changed: 10 -> 16"
-// Logs: "effect: 'logCount' running"
+increment(3); // Logs: "action: 'increment' /path/to/file.ts:126:48"
+// Logs: "state: 'counter' 8 /path/to/file.ts:127:49"
+// Logs: "derived: 'doubled' 16 /path/to/file.ts:128:50"
+// Logs: "effect: 'logCount' running /path/to/file.ts:129:51"
+```
+
+**Debug Options:**
+
+- `enabled: boolean` - Enable/disable debug logging
+- `logger: function` - Custom logger function (defaults to `console.log`)
+- `showFile: boolean` - Show clickable file location links (defaults to `false`)
+
+When `showFile: false` or omitted, logs show just the function names:
+
+```tsx
+configureDebug({ enabled: true });
+// Logs: "action: 'increment'"
+// Logs: "state: 'counter' 8"
+// Logs: "derived: 'doubled' 16"
 ```
 
 ### Batching Updates
@@ -619,7 +634,7 @@ Check out the complete examples in the `examples/` directory:
 
 ### Debug Configuration
 
-- `configureDebug(options?: { enabled: boolean; logger?: (message: string) => void }): { enabled: boolean; logger?: (message: string) => void }` - Configure debug logging or get current configuration
+- `configureDebug(options?: { enabled?: boolean; logger?: (message: string) => void; showFile?: boolean }): { enabled: boolean; logger?: (message: string) => void; showFile: boolean }` - Configure debug logging or get current configuration
 
 ### Browser Debugging
 
@@ -627,7 +642,7 @@ In development, you can access the debug API and all named states through the br
 
 ```tsx
 // Access debug configuration
-window.understate.configureDebug({ enabled: true });
+window.understate.configureDebug({ enabled: true, showFile: true });
 
 // Access all named states
 console.log(window.understate.states);

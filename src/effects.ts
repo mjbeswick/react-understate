@@ -6,6 +6,7 @@
  */
 
 import { setActiveEffect, configureDebug } from './core';
+import { logDebug } from './debug-utils';
 
 /**
  * Runs a side effect that automatically re-executes when dependencies change.
@@ -100,9 +101,9 @@ export function effect(
     if (disposed) return;
 
     // Debug logging
-    const debugConfig = configureDebug();
-    if (debugConfig.enabled && name && debugConfig.logger) {
-      debugConfig.logger(`effect: '${name}' running`);
+    if (name) {
+      const debugConfig = configureDebug();
+      logDebug(`effect: '${name}' running`, debugConfig);
     }
 
     // Call previous cleanup before re-running

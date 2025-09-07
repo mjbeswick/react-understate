@@ -339,12 +339,7 @@ describe('States', () => {
       const testState = state(0, 'testState');
       testState.value = 5;
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "state: 'testState' changed:",
-        0,
-        '->',
-        5,
-      );
+      expect(consoleSpy).toHaveBeenCalledWith("state: 'testState' 5");
 
       consoleSpy.mockRestore();
     });
@@ -410,7 +405,7 @@ describe('States', () => {
 
       increment(5);
 
-      expect(consoleSpy).toHaveBeenCalledWith("action: 'increment' executing");
+      expect(consoleSpy).toHaveBeenCalledWith("action: 'increment'");
 
       consoleSpy.mockRestore();
     });
@@ -428,9 +423,7 @@ describe('States', () => {
 
       increment(5);
 
-      expect(consoleSpy).not.toHaveBeenCalledWith(
-        "action: 'increment' executing",
-      );
+      expect(consoleSpy).not.toHaveBeenCalledWith("action: 'increment'");
 
       consoleSpy.mockRestore();
     });
@@ -447,9 +440,7 @@ describe('States', () => {
 
       increment(5);
 
-      expect(consoleSpy).not.toHaveBeenCalledWith(
-        "action: 'increment' executing",
-      );
+      expect(consoleSpy).not.toHaveBeenCalledWith("action: 'increment'");
 
       consoleSpy.mockRestore();
     });

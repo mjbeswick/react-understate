@@ -1,9 +1,6 @@
 import { state, action, configureDebug } from 'react-understate';
 
-// Enable debug logging in development
-if (import.meta.env?.DEV) {
-  configureDebug({ enabled: true });
-}
+configureDebug({ enabled: true, showFile: true });
 
 /**
  * State containing the current display value shown on the calculator
@@ -53,33 +50,16 @@ function calculate(
  * @param digit The digit to add
  */
 export const inputDigit = action((digit: string) => {
-  console.log('inputDigit called with:', digit);
-  console.log('Current displayValue:', displayValue.value);
-  console.log('waitingForOperand:', waitingForOperand.value);
-
   if (waitingForOperand.value) {
-    console.log('Setting displayValue to digit (waitingForOperand was true)');
     displayValue.value = digit;
     waitingForOperand.value = false;
   } else {
     if (displayValue.value === '0') {
-      console.log('displayValue was "0", setting to digit');
       displayValue.value = digit;
     } else {
-      const newValue = displayValue.value + digit;
-      console.log(
-        'Concatenating:',
-        displayValue.value,
-        '+',
-        digit,
-        '=',
-        newValue,
-      );
-      displayValue.value = newValue;
+      displayValue.value = displayValue.value + digit;
     }
   }
-
-  console.log('Final displayValue:', displayValue.value);
 }, 'inputDigit');
 
 /**

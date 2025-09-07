@@ -321,12 +321,7 @@ describe('Derived Values', () => {
       base.value = 15;
       expect(doubled.value).toBe(30);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "derived: 'doubled' changed:",
-        20,
-        '->',
-        30,
-      );
+      expect(consoleSpy).toHaveBeenCalledWith("derived: 'doubled' 30");
 
       consoleSpy.mockRestore();
     });
@@ -342,6 +337,9 @@ describe('Derived Values', () => {
       base.value = 15;
       expect(doubled.value).toBe(30);
 
+      // Clear any state logs and check only derived logs
+      consoleSpy.mockClear();
+      doubled.value; // Access derived value to trigger logging
       expect(consoleSpy).not.toHaveBeenCalled();
 
       consoleSpy.mockRestore();

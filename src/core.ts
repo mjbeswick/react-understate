@@ -6,6 +6,7 @@
  */
 
 import { batch } from './batch';
+import { logDebug } from './debug-utils';
 
 // Global state for tracking active effects and batching
 let activeEffect: (() => void) | null = null;
@@ -16,6 +17,7 @@ const pendingUpdates = new Set<() => void>();
 type DebugOptions = {
   enabled?: boolean;
   logger?: (message: string, ...args: any[]) => void;
+  showFile?: boolean;
 };
 
 let debugConfig: DebugOptions = {
@@ -245,8 +247,8 @@ export function action<T extends (...args: any[]) => any>(
 ): T {
   return ((...args: Parameters<T>) => {
     // Debug logging
-    if (debugConfig.enabled && name && debugConfig.logger) {
-      debugConfig.logger(`action: '${name}' executing`);
+    if (name) {
+      logDebug(`action: '${name}'`, debugConfig);
     }
 
     // Automatically batch the action
@@ -367,13 +369,8 @@ export function state<T>(initialValue: T, name?: string): State<T> {
 
       if (!Object.is(value, resolvedValue)) {
         // Debug logging
-        if (debugConfig.enabled && name && debugConfig.logger) {
-          debugConfig.logger(
-            `state: '${name}' changed:`,
-            value,
-            '->',
-            resolvedValue,
-          );
+        if (name) {
+          logDebug(`state: '${name}' ${resolvedValue}`, debugConfig);
         }
 
         // Store the new value directly - TypeScript handles immutability

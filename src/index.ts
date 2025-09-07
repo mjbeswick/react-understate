@@ -17,6 +17,9 @@
 export { state, action, configureDebug } from './core';
 export type { State } from './core';
 
+// Debug utilities
+export * from './debug-utils';
+
 // Browser debugging types
 /// <reference path="./browser-debug.d.ts" />
 
