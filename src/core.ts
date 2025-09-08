@@ -352,6 +352,7 @@ export function state<T>(initialValue: T, name?: string): State<T> {
   ): Promise<void> => {
     try {
       let resolvedValue: T;
+      const debugConfig = configureDebug();
 
       if (typeof newValue === 'function') {
         // Handle function (sync or async)
@@ -362,7 +363,7 @@ export function state<T>(initialValue: T, name?: string): State<T> {
             // Log async resolution
             if (name) {
               logDebug(
-                `state: '${name}' async resolved: ${resolvedValue}`,
+                `state: '${name}' async resolved: ${JSON.stringify(resolvedValue, null, 2)}`,
                 debugConfig,
               );
             }
@@ -387,7 +388,10 @@ export function state<T>(initialValue: T, name?: string): State<T> {
       if (!Object.is(value, resolvedValue)) {
         // Debug logging
         if (name) {
-          logDebug(`state: '${name}' ${resolvedValue}`, debugConfig);
+          logDebug(
+            `state: '${name}' ${JSON.stringify(resolvedValue, null, 2)}`,
+            debugConfig,
+          );
         }
 
         // Store the new value directly - TypeScript handles immutability
@@ -412,8 +416,9 @@ export function state<T>(initialValue: T, name?: string): State<T> {
           const newValue = await result;
           // Log async resolution
           if (name) {
+            const debugConfig = configureDebug();
             logDebug(
-              `state: '${name}' update async resolved: ${newValue}`,
+              `state: '${name}' update async resolved: ${JSON.stringify(newValue, null, 2)}`,
               debugConfig,
             );
           }
@@ -422,6 +427,7 @@ export function state<T>(initialValue: T, name?: string): State<T> {
         } catch (error) {
           // Log async rejection
           if (name) {
+            const debugConfig = configureDebug();
             logDebug(
               `state: '${name}' update async rejected: ${error}`,
               debugConfig,

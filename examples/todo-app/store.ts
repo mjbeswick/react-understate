@@ -6,7 +6,7 @@ import {
   configureDebug,
 } from 'react-understate';
 
-configureDebug({ enabled: true });
+configureDebug({ enabled: true, showFile: true });
 
 // Define the Todo type
 export type Todo = {

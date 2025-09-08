@@ -129,6 +129,7 @@ describe('Async Functionality', () => {
 
       const userId = state(1, 'userId');
       const userData = asyncDerived(async () => {
+        console.log('asyncDerived computing, userId.value:', userId.value);
         await new Promise(resolve => setTimeout(resolve, 10));
         return { id: userId.value, name: `User ${userId.value}` };
       }, 'userData');
@@ -136,11 +137,14 @@ describe('Async Functionality', () => {
       // Wait for initial computation
       await new Promise(resolve => setTimeout(resolve, 20));
 
+      console.log('About to change userId to 2');
       // Change dependency
       userId.value = 2;
+      console.log('Changed userId to 2, waiting...');
       await new Promise(resolve => setTimeout(resolve, 30));
 
       const data = await userData.value;
+      console.log('Final data:', data);
       expect(data).toEqual({ id: 2, name: 'User 2' });
     });
 

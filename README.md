@@ -1,6 +1,6 @@
-`# React Understate
+# React Understate
 
-The state management library that's so lightweight, it makes Redux feel like you're carrying a backpack full of bricks. No more wrestling with weight of useless boilerplate - just pure, unadulterated reactivity.
+The state management library that's so lightweight, it makes Redux feel like you're carrying a backpack full of bricks. While Redux's predictable state management and time-travel debugging are legendary, React Understate cuts through the boilerplate to deliver pure, unadulterated reactivity with zero dependencies.
 
 [![npm version](https://img.shields.io/npm/v/react-understate.svg)](https://www.npmjs.com/package/react-understate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

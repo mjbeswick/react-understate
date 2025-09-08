@@ -97,7 +97,10 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
         // Debug logging
         if (name) {
           const debugConfig = configureDebug();
-          logDebug(`derived: '${name}' ${cachedValue}`, debugConfig);
+          logDebug(
+            `derived: '${name}' ${JSON.stringify(cachedValue, null, 2)}`,
+            debugConfig,
+          );
         }
       } finally {
         setActiveEffect(prevEffect);
@@ -196,7 +199,17 @@ export function asyncDerived<T>(
   const markDirty = () => {
     if (!dirty) {
       dirty = true;
-      subscribers.forEach(sub => sub());
+      // Notify subscribers and dependent effects
+      subscribers.forEach(sub => {
+        if (sub !== markDirty) {
+          sub();
+        }
+      });
+      dependencies.forEach(dep => {
+        if (dep !== markDirty) {
+          dep();
+        }
+      });
     }
   };
 
@@ -221,7 +234,7 @@ export function asyncDerived<T>(
         if (name) {
           const debugConfig = configureDebug();
           logDebug(
-            `asyncDerived: '${name}' async resolved: ${result}`,
+            `asyncDerived: '${name}' async resolved: ${JSON.stringify(result, null, 2)}`,
             debugConfig,
           );
         }

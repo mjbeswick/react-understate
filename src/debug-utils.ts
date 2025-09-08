@@ -18,11 +18,12 @@ export function findUserCodeLine(stack: string): string | undefined {
         !line.includes('effects.ts') &&
         !line.includes('react.ts') &&
         !line.includes('node_modules') &&
-        !line.includes('react-understate') &&
-        !line.includes('dist/') &&
+        !line.includes('dist/react-understate') &&
         !line.includes('.js?t=') &&
         !line.includes('rollup') &&
         !line.includes('vite') &&
+        !line.includes('ModuleJob.run') &&
+        !line.includes('node:internal') &&
         line.trim() !== '' &&
         line.includes(':'),
     );
@@ -77,20 +78,22 @@ export function logDebug(
     return;
   }
 
-  const stack = new Error().stack;
-  if (stack && debugConfig.showFile) {
-    const userLine = findUserCodeLine(stack);
-    if (userLine) {
-      const location = parseStackLine(userLine);
-      if (location) {
-        debugConfig.logger(
-          `${message} ${createFileLocation(location.file, location.line, location.col)}`,
-          getFileLocationStyle(),
-        );
-        return;
-      } else {
-        debugConfig.logger(`${message} at ${userLine.trim()}`);
-        return;
+  if (debugConfig.showFile) {
+    const stack = new Error().stack;
+    if (stack) {
+      const userLine = findUserCodeLine(stack);
+      if (userLine) {
+        const location = parseStackLine(userLine);
+        if (location) {
+          debugConfig.logger(
+            `${message} ${createFileLocation(location.file, location.line, location.col)}`,
+            getFileLocationStyle(),
+          );
+          return;
+        } else {
+          debugConfig.logger(`${message} at ${userLine.trim()}`);
+          return;
+        }
       }
     }
   }
