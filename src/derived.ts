@@ -5,7 +5,12 @@
  * Derived values are read-only signals that automatically update when their dependencies change.
  */
 
-import { setActiveEffect, configureDebug, type State } from './core';
+import {
+  setActiveEffect,
+  configureDebug,
+  type State,
+  validateStateName,
+} from './core';
 import { logDebug } from './debug-utils';
 
 /**
@@ -62,6 +67,8 @@ import { logDebug } from './debug-utils';
  * ```
  */
 export function derived<T>(computeFn: () => T, name?: string): State<T> {
+  // Validate name if provided
+  const validatedName = name ? validateStateName(name) : undefined;
   let cachedValue: T;
   let dirty = true;
   let isComputing = false;
@@ -95,10 +102,10 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
         cachedValue = computeFn();
 
         // Debug logging
-        if (name) {
+        if (validatedName) {
           const debugConfig = configureDebug();
           logDebug(
-            `derived: '${name}' ${JSON.stringify(cachedValue, null, 2)}`,
+            `derived: '${validatedName}' ${JSON.stringify(cachedValue, null, 2)}`,
             debugConfig,
           );
         }
@@ -160,8 +167,20 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
   } as State<T>;
 
   // Register named derived values for debugging
-  if (name && typeof window !== 'undefined') {
-    (window as any).understate.states[name] = derivedObj;
+  if (validatedName && typeof window !== 'undefined') {
+    // Initialize window.understate if not already done
+    if (!(window as any).understate) {
+      (window as any).understate = {
+        configureDebug: () => ({}),
+        states: {},
+      };
+    }
+    if ((window as any).understate.states[validatedName]) {
+      throw new Error(
+        `Derived value with name '${validatedName}' already exists. State names must be unique.`,
+      );
+    }
+    (window as any).understate.states[validatedName] = derivedObj;
   }
 
   return derivedObj;
@@ -191,6 +210,8 @@ export function asyncDerived<T>(
   computeFn: () => Promise<T>,
   name?: string,
 ): State<Promise<T>> {
+  // Validate name if provided
+  const validatedName = name ? validateStateName(name) : undefined;
   let cachedValue: Promise<T>;
   let dirty = true;
   const subscribers = new Set<() => void>();
@@ -222,19 +243,19 @@ export function asyncDerived<T>(
 
       try {
         // Debug logging
-        if (name) {
+        if (validatedName) {
           const debugConfig = configureDebug();
-          logDebug(`asyncDerived: '${name}' computing`, debugConfig);
+          logDebug(`asyncDerived: '${validatedName}' computing`, debugConfig);
         }
 
         cachedValue = computeFn();
         const result = await cachedValue;
 
         // Log async resolution
-        if (name) {
+        if (validatedName) {
           const debugConfig = configureDebug();
           logDebug(
-            `asyncDerived: '${name}' async resolved: ${JSON.stringify(result, null, 2)}`,
+            `asyncDerived: '${validatedName}' async resolved: ${JSON.stringify(result, null, 2)}`,
             debugConfig,
           );
         }
@@ -242,10 +263,10 @@ export function asyncDerived<T>(
         return result;
       } catch (error) {
         // Log async rejection
-        if (name) {
+        if (validatedName) {
           const debugConfig = configureDebug();
           logDebug(
-            `asyncDerived: '${name}' async rejected: ${error}`,
+            `asyncDerived: '${validatedName}' async rejected: ${error}`,
             debugConfig,
           );
         }
@@ -270,10 +291,10 @@ export function asyncDerived<T>(
       // Handle async errors during initialization
       cachedValue.catch(error => {
         // Log async rejection during initialization
-        if (name) {
+        if (validatedName) {
           const debugConfig = configureDebug();
           logDebug(
-            `asyncDerived: '${name}' async rejected: ${error}`,
+            `asyncDerived: '${validatedName}' async rejected: ${error}`,
             debugConfig,
           );
         }
@@ -287,9 +308,12 @@ export function asyncDerived<T>(
     dirty = false;
 
     // Log sync rejection during initialization
-    if (name) {
+    if (validatedName) {
       const debugConfig = configureDebug();
-      logDebug(`asyncDerived: '${name}' async rejected: ${error}`, debugConfig);
+      logDebug(
+        `asyncDerived: '${validatedName}' async rejected: ${error}`,
+        debugConfig,
+      );
     }
   }
 
@@ -333,8 +357,20 @@ export function asyncDerived<T>(
   };
 
   // Register named async derived values for debugging
-  if (name && typeof window !== 'undefined') {
-    (window as any).understate.states[name] = asyncDerivedObj;
+  if (validatedName && typeof window !== 'undefined') {
+    // Initialize window.understate if not already done
+    if (!(window as any).understate) {
+      (window as any).understate = {
+        configureDebug: () => ({}),
+        states: {},
+      };
+    }
+    if ((window as any).understate.states[validatedName]) {
+      throw new Error(
+        `Async derived value with name '${validatedName}' already exists. State names must be unique.`,
+      );
+    }
+    (window as any).understate.states[validatedName] = asyncDerivedObj;
   }
 
   return asyncDerivedObj;

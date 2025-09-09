@@ -15,3 +15,18 @@ global.console = {
   // warn: jest.fn(),
   // error: jest.fn(),
 };
+
+// Setup window.understate for testing
+global.window = {
+  understate: {
+    configureDebug: jest.fn(),
+    states: {},
+  },
+};
+
+// Clear states between tests to prevent name conflicts
+beforeEach(() => {
+  if (global.window?.understate?.states) {
+    global.window.understate.states = {};
+  }
+});

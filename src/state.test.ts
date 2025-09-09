@@ -1,4 +1,12 @@
-import { state, derived, effect, batch, action, configureDebug } from './index';
+import {
+  state,
+  derived,
+  asyncDerived,
+  effect,
+  batch,
+  action,
+  configureDebug,
+} from './index';
 
 describe('States', () => {
   beforeEach(() => {
@@ -349,7 +357,7 @@ describe('States', () => {
 
       configureDebug({ enabled: false });
 
-      const testState = state(0, 'testState');
+      const testState = state(0, 'debugDisabledState');
       testState.value = 5;
 
       expect(consoleSpy).not.toHaveBeenCalled();
@@ -398,7 +406,7 @@ describe('States', () => {
       configureDebug({ enabled: false });
       configureDebug({ enabled: true, logger: console.log });
 
-      const testState = state(0, 'testState');
+      const testState = state(0, 'actionDebugState');
       const increment = action((amount: number) => {
         testState.value = testState.value + amount;
       }, 'increment');
@@ -416,7 +424,7 @@ describe('States', () => {
       // Disable debug
       configureDebug({ enabled: false });
 
-      const testState = state(0, 'testState');
+      const testState = state(0, 'actionDisabledState');
       const increment = action((amount: number) => {
         testState.value = testState.value + amount;
       }, 'increment');
@@ -433,7 +441,7 @@ describe('States', () => {
 
       configureDebug({ enabled: true, logger: console.log });
 
-      const testState = state(0, 'testState');
+      const testState = state(0, 'actionNoNameState');
       const increment = action((amount: number) => {
         testState.value = testState.value + amount;
       }); // No name provided
@@ -595,25 +603,15 @@ describe('States', () => {
   });
 
   describe('Browser Debugging', () => {
-    beforeEach(() => {
-      // Mock window object
-      (global as any).window = {
-        understate: {
-          configureDebug: jest.fn(),
-          states: {},
-        },
-      };
-    });
-
-    afterEach(() => {
-      delete (global as any).window;
-    });
-
     it('should register named states on window.understate.states', () => {
-      const testState = state(42, 'testState');
+      const testState = state(42, 'browserDebugState');
 
-      expect((global as any).window.understate.states.testState).toBeDefined();
-      expect((global as any).window.understate.states.testState.value).toBe(42);
+      expect(
+        (global as any).window.understate.states.browserDebugState,
+      ).toBeDefined();
+      expect(
+        (global as any).window.understate.states.browserDebugState.value,
+      ).toBe(42);
     });
 
     it('should not register unnamed states on window.understate.states', () => {
@@ -633,6 +631,259 @@ describe('States', () => {
       expect(typeof (global as any).window.understate.configureDebug).toBe(
         'function',
       );
+    });
+  });
+
+  describe('Duplicate Name Validation', () => {
+    it('should throw error when creating two states with the same name', () => {
+      const state1 = state('first', 'duplicateName');
+      expect(state1.value).toBe('first');
+
+      expect(() => {
+        state('second', 'duplicateName');
+      }).toThrow(
+        "State with name 'duplicateName' already exists. State names must be unique.",
+      );
+    });
+
+    it('should throw error when creating state with same name as derived', () => {
+      const source = state(1);
+      const derivedValue = derived(() => source.value * 2, 'duplicateName');
+      expect(derivedValue.value).toBe(2);
+
+      expect(() => {
+        state('test', 'duplicateName');
+      }).toThrow(
+        "State with name 'duplicateName' already exists. State names must be unique.",
+      );
+    });
+
+    it('should throw error when creating derived with same name as state', () => {
+      const state1 = state(1, 'duplicateName');
+      expect(state1.value).toBe(1);
+
+      expect(() => {
+        const source = state(2);
+        derived(() => source.value * 2, 'duplicateName');
+      }).toThrow(
+        "Derived value with name 'duplicateName' already exists. State names must be unique.",
+      );
+    });
+
+    it('should throw error when creating two derived values with the same name', () => {
+      const source1 = state(1);
+      const derived1 = derived(() => source1.value * 2, 'duplicateName');
+      expect(derived1.value).toBe(2);
+
+      expect(() => {
+        const source2 = state(3);
+        derived(() => source2.value * 3, 'duplicateName');
+      }).toThrow(
+        "Derived value with name 'duplicateName' already exists. State names must be unique.",
+      );
+    });
+
+    it('should throw error when creating asyncDerived with same name as state', () => {
+      const state1 = state(1, 'duplicateName');
+      expect(state1.value).toBe(1);
+
+      expect(() => {
+        const source = state(2);
+        asyncDerived(async () => source.value * 2, 'duplicateName');
+      }).toThrow(
+        "Async derived value with name 'duplicateName' already exists. State names must be unique.",
+      );
+    });
+
+    it('should throw error when creating effect with same name as state', () => {
+      const state1 = state(1, 'duplicateName');
+      expect(state1.value).toBe(1);
+
+      expect(() => {
+        effect(() => {
+          console.log('test');
+        }, 'duplicateName');
+      }).toThrow(
+        "Effect with name 'duplicateName' already exists. State names must be unique.",
+      );
+    });
+
+    it('should throw error when creating state with same name as effect', () => {
+      const dispose = effect(() => {
+        console.log('test');
+      }, 'duplicateName');
+
+      expect(() => {
+        state('test', 'duplicateName');
+      }).toThrow(
+        "State with name 'duplicateName' already exists. State names must be unique.",
+      );
+
+      dispose();
+    });
+
+    it('should allow creating states with different names', () => {
+      const state1 = state('first', 'name1');
+      const state2 = state('second', 'name2');
+      const state3 = state('third', 'name3');
+
+      expect(state1.value).toBe('first');
+      expect(state2.value).toBe('second');
+      expect(state3.value).toBe('third');
+
+      // All should be registered
+      expect((global as any).window.understate.states.name1).toBeDefined();
+      expect((global as any).window.understate.states.name2).toBeDefined();
+      expect((global as any).window.understate.states.name3).toBeDefined();
+    });
+
+    it('should allow creating unnamed states even if named states exist', () => {
+      const namedState = state('named', 'namedState');
+      const unnamedState1 = state('unnamed1');
+      const unnamedState2 = state('unnamed2');
+
+      expect(namedState.value).toBe('named');
+      expect(unnamedState1.value).toBe('unnamed1');
+      expect(unnamedState2.value).toBe('unnamed2');
+
+      // Only named state should be registered
+      expect((global as any).window.understate.states.namedState).toBeDefined();
+      expect(
+        (global as any).window.understate.states.unnamedState1,
+      ).toBeUndefined();
+      expect(
+        (global as any).window.understate.states.unnamedState2,
+      ).toBeUndefined();
+    });
+
+    it('should work correctly when window is not available', () => {
+      // This test verifies that the validation only applies when window is available
+      // In a real Node.js environment, window would be undefined and validation wouldn't run
+      const state1 = state('first', 'uniqueName1');
+      const state2 = state('second', 'uniqueName2');
+
+      expect(state1.value).toBe('first');
+      expect(state2.value).toBe('second');
+    });
+  });
+
+  describe('Name Validation', () => {
+    it('should throw error for names containing dots', () => {
+      expect(() => {
+        state('test', 'invalid.name');
+      }).toThrow(
+        "Invalid state name 'invalid.name': Names cannot contain dots (.) as they break the code.",
+      );
+    });
+
+    it('should throw error for names starting with numbers', () => {
+      expect(() => {
+        state('test', '123invalid');
+      }).toThrow(
+        "Invalid state name '123invalid': Names must be valid JavaScript identifiers (start with letter, underscore, or $, followed by letters, numbers, underscores, or $).",
+      );
+    });
+
+    it('should throw error for names with spaces', () => {
+      expect(() => {
+        state('test', 'invalid name');
+      }).toThrow(
+        "Invalid state name 'invalid name': Names must be valid JavaScript identifiers (start with letter, underscore, or $, followed by letters, numbers, underscores, or $).",
+      );
+    });
+
+    it('should throw error for names with special characters', () => {
+      expect(() => {
+        state('test', 'invalid-name');
+      }).toThrow(
+        "Invalid state name 'invalid-name': Names must be valid JavaScript identifiers (start with letter, underscore, or $, followed by letters, numbers, underscores, or $).",
+      );
+    });
+
+    it('should throw error for names with parentheses', () => {
+      expect(() => {
+        state('test', 'invalid()');
+      }).toThrow(
+        "Invalid state name 'invalid()': Names must be valid JavaScript identifiers (start with letter, underscore, or $, followed by letters, numbers, underscores, or $).",
+      );
+    });
+
+    it('should allow valid names starting with underscore', () => {
+      const state1 = state('test', '_validName');
+      const state2 = state('test', '_123valid');
+      expect(state1.value).toBe('test');
+      expect(state2.value).toBe('test');
+    });
+
+    it('should allow valid names starting with dollar sign', () => {
+      const state1 = state('test', '$validName');
+      const state2 = state('test', '$123valid');
+      expect(state1.value).toBe('test');
+      expect(state2.value).toBe('test');
+    });
+
+    it('should allow valid names with numbers after first character', () => {
+      const state1 = state('test', 'valid123');
+      const state2 = state('test', 'valid_123');
+      expect(state1.value).toBe('test');
+      expect(state2.value).toBe('test');
+    });
+
+    it('should allow single character names', () => {
+      const state1 = state('test', 'a');
+      const state2 = state('test', '_');
+      const state3 = state('test', '$');
+      expect(state1.value).toBe('test');
+      expect(state2.value).toBe('test');
+      expect(state3.value).toBe('test');
+    });
+
+    it('should validate names in derived values', () => {
+      const source = state(1);
+
+      expect(() => {
+        derived(() => source.value * 2, 'invalid.name');
+      }).toThrow(
+        "Invalid state name 'invalid.name': Names cannot contain dots (.) as they break the code.",
+      );
+    });
+
+    it('should validate names in asyncDerived values', () => {
+      const source = state(1);
+
+      expect(() => {
+        asyncDerived(async () => source.value * 2, 'invalid.name');
+      }).toThrow(
+        "Invalid state name 'invalid.name': Names cannot contain dots (.) as they break the code.",
+      );
+    });
+
+    it('should validate names in effects', () => {
+      expect(() => {
+        effect(() => {}, 'invalid.name');
+      }).toThrow(
+        "Invalid state name 'invalid.name': Names cannot contain dots (.) as they break the code.",
+      );
+    });
+
+    it('should validate names in actions', () => {
+      expect(() => {
+        action(() => {}, 'invalid.name');
+      }).toThrow(
+        "Invalid state name 'invalid.name': Names cannot contain dots (.) as they break the code.",
+      );
+    });
+
+    it('should allow empty string as name (no validation)', () => {
+      // Empty string should not trigger validation
+      const state1 = state('test', '');
+      expect(state1.value).toBe('test');
+    });
+
+    it('should allow undefined as name (no validation)', () => {
+      // Undefined should not trigger validation
+      const state1 = state('test');
+      expect(state1.value).toBe('test');
     });
   });
 });

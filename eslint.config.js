@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
 import globals from 'globals';
+import reactUnderstate from './eslint-plugin/index.js';
 
 export default [
   js.configs.recommended,
@@ -22,6 +23,7 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tseslint,
+      'react-understate': reactUnderstate,
     },
     rules: {
       // TypeScript specific rules
@@ -80,6 +82,9 @@ export default [
           ignoreDefaultValues: true,
         },
       ],
+
+      // React Understate rules
+      ...reactUnderstate.configs.recommended.rules,
     },
   },
   {

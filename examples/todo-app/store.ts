@@ -17,7 +17,7 @@ export type Todo = {
 
 // State
 const todos = state<Todo[]>([], 'todos');
-const filter = state<'all' | 'active' | 'completed'>('all', 'todos-filter');
+const filter = state<'all' | 'active' | 'completed'>('all', 'todosFilter');
 const newTodo = state('', 'newTodo');
 
 // Persist state to localStorage (survives browser restart)

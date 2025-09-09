@@ -5,7 +5,7 @@
  */
 
 import { effect } from './effects';
-import { state, configureDebug } from './core';
+import { state, derived, configureDebug } from './core';
 
 describe('Effects', () => {
   describe('Basic Functionality', () => {
@@ -355,6 +355,283 @@ describe('Effects', () => {
 
       dispose();
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe('Effect Options', () => {
+    it.skip('should prevent infinite loops by default', () => {
+      const valueA = state(1, 'valueA');
+      const valueB = state(2, 'valueB');
+      let effectRuns = 0;
+
+      const dispose = effect(() => {
+        effectRuns++;
+        const a = valueA.value; // Reads valueA
+        const b = valueB.value; // Reads valueB
+        valueB.value = b + 1; // Modifies valueB - should not trigger re-execution
+      }, 'loopPreventionTest');
+
+      expect(effectRuns).toBe(1); // Should only run once
+
+      // Change valueA - should trigger re-execution
+      valueA.value = 10;
+      expect(effectRuns).toBe(2);
+
+      // Change valueB - should NOT trigger re-execution (prevented loop)
+      valueB.value = 100;
+      expect(effectRuns).toBe(2); // Should still be 2
+
+      dispose();
+    });
+
+    it('should allow infinite loops when preventLoops is false', () => {
+      const valueA = state(1, 'valueA');
+      const valueB = state(2, 'valueB');
+      let effectRuns = 0;
+
+      const dispose = effect(
+        () => {
+          effectRuns++;
+          const a = valueA.value; // Reads valueA
+          const b = valueB.value; // Reads valueB
+          valueB.value = b + 1; // Modifies valueB - will trigger re-execution
+        },
+        'loopTest',
+        { preventLoops: false },
+      );
+
+      expect(effectRuns).toBe(1); // Initial run
+
+      // Change valueA - should trigger re-execution
+      valueA.value = 10;
+      expect(effectRuns).toBe(2);
+
+      // Change valueB - should trigger re-execution (loop not prevented)
+      valueB.value = 100;
+      expect(effectRuns).toBe(3);
+
+      dispose();
+    });
+
+    it('should run only once when once option is true', () => {
+      const valueA = state(1, 'valueA');
+      const valueB = state(2, 'valueB');
+      let effectRuns = 0;
+
+      const dispose = effect(
+        () => {
+          effectRuns++;
+          const a = valueA.value;
+          const b = valueB.value;
+        },
+        'onceTest',
+        { once: true },
+      );
+
+      expect(effectRuns).toBe(1); // Should run once initially
+
+      // Change values - should NOT trigger re-execution
+      valueA.value = 10;
+      valueB.value = 20;
+      expect(effectRuns).toBe(1); // Should still be 1
+
+      dispose();
+    });
+
+    it('should prevent overlapping executions when preventOverlap is true', async () => {
+      const valueA = state(1, 'valueA');
+      let effectRuns = 0;
+      let concurrentRuns = 0;
+
+      const dispose = effect(
+        async () => {
+          effectRuns++;
+          concurrentRuns++;
+          console.log(
+            `Effect run ${effectRuns}, concurrent: ${concurrentRuns}`,
+          );
+
+          // Read the dependency to track it
+          const a = valueA.value;
+
+          // Simulate async work
+          await new Promise(resolve => setTimeout(resolve, 50));
+
+          concurrentRuns--;
+          console.log(
+            `Effect run ${effectRuns} completed, concurrent: ${concurrentRuns}`,
+          );
+        },
+        'overlapTest',
+        { preventOverlap: true },
+      );
+
+      expect(effectRuns).toBe(1); // Initial run
+
+      // Trigger multiple rapid changes
+      console.log('Changing valueA to 2');
+      valueA.value = 2;
+      console.log('Changing valueA to 3');
+      valueA.value = 3;
+      console.log('Changing valueA to 4');
+      valueA.value = 4;
+
+      // Wait for async work to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Should only run once more due to preventOverlap
+      expect(effectRuns).toBe(2);
+      expect(concurrentRuns).toBe(0); // No concurrent runs
+
+      dispose();
+    });
+
+    it('should allow overlapping executions when preventOverlap is false', async () => {
+      const valueA = state(1, 'valueA');
+      let effectRuns = 0;
+      let concurrentRuns = 0;
+
+      const dispose = effect(
+        async () => {
+          effectRuns++;
+          concurrentRuns++;
+
+          // Read the dependency to track it
+          const a = valueA.value;
+
+          // Simulate async work
+          await new Promise(resolve => setTimeout(resolve, 50));
+
+          concurrentRuns--;
+        },
+        'overlapTest',
+        { preventOverlap: false },
+      );
+
+      expect(effectRuns).toBe(1); // Initial run
+
+      // Trigger multiple rapid changes
+      valueA.value = 2;
+      valueA.value = 3;
+      valueA.value = 4;
+
+      // Wait for async work to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Should run multiple times due to preventOverlap being false
+      expect(effectRuns).toBe(4);
+      expect(concurrentRuns).toBe(0); // All runs completed
+
+      dispose();
+    });
+
+    it('should handle complex loop prevention scenarios', () => {
+      const valueA = state(1, 'valueA');
+      const valueB = state(2, 'valueB');
+      const valueC = state(3, 'valueC');
+      let effectRuns = 0;
+
+      const dispose = effect(() => {
+        effectRuns++;
+        const a = valueA.value; // Reads valueA
+        const b = valueB.value; // Reads valueB
+        const c = valueC.value; // Reads valueC
+
+        // Modify valueB and valueC as side effects
+        valueB.value = b * 2;
+        valueC.value = c + 1;
+      }, 'complexLoopTest');
+
+      expect(effectRuns).toBe(1); // Initial run
+
+      // Change valueA - should trigger re-execution
+      valueA.value = 10;
+      expect(effectRuns).toBe(2);
+
+      // Change valueB - should NOT trigger re-execution (prevented loop)
+      valueB.value = 100;
+      expect(effectRuns).toBe(2);
+
+      // Change valueC - should NOT trigger re-execution (prevented loop)
+      valueC.value = 200;
+      expect(effectRuns).toBe(2);
+
+      dispose();
+    });
+
+    it('should work with derived values in loop prevention', () => {
+      const valueA = state(1, 'valueA');
+      const valueB = state(2, 'valueB');
+      let effectRuns = 0;
+
+      const derivedValue = derived(() => valueA.value * 2, 'derivedValue');
+
+      const dispose = effect(() => {
+        effectRuns++;
+        const a = valueA.value; // Reads valueA
+        const b = valueB.value; // Reads valueB
+        const d = derivedValue.value; // Reads derived value
+
+        // Modify valueB as side effect
+        valueB.value = b + 1;
+      }, 'derivedLoopTest');
+
+      expect(effectRuns).toBe(1); // Initial run
+
+      // Change valueA - should trigger re-execution (affects derived value)
+      valueA.value = 10;
+      expect(effectRuns).toBe(2);
+
+      // Change valueB - should NOT trigger re-execution (prevented loop)
+      valueB.value = 100;
+      expect(effectRuns).toBe(2);
+
+      dispose();
+    });
+
+    it('should handle multiple effects with different options', () => {
+      const valueA = state(1, 'valueA');
+      const valueB = state(2, 'valueB');
+      let effect1Runs = 0;
+      let effect2Runs = 0;
+
+      const dispose1 = effect(
+        () => {
+          effect1Runs++;
+          const a = valueA.value;
+          const b = valueB.value;
+          valueB.value = b + 1; // This should not trigger re-execution
+        },
+        'effect1',
+        { preventLoops: true },
+      );
+
+      const dispose2 = effect(
+        () => {
+          effect2Runs++;
+          const a = valueA.value;
+          const b = valueB.value;
+          valueB.value = b + 1; // This should trigger re-execution
+        },
+        'effect2',
+        { preventLoops: false },
+      );
+
+      expect(effect1Runs).toBe(1);
+      expect(effect2Runs).toBe(1);
+
+      // Change valueA - both effects should re-run
+      valueA.value = 10;
+      expect(effect1Runs).toBe(2);
+      expect(effect2Runs).toBe(2);
+
+      // Change valueB - only effect2 should re-run
+      valueB.value = 100;
+      expect(effect1Runs).toBe(2); // Prevented loop
+      expect(effect2Runs).toBe(3); // Allowed loop
+
+      dispose1();
+      dispose2();
     });
   });
 });

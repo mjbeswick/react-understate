@@ -7,10 +7,52 @@
 
 import { logDebug } from './debug-utils';
 
+/**
+ * A valid state name that cannot contain dots (.) as they break the code.
+ * State names are used for debugging and must be valid JavaScript identifiers.
+ */
+export type StateName = string & { readonly __brand: 'StateName' };
+
+/**
+ * Validates that a name is valid for use as a state name.
+ * Names cannot contain dots (.) as they break the code.
+ *
+ * @param name - The name to validate
+ * @returns The validated name as a StateName type
+ * @throws Error if the name is invalid
+ */
+export function validateStateName(name: string): StateName {
+  if (name.includes('.')) {
+    throw new Error(
+      `Invalid state name '${name}': Names cannot contain dots (.) as they break the code.`,
+    );
+  }
+
+  // Additional validation for valid JavaScript identifier
+  if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name)) {
+    throw new Error(
+      `Invalid state name '${name}': Names must be valid JavaScript identifiers (start with letter, underscore, or $, followed by letters, numbers, underscores, or $).`,
+    );
+  }
+
+  return name as StateName;
+}
+
 // Global state for tracking active effects and batching
 let activeEffect: (() => void) | null = null;
 let isBatching = false;
 const pendingUpdates = new Set<() => void>();
+
+// Global state for tracking effect dependency filtering
+let activeEffectOptions: {
+  once?: boolean;
+  preventOverlap?: boolean;
+  preventLoops?: boolean;
+} | null = null;
+
+// Track which reactive values were read by the current effect
+const readValues = new Set<{ value: any }>();
+let currentEffect: (() => void) | null = null;
 
 // Debug configuration
 type DebugOptions = {
@@ -167,7 +209,8 @@ export interface State<T> {
    * effect(() => console.log(`Count is now: ${count.value}`));
    * ```
    */
-  value: T;
+  get value(): T;
+  set value(newValue: T | ((prev: T) => T | Promise<T>));
 }
 
 /**
@@ -244,10 +287,12 @@ export function action<T extends (...args: any[]) => any>(
   fn: T,
   name?: string,
 ): T {
+  // Validate name if provided
+  const validatedName = name ? validateStateName(name) : undefined;
   return ((...args: Parameters<T>) => {
     // Debug logging
-    if (name) {
-      logDebug(`action: '${name}'`, debugConfig);
+    if (validatedName) {
+      logDebug(`action: '${validatedName}'`, debugConfig);
     }
 
     // Automatically batch the action
@@ -328,6 +373,8 @@ export function action<T extends (...args: any[]) => any>(
  * ```
  */
 export function state<T>(initialValue: T, name?: string): State<T> {
+  // Validate name if provided
+  const validatedName = name ? validateStateName(name) : undefined;
   // Store the initial value directly - TypeScript handles immutability
   let value = initialValue;
   const subscribers = new Set<() => void>();
@@ -343,6 +390,14 @@ export function state<T>(initialValue: T, name?: string): State<T> {
 
     // Also notify dependencies (effects and computed values)
     dependencies.forEach(dep => {
+      // Skip notifying the current effect if it read this value and loop prevention is enabled
+      if (
+        dep === activeEffect &&
+        activeEffectOptions?.preventLoops !== false &&
+        wasValueRead(stateObj)
+      ) {
+        return; // Skip this notification to prevent infinite loop
+      }
       dep();
     });
   };
@@ -361,17 +416,17 @@ export function state<T>(initialValue: T, name?: string): State<T> {
           try {
             resolvedValue = await result;
             // Log async resolution
-            if (name) {
+            if (validatedName) {
               logDebug(
-                `state: '${name}' async resolved: ${JSON.stringify(resolvedValue, null, 2)}`,
+                `state: '${validatedName}' async resolved: ${JSON.stringify(resolvedValue, null, 2)}`,
                 debugConfig,
               );
             }
           } catch (error) {
             // Log async rejection
-            if (name) {
+            if (validatedName) {
               logDebug(
-                `state: '${name}' async rejected: ${error}`,
+                `state: '${validatedName}' async rejected: ${error}`,
                 debugConfig,
               );
             }
@@ -387,9 +442,9 @@ export function state<T>(initialValue: T, name?: string): State<T> {
 
       if (!Object.is(value, resolvedValue)) {
         // Debug logging
-        if (name) {
+        if (validatedName) {
           logDebug(
-            `state: '${name}' ${JSON.stringify(resolvedValue, null, 2)}`,
+            `state: '${validatedName}' ${JSON.stringify(resolvedValue, null, 2)}`,
             debugConfig,
           );
         }
@@ -415,10 +470,10 @@ export function state<T>(initialValue: T, name?: string): State<T> {
         try {
           const newValue = await result;
           // Log async resolution
-          if (name) {
+          if (validatedName) {
             const debugConfig = configureDebug();
             logDebug(
-              `state: '${name}' update async resolved: ${JSON.stringify(newValue, null, 2)}`,
+              `state: '${validatedName}' update async resolved: ${JSON.stringify(newValue, null, 2)}`,
               debugConfig,
             );
           }
@@ -426,10 +481,10 @@ export function state<T>(initialValue: T, name?: string): State<T> {
           setValue(newValue);
         } catch (error) {
           // Log async rejection
-          if (name) {
+          if (validatedName) {
             const debugConfig = configureDebug();
             logDebug(
-              `state: '${name}' update async rejected: ${error}`,
+              `state: '${validatedName}' update async rejected: ${error}`,
               debugConfig,
             );
           }
@@ -460,12 +515,23 @@ export function state<T>(initialValue: T, name?: string): State<T> {
     get value() {
       // Track this state as a dependency if we're in an effect or computed
       if (activeEffect) {
+        // Track that this value was read during effect execution
+        addReadValue(stateObj);
         dependencies.add(activeEffect);
       }
       return value;
     },
     set value(newValue: T | ((prev: T) => T | Promise<T>)) {
-      setValue(newValue);
+      if (typeof newValue === 'function') {
+        const result = (newValue as (prev: T) => T | Promise<T>)(value);
+        if (result instanceof Promise) {
+          result.then(resolvedValue => setValue(resolvedValue));
+          return;
+        }
+        setValue(result);
+      } else {
+        setValue(newValue);
+      }
     },
 
     toString() {
@@ -474,8 +540,14 @@ export function state<T>(initialValue: T, name?: string): State<T> {
   };
 
   // Register named states for debugging
-  if (name && typeof window !== 'undefined') {
-    (window as any).understate.states[name] = stateObj;
+  if (validatedName && typeof window !== 'undefined') {
+    initializeWindowUnderstate();
+    if ((window as any).understate.states[validatedName]) {
+      throw new Error(
+        `State with name '${validatedName}' already exists. State names must be unique.`,
+      );
+    }
+    (window as any).understate.states[validatedName] = stateObj;
   }
 
   return stateObj as State<T>;
@@ -507,6 +579,51 @@ export function setActiveEffect(
   const prev = activeEffect;
   activeEffect = effect;
   return prev;
+}
+
+export function setActiveEffectOptions(
+  options: typeof activeEffectOptions,
+): typeof activeEffectOptions {
+  const prev = activeEffectOptions;
+  activeEffectOptions = options;
+  return prev;
+}
+
+export function getActiveEffectOptions(): typeof activeEffectOptions {
+  return activeEffectOptions;
+}
+
+export function addReadValue(value: { value: any }): void {
+  if (
+    activeEffect &&
+    activeEffectOptions?.preventLoops !== false &&
+    activeEffect === currentEffect
+  ) {
+    readValues.add(value);
+  }
+}
+
+export function clearReadValues(): void {
+  readValues.clear();
+}
+
+export function wasValueRead(value: { value: any }): boolean {
+  return readValues.has(value);
+}
+
+export function setCurrentEffect(effect: (() => void) | null): void {
+  currentEffect = effect;
+}
+
+// Global flag to track if the current effect is modifying values
+let isEffectModifyingValues = false;
+
+export function setIsEffectModifyingValues(modifying: boolean): void {
+  isEffectModifyingValues = modifying;
+}
+
+export function getIsEffectModifyingValues(): boolean {
+  return isEffectModifyingValues;
 }
 export function setIsBatching(batching: boolean): boolean {
   const prev = isBatching;
@@ -566,9 +683,20 @@ export function batch(fn: () => void): void {
 }
 
 // Expose debug API and states on window for browser debugging
-if (typeof window !== 'undefined') {
-  (window as any).understate = {
-    configureDebug,
-    states: {},
-  };
+// Use lazy initialization to avoid issues with React hooks
+let windowUnderstateInitialized = false;
+function initializeWindowUnderstate() {
+  if (typeof window !== 'undefined' && !windowUnderstateInitialized) {
+    (window as any).understate = {
+      configureDebug,
+      states: {},
+    };
+    windowUnderstateInitialized = true;
+  }
+}
+
+// Initialize on first state creation
+export function getWindowUnderstate() {
+  initializeWindowUnderstate();
+  return (window as any).understate;
 }

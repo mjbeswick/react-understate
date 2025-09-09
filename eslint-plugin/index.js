@@ -1,27 +1,53 @@
-module.exports = {
+import requireUseSubscribe from './rules/require-use-subscribe.cjs';
+import requireUseSubscribeStoreObject from './rules/require-use-subscribe-store-object.cjs';
+import preferBatchForMultipleUpdates from './rules/prefer-batch-for-multiple-updates.cjs';
+import noDirectStateAssignment from './rules/no-direct-state-assignment.cjs';
+import requireUseSubscribeForAllStates from './rules/require-use-subscribe-for-all-states.cjs';
+import preferDerivedForComputed from './rules/prefer-derived-for-computed.cjs';
+import noStateCreationInComponents from './rules/no-state-creation-in-components.cjs';
+import preferEffectForSideEffects from './rules/prefer-effect-for-side-effects.cjs';
+import noUnusedStates from './rules/no-unused-states.cjs';
+import requireErrorHandlingInAsyncUpdates from './rules/require-error-handling-in-async-updates.cjs';
+import preferObjectSpreadForUpdates from './rules/prefer-object-spread-for-updates.cjs';
+import noNestedEffects from './rules/no-nested-effects.cjs';
+import noNestedDerived from './rules/no-nested-derived.cjs';
+import noLibraryFunctionsInActions from './rules/no-library-functions-in-actions.cjs';
+import noStateCreationInEffects from './rules/no-state-creation-in-effects.cjs';
+import noDerivedCreationInEffects from './rules/no-derived-creation-in-effects.cjs';
+import noStateUpdatesInDerived from './rules/no-state-updates-in-derived.cjs';
+import noEffectCreationInDerived from './rules/no-effect-creation-in-derived.cjs';
+import requireErrorHandlingInEffects from './rules/require-error-handling-in-effects.cjs';
+import noDirectStateMutation from './rules/no-direct-state-mutation.cjs';
+import noUnusedActionParameters from './rules/no-unused-action-parameters.cjs';
+import requireStateSubscriptionCleanup from './rules/require-state-subscription-cleanup.cjs';
+import requireValidStateName from './rules/require-valid-state-name.cjs';
+
+export default {
   rules: {
-    'require-use-subscribe': require('./rules/require-use-subscribe'),
-    'require-use-subscribe-store-object': require('./rules/require-use-subscribe-store-object'),
-    'prefer-batch-for-multiple-updates': require('./rules/prefer-batch-for-multiple-updates'),
-    'no-direct-state-assignment': require('./rules/no-direct-state-assignment'),
-    'require-use-subscribe-for-all-states': require('./rules/require-use-subscribe-for-all-states'),
-    'prefer-derived-for-computed': require('./rules/prefer-derived-for-computed'),
-    'no-state-creation-in-components': require('./rules/no-state-creation-in-components'),
-    'prefer-effect-for-side-effects': require('./rules/prefer-effect-for-side-effects'),
-    'no-unused-states': require('./rules/no-unused-states'),
-    'require-error-handling-in-async-updates': require('./rules/require-error-handling-in-async-updates'),
-    'prefer-object-spread-for-updates': require('./rules/prefer-object-spread-for-updates'),
-    'no-nested-effects': require('./rules/no-nested-effects'),
-    'no-nested-derived': require('./rules/no-nested-derived'),
-    'no-library-functions-in-actions': require('./rules/no-library-functions-in-actions.cjs'),
-    'no-state-creation-in-effects': require('./rules/no-state-creation-in-effects.cjs'),
-    'no-derived-creation-in-effects': require('./rules/no-derived-creation-in-effects.cjs'),
-    'no-state-updates-in-derived': require('./rules/no-state-updates-in-derived.cjs'),
-    'no-effect-creation-in-derived': require('./rules/no-effect-creation-in-derived.cjs'),
-    'require-error-handling-in-effects': require('./rules/require-error-handling-in-effects.cjs'),
-    'no-direct-state-mutation': require('./rules/no-direct-state-mutation.cjs'),
-    'no-unused-action-parameters': require('./rules/no-unused-action-parameters.cjs'),
-    'require-state-subscription-cleanup': require('./rules/require-state-subscription-cleanup.cjs'),
+    'require-use-subscribe': requireUseSubscribe,
+    'require-use-subscribe-store-object': requireUseSubscribeStoreObject,
+    'prefer-batch-for-multiple-updates': preferBatchForMultipleUpdates,
+    'no-direct-state-assignment': noDirectStateAssignment,
+    'require-use-subscribe-for-all-states': requireUseSubscribeForAllStates,
+    'prefer-derived-for-computed': preferDerivedForComputed,
+    'no-state-creation-in-components': noStateCreationInComponents,
+    'prefer-effect-for-side-effects': preferEffectForSideEffects,
+    'no-unused-states': noUnusedStates,
+    'require-error-handling-in-async-updates':
+      requireErrorHandlingInAsyncUpdates,
+    'prefer-object-spread-for-updates': preferObjectSpreadForUpdates,
+    'no-nested-effects': noNestedEffects,
+    'no-nested-derived': noNestedDerived,
+    'no-library-functions-in-actions': noLibraryFunctionsInActions,
+    'no-state-creation-in-effects': noStateCreationInEffects,
+    'no-derived-creation-in-effects': noDerivedCreationInEffects,
+    'no-state-updates-in-derived': noStateUpdatesInDerived,
+    'no-effect-creation-in-derived': noEffectCreationInDerived,
+    'require-error-handling-in-effects': requireErrorHandlingInEffects,
+    'no-direct-state-mutation': noDirectStateMutation,
+    'no-unused-action-parameters': noUnusedActionParameters,
+    'require-state-subscription-cleanup': requireStateSubscriptionCleanup,
+    'require-valid-state-name': requireValidStateName,
   },
   configs: {
     recommended: {
@@ -43,6 +69,7 @@ module.exports = {
         'react-understate/no-direct-state-mutation': 'error',
         'react-understate/no-unused-action-parameters': 'warn',
         'react-understate/require-state-subscription-cleanup': 'warn',
+        'react-understate/require-valid-state-name': 'error',
 
         // Warning rules - these are best practices but not critical
         'react-understate/prefer-derived-for-computed': 'warn',

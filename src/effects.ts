@@ -5,8 +5,58 @@
  * Effects automatically re-execute when their dependencies change.
  */
 
-import { setActiveEffect, configureDebug } from './core';
+import {
+  setActiveEffect,
+  setActiveEffectOptions,
+  clearReadValues,
+  setCurrentEffect,
+  configureDebug,
+  validateStateName,
+} from './core';
 import { logDebug } from './debug-utils';
+
+/**
+ * Options for controlling effect execution behavior.
+ */
+export type EffectOptions = {
+  /**
+   * Only run the effect once, ignoring subsequent dependency changes.
+   * Useful for one-time initialization or setup effects.
+   *
+   * @example
+   * effect(() => {
+   *   // This will only run once, even if dependencies change
+   *   initializeSomething();
+   * }, 'initEffect', { once: true });
+   */
+  once?: boolean;
+
+  /**
+   * Prevent the effect from re-running if it's already running.
+   * Useful for preventing overlapping executions of async effects.
+   *
+   * @example
+   * effect(async () => {
+   *   // This won't re-run if already running
+   *   await fetchData();
+   * }, 'fetchEffect', { preventOverlap: true });
+   */
+  preventOverlap?: boolean;
+
+  /**
+   * Automatically prevent infinite loops by ignoring re-execution when
+   * the effect modifies reactive values it reads. This is the default behavior.
+   * Set to false to allow all dependency changes to trigger re-execution.
+   *
+   * @example
+   * effect(() => {
+   *   const a = valueA.value; // Reads valueA
+   *   const b = valueB.value; // Reads valueB
+   *   valueB.value = someNewValue; // Modifies valueB - won't trigger re-execution
+   * }, 'effectName', { preventLoops: true }); // This is the default
+   */
+  preventLoops?: boolean;
+};
 
 /**
  * Runs a side effect that automatically re-executes when dependencies change.
@@ -93,17 +143,38 @@ import { logDebug } from './debug-utils';
 export function effect(
   fn: () => void | (() => void) | Promise<void> | Promise<() => void>,
   name?: string,
+  options?: EffectOptions,
 ): () => void {
+  // Validate name if provided
+  const validatedName = name ? validateStateName(name) : undefined;
   let cleanup: (() => void) | void;
   let disposed = false;
+  let hasRunOnce = false;
+  let isExecuting = false;
+
+  // Set default options
+  const effectOptions: EffectOptions = {
+    preventLoops: true, // Default to preventing loops
+    ...options,
+  };
 
   const runEffect = () => {
     if (disposed) return;
 
+    // Handle once option
+    if (effectOptions.once && hasRunOnce) return;
+
+    // Handle preventOverlap option
+    if (effectOptions.preventOverlap && isExecuting) {
+      return;
+    }
+
+    isExecuting = true;
+
     // Debug logging
-    if (name) {
+    if (validatedName) {
       const debugConfig = configureDebug();
-      logDebug(`effect: '${name}' running`, debugConfig);
+      logDebug(`effect: '${validatedName}' running`, debugConfig);
     }
 
     // Call previous cleanup before re-running
@@ -112,6 +183,14 @@ export function effect(
       cleanup = undefined;
     }
 
+    // Clear read values from previous execution
+    clearReadValues();
+
+    // Set current effect for loop prevention
+    setCurrentEffect(runEffect);
+
+    // Set active effect options for dependency tracking
+    const prevOptions = setActiveEffectOptions(effectOptions);
     const prevEffect = setActiveEffect(runEffect);
 
     try {
@@ -122,17 +201,20 @@ export function effect(
           .then(cleanupResult => {
             cleanup = cleanupResult;
             // Log async resolution
-            if (name) {
+            if (validatedName) {
               const debugConfig = configureDebug();
-              logDebug(`effect: '${name}' async resolved`, debugConfig);
+              logDebug(
+                `effect: '${validatedName}' async resolved`,
+                debugConfig,
+              );
             }
           })
           .catch(error => {
             // Log async rejection
-            if (name) {
+            if (validatedName) {
               const debugConfig = configureDebug();
               logDebug(
-                `effect: '${name}' async rejected: ${error}`,
+                `effect: '${validatedName}' async rejected: ${error}`,
                 debugConfig,
               );
             }
@@ -141,15 +223,27 @@ export function effect(
           })
           .finally(() => {
             setActiveEffect(prevEffect);
+            setActiveEffectOptions(prevOptions);
+            setCurrentEffect(null);
+            isExecuting = false;
+            hasRunOnce = true;
           });
       } else {
         cleanup = result;
         setActiveEffect(prevEffect);
+        setActiveEffectOptions(prevOptions);
+        setCurrentEffect(null);
+        isExecuting = false;
+        hasRunOnce = true;
       }
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Effect function failed:', error);
       setActiveEffect(prevEffect);
+      setActiveEffectOptions(prevOptions);
+      setCurrentEffect(null);
+      isExecuting = false;
+      hasRunOnce = true;
     }
   };
 
@@ -157,8 +251,20 @@ export function effect(
   runEffect();
 
   // Register named effects for debugging
-  if (name && typeof window !== 'undefined') {
-    (window as any).understate.states[name] = {
+  if (validatedName && typeof window !== 'undefined') {
+    // Initialize window.understate if not already done
+    if (!(window as any).understate) {
+      (window as any).understate = {
+        configureDebug: () => ({}),
+        states: {},
+      };
+    }
+    if ((window as any).understate.states[validatedName]) {
+      throw new Error(
+        `Effect with name '${validatedName}' already exists. State names must be unique.`,
+      );
+    }
+    (window as any).understate.states[validatedName] = {
       value: 'effect',
       dispose: () => {
         disposed = true;

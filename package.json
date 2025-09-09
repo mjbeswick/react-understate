@@ -1,6 +1,6 @@
 {
   "name": "react-understate",
-  "version": "1.7.3",
+  "version": "1.8.0",
   "description": "A lightweight, reactive signals library for React 18+ with automatic dependency tracking and optimized performance",
   "type": "module",
   "main": "dist/react-understate.esm.js",
@@ -84,9 +84,6 @@
   "engines": {
     "node": ">=23.6.0"
   },
-  "peerDependencies": {
-    "react": ">=18.0.0"
-  },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-node-resolve": "^16.0.1",
@@ -118,6 +115,8 @@
     "dist"
   ],
   "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "use-sync-external-store": "^1.5.0"
   }
 }
