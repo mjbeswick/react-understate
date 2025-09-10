@@ -11,7 +11,7 @@ The state management library that's so lightweight, it makes Redux feel like you
 - 🎯 **Simple API** - Just use `.value` to read/write state values
 - ⚡ **Automatic dependency tracking** - Effects and derived values update automatically
 - 🔄 **React 18+ integration** - Built with `useSyncExternalStore` for optimal performance
-- 🚀 **Async support** - Built-in async update methods with loading states
+- 🚀 **Async support** - Built-in async update methods and async setters with loading states
 - 💾 **State persistence** - Built-in localStorage/sessionStorage persistence with cross-tab sync
 - 📦 **Lightweight** - Minimal bundle size with zero dependencies
 - 🎨 **TypeScript first** - Full type safety out of the box
@@ -20,6 +20,7 @@ The state management library that's so lightweight, it makes Redux feel like you
 - 🎭 **Named reactive elements** - Give names to states, derived values, and effects for better debugging
 - 🐛 **Debug logging** - Built-in debug system with configurable logging
 - ⚡ **Action functions** - Automatic batching and debug logging for state updates
+- 🔧 **ESLint integration** - Built-in ESLint rules for best practices and state name validation
 
 ## Installation
 
@@ -27,17 +28,55 @@ The state management library that's so lightweight, it makes Redux feel like you
 npm install react-understate
 ```
 
+### ESLint Integration (Optional)
+
+For additional code quality and best practices, install the ESLint plugin:
+
+```bash
+npm install --save-dev eslint-plugin-react-understate
+```
+
+Then add it to your ESLint configuration:
+
+```js
+// eslint.config.js
+import reactUnderstate from 'eslint-plugin-react-understate';
+
+export default [
+  // ... other configs
+  {
+    plugins: {
+      'react-understate': reactUnderstate,
+    },
+    rules: {
+      ...reactUnderstate.configs.recommended.rules,
+    },
+  },
+];
+```
+
+**Available Rules:**
+
+- `require-valid-state-name` - Ensures state names are valid JavaScript identifiers
+- `no-nested-understate-functions` - Prevents any understate function calls inside other understate functions
+- `no-batch-in-effects` - Prevents redundant batch() calls inside effects (effects auto-batch)
+- `prefer-derived-for-computed` - Suggests using derived values for computed state
+- `prefer-effect-for-side-effects` - Suggests using effects for side effects
+- And many more best practice rules...
+
 ## Quick Start
 
 **Basic usage with store pattern:**
 
 ```tsx
-import { state, useUnderstate } from 'react-understate';
+import { state, useUnderstate, action } from 'react-understate';
 
 // Create a store object
 const store = {
   count: state(0),
-  increment: () => store.count.value++,
+  increment: action(() => {
+    store.count.value++;
+  }, 'increment'),
 };
 
 function Counter() {
@@ -55,25 +94,31 @@ function Counter() {
 
 ### States
 
-States are reactive containers that hold values and notify subscribers when they change. Always use the `.value` property to read and write state values.
+States are reactive containers that hold values and notify subscribers when they change. Always use the `.value` property to read state values. For updates, prefer using actions, but direct assignment is acceptable for simple cases.
 
 ```tsx
-import { state } from 'react-understate';
+import { state, action } from 'react-understate';
 
 const count = state(0);
 console.log(count.value); // 0
 
-count.value = 5;
+// Use actions for state updates
+const setCount = action((value: number) => {
+  count.value = value;
+}, 'setCount');
+
+const increment = action((amount: number) => {
+  count.value = prev => prev + amount;
+}, 'increment');
+
+const asyncIncrement = action(async (amount: number) => {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  count.value = prev => prev + amount;
+}, 'asyncIncrement');
+
+// Call actions instead of direct assignment
+setCount(5);
 console.log(count.value); // 5
-
-// Update with function (sync)
-count.value = prev => prev + 1;
-
-// Update with async function
-count.value = async prev => {
-  const result = await fetch('/api/increment');
-  return prev + (await result.json());
-};
 ```
 
 ### Derived Values
@@ -81,7 +126,7 @@ count.value = async prev => {
 Derived values automatically update when their dependencies change:
 
 ```tsx
-import { state, derived } from 'react-understate';
+import { state, derived, action } from 'react-understate';
 
 const firstName = state('John');
 const lastName = state('Doe');
@@ -92,16 +137,20 @@ const fullName = derived(() => `${firstName.value} ${lastName.value}`);
 console.log(fullName.value); // "John Doe"
 
 // Update dependencies - derived automatically updates
-firstName.value = 'Jane';
+const setFirstName = action((name: string) => {
+  firstName.value = name;
+}, 'setFirstName');
+
+setFirstName('Jane');
 console.log(fullName.value); // "Jane Doe"
 ```
 
 ### Effects
 
-Effects run side effects when dependencies change:
+Effects run side effects when dependencies change. You can control effect behavior with options:
 
 ```tsx
-import { state, effect } from 'react-understate';
+import { state, effect, action } from 'react-understate';
 
 const count = state(0);
 const name = state('John');
@@ -111,9 +160,87 @@ effect(() => {
   console.log(`Count: ${count.value}, Name: ${name.value}`);
 });
 
-count.value = 5; // Logs: "Count: 5, Name: John"
-name.value = 'Jane'; // Logs: "Count: 5, Name: Jane"
+// Effect with options
+effect(
+  () => {
+    console.log('This runs only once');
+  },
+  'oneTimeEffect',
+  { once: true },
+);
+
+// Effect that prevents overlapping executions
+effect(
+  async () => {
+    await fetch('/api/data');
+    console.log('API call completed');
+  },
+  'apiEffect',
+  { preventOverlap: true },
+);
+
+// Effect that prevents infinite loops (default behavior)
+effect(
+  () => {
+    count.value = count.value + 1; // Won't cause infinite loop
+  },
+  'safeEffect',
+  { preventLoops: true },
+);
+
+const setCount = action((value: number) => {
+  count.value = value;
+}, 'setCount');
+
+const setName = action((value: string) => {
+  name.value = value;
+}, 'setName');
+
+setCount(5); // Logs: "Count: 5, Name: John"
+setName('Jane'); // Logs: "Count: 5, Name: Jane"
 ```
+
+**Effect Options:**
+
+- `once: boolean` - Run effect only once, ignore subsequent dependency changes
+- `preventOverlap: boolean` - Prevent overlapping executions of async effects
+- `preventLoops: boolean` - Automatically prevent infinite loops (default: true)
+
+**Automatic Batching:**
+
+Effects automatically batch state updates to prevent infinite loops and improve performance. Multiple state updates within an effect are collected and processed together:
+
+```tsx
+effect(() => {
+  // These updates are automatically batched
+  count.value = count.value + 1;
+  name.value = name.value + '!';
+  count.value = count.value + 1;
+  // Only triggers effects once at the end
+});
+```
+
+**Infinite Loop Detection:**
+
+React Understate automatically detects and prevents infinite loops in effects. If an effect runs more than 10 times per second, it will be automatically disabled with a helpful error message:
+
+```tsx
+effect(() => {
+  // This will cause an infinite loop
+  count.value = count.value + 1; // Effect modifies state it depends on
+}, 'problematicEffect');
+
+// Console output:
+// 🚨 INFINITE LOOP DETECTED in effect 'problematicEffect'!
+// Effect has run 11 times in the last second.
+// This usually happens when an effect modifies a state it depends on.
+// Consider using preventLoops: false or restructuring your effect.
+```
+
+**Loop Prevention Options:**
+
+- `preventLoops: true` (default) - Automatically prevents infinite loops
+- `preventLoops: false` - Allows infinite loops (useful for testing or specific use cases)
 
 ### Async Updates
 
@@ -242,11 +369,13 @@ batch(() => {
 The `useUnderstate` hook subscribes to state changes and re-renders components when values change:
 
 ```tsx
-import { state, useUnderstate } from 'react-understate';
+import { state, useUnderstate, action } from 'react-understate';
 
 const store = {
   count: state(0),
-  increment: () => store.count.value++,
+  increment: action(() => {
+    store.count.value++;
+  }, 'increment'),
 };
 
 function Counter() {
@@ -260,6 +389,8 @@ function Counter() {
 Organize related state and actions together:
 
 ```tsx
+import { state, derived, action } from 'react-understate';
+
 const todoStore = {
   // State
   todos: state<Todo[]>([]),
@@ -279,7 +410,7 @@ const todoStore = {
   }),
 
   // Actions
-  addTodo: () => {
+  addTodo: action(() => {
     if (todoStore.newTodo.value.trim()) {
       todoStore.todos.value = [
         ...todoStore.todos.value,
@@ -291,17 +422,17 @@ const todoStore = {
       ];
       todoStore.newTodo.value = '';
     }
-  },
+  }, 'addTodo'),
 
-  toggleTodo: (id: number) => {
+  toggleTodo: action((id: number) => {
     todoStore.todos.value = todoStore.todos.value.map(todo =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo,
     );
-  },
+  }, 'toggleTodo'),
 
-  setFilter: (filter: typeof todoStore.filter.value) => {
+  setFilter: action((filter: typeof todoStore.filter.value) => {
     todoStore.filter.value = filter;
-  },
+  }, 'setFilter'),
 };
 ```
 
@@ -354,6 +485,8 @@ dispose();
 React Understate is designed to make it easy to completely separate business logic from the presentation layer:
 
 ```tsx
+import { state, action } from 'react-understate';
+
 // ✅ GOOD - Business logic in store
 const store = {
   // State
@@ -361,7 +494,7 @@ const store = {
   loading: state(false),
 
   // Actions (business logic)
-  login: async (email: string, password: string) => {
+  login: action(async (email: string, password: string) => {
     store.loading.value = true;
     try {
       const response = await fetch('/api/login', {
@@ -372,11 +505,11 @@ const store = {
     } finally {
       store.loading.value = false;
     }
-  },
+  }, 'login'),
 
-  logout: () => {
+  logout: action(() => {
     store.user.value = null;
-  },
+  }, 'logout'),
 };
 
 // UI only calls actions
@@ -415,13 +548,15 @@ describe('Todo Store', () => {
   });
 
   it('should add todos', () => {
-    store.addTodo('Learn React Understate');
+    store.newTodo.value = 'Learn React Understate';
+    store.addTodo();
     expect(store.todos.value).toHaveLength(1);
     expect(store.todos.value[0].text).toBe('Learn React Understate');
   });
 
   it('should toggle todo completion', () => {
-    store.addTodo('Test todo');
+    store.newTodo.value = 'Test todo';
+    store.addTodo();
     const todoId = store.todos.value[0].id;
 
     store.toggleTodo(todoId);
@@ -434,12 +569,61 @@ describe('Todo Store', () => {
 
 1. **Create states at module level** - Never inside components
 2. **Use store object pattern** - Group related state and actions together
-3. **Separate business logic from UI** - Keep state and actions together, UI only calls actions
-4. **Batch related updates** - Use `batch()` for multiple simultaneous updates
-5. **Prefer derived over effects** - Use derived for computed state, effects for side effects
-6. **Use object spread for updates** - Maintain immutability with object/array updates
-7. **Handle errors in async updates** - Always wrap async operations in try-catch
-8. **Use TypeScript** - Take advantage of full type safety and immutability
+3. **Always use actions for state updates** - Never update state directly, always use actions
+4. **Separate business logic from UI** - Keep state and actions together, UI only calls actions
+5. **No nested understate functions** - Never call any understate function inside another understate function
+6. **Batch related updates** - Use `batch()` for multiple simultaneous updates
+7. **Prefer derived over effects** - Use derived for computed state, effects for side effects
+8. **Use object spread for updates** - Maintain immutability with object/array updates
+9. **Handle errors in async updates** - Always wrap async operations in try-catch
+10. **Use TypeScript** - Take advantage of full type safety and immutability
+
+### No Nested Understate Functions
+
+React Understate enforces a strict rule: **no understate function should be called inside any other understate function**. This keeps your code predictable and prevents complex dependency chains.
+
+```tsx
+// ✅ GOOD - All understate functions at top level
+const count = state(0, 'count');
+const doubled = derived(() => count.value * 2, 'doubled');
+const increment = action(() => {
+  count.value = count.value + 1;
+}, 'increment');
+
+effect(() => {
+  console.log(`Count: ${count.value}, Doubled: ${doubled.value}`);
+}, 'logCount');
+
+// ❌ BAD - Nested understate functions
+effect(() => {
+  const nestedState = state(0); // ❌ No state inside effect
+  const nestedDerived = derived(() => nestedState.value * 2); // ❌ No derived inside effect
+  const nestedAction = action(() => {
+    nestedState.value = nestedState.value + 1;
+  }); // ❌ No action inside effect
+}, 'badEffect');
+
+// ❌ BAD - Nested in derived
+const badDerived = derived(() => {
+  const nestedState = state(0); // ❌ No state inside derived
+  return nestedState.value;
+}, 'badDerived');
+
+// ❌ BAD - Nested in action
+const badAction = action(() => {
+  const nestedState = state(0); // ❌ No state inside action
+  const nestedEffect = effect(() => {
+    console.log('nested');
+  }); // ❌ No effect inside action
+}, 'badAction');
+```
+
+**Why this rule exists:**
+
+- **Predictability** - All reactive elements are created at module level
+- **Performance** - Prevents memory leaks from repeated creation
+- **Debugging** - Clear separation between reactive elements and business logic
+- **Maintainability** - Easier to understand and modify code
 
 ### TypeScript Support
 
@@ -460,6 +644,8 @@ The todo example demonstrates the recommended pattern for organizing React Under
 ### Pattern Overview
 
 ```tsx
+import { state, derived, action, persistLocalStorage } from 'react-understate';
+
 // 1. Define types
 export type Todo = {
   id: number;
@@ -489,7 +675,7 @@ export const filteredTodos = derived(() => {
 });
 
 // 5. Define action functions
-function addTodo() {
+const addTodo = action(() => {
   if (newTodo.value.trim()) {
     todos.value = [
       ...todos.value,
@@ -501,13 +687,13 @@ function addTodo() {
     ];
     newTodo.value = '';
   }
-}
+}, 'addTodo');
 
-function toggleTodo(id: number) {
+const toggleTodo = action((id: number) => {
   todos.value = todos.value.map(todo =>
     todo.id === id ? { ...todo, completed: !todo.completed } : todo,
   );
-}
+}, 'toggleTodo');
 
 // 6. Export everything
 export {
@@ -617,7 +803,7 @@ Check out the complete examples in the `examples/` directory:
 
 - `state<T>(initialValue: T, name?: string): State<T>` - Create a reactive state
 - `derived<T>(fn: () => T, name?: string): Derived<T>` - Create a derived value
-- `effect(fn: () => void | (() => void), name?: string): () => void` - Create an effect
+- `effect(fn: () => void | (() => void) | Promise<void>, name?: string, options?: EffectOptions): () => void` - Create an effect
 - `batch(fn: () => void): void` - Batch multiple updates
 - `action<T extends any[]>(fn: (...args: T) => void, name?: string): (...args: T) => void` - Create an action function
 
@@ -659,6 +845,12 @@ window.understate.states.count.value = 100;
 ### Types
 
 ```tsx
+type EffectOptions = {
+  once?: boolean; // Run effect only once, ignore subsequent dependency changes
+  preventOverlap?: boolean; // Prevent overlapping executions of async effects
+  preventLoops?: boolean; // Automatically prevent infinite loops (default: true)
+};
+
 type PersistOptions = {
   loadInitial?: boolean; // Load initial value from storage (default: true)
   syncAcrossTabs?: boolean; // Sync changes across tabs (default: true)
@@ -667,6 +859,32 @@ type PersistOptions = {
   onError?: (error: Error) => void; // Error handler
 };
 ```
+
+## Breaking Changes
+
+### Version 1.8.0
+
+- **State Setters Now Accept Async Functions**: State setters can now accept async functions directly:
+
+  ```tsx
+  // ✅ New in 1.8.0 - async setters
+  count.value = async prev => {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return prev + 1;
+  };
+  ```
+
+- **Effect Options**: Effects now accept an options parameter for better control:
+  ```tsx
+  // ✅ New in 1.8.0 - effect options
+  effect(
+    () => {
+      // effect logic
+    },
+    'effectName',
+    { once: true, preventOverlap: true },
+  );
+  ```
 
 ## License
 

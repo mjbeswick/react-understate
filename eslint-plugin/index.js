@@ -21,6 +21,8 @@ import noDirectStateMutation from './rules/no-direct-state-mutation.cjs';
 import noUnusedActionParameters from './rules/no-unused-action-parameters.cjs';
 import requireStateSubscriptionCleanup from './rules/require-state-subscription-cleanup.cjs';
 import requireValidStateName from './rules/require-valid-state-name.cjs';
+import noBatchInEffects from './rules/no-batch-in-effects.cjs';
+import noNestedUnderstateFunctions from './rules/no-nested-understate-functions.cjs';
 
 export default {
   rules: {
@@ -48,6 +50,8 @@ export default {
     'no-unused-action-parameters': noUnusedActionParameters,
     'require-state-subscription-cleanup': requireStateSubscriptionCleanup,
     'require-valid-state-name': requireValidStateName,
+    'no-batch-in-effects': noBatchInEffects,
+    'no-nested-understate-functions': noNestedUnderstateFunctions,
   },
   configs: {
     recommended: {
@@ -70,6 +74,8 @@ export default {
         'react-understate/no-unused-action-parameters': 'warn',
         'react-understate/require-state-subscription-cleanup': 'warn',
         'react-understate/require-valid-state-name': 'error',
+        'react-understate/no-batch-in-effects': 'warn',
+        'react-understate/no-nested-understate-functions': 'error',
 
         // Warning rules - these are best practices but not critical
         'react-understate/prefer-derived-for-computed': 'warn',

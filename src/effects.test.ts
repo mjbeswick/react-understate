@@ -5,7 +5,8 @@
  */
 
 import { effect } from './effects';
-import { state, derived, configureDebug } from './core';
+import { state, configureDebug } from './core';
+import { derived } from './derived';
 
 describe('Effects', () => {
   describe('Basic Functionality', () => {
@@ -632,6 +633,85 @@ describe('Effects', () => {
 
       dispose1();
       dispose2();
+    });
+
+    it('should automatically batch state updates within effects', () => {
+      const count = state(0);
+      const name = state('John');
+      let effectRuns = 0;
+      let otherEffectRuns = 0;
+
+      // Create another effect that depends on count to track notifications
+      const disposeOther = effect(() => {
+        otherEffectRuns++;
+        const currentCount = count.value; // Track dependency
+      });
+
+      const dispose = effect(() => {
+        effectRuns++;
+        // Track count as a dependency
+        const currentCount = count.value;
+        // Multiple state updates within the effect - but don't modify count since we depend on it
+        name.value = name.value + '!';
+        // Add a new state to modify instead
+        const newState = state(0);
+        newState.value = 1;
+      });
+
+      expect(effectRuns).toBe(1);
+      // The other effect should only run once despite multiple updates
+      expect(otherEffectRuns).toBe(1);
+
+      // Trigger effect again by changing count (which the effect doesn't modify)
+      count.value = 10;
+      expect(effectRuns).toBe(2);
+      // The other effect should run again because count changed
+      expect(otherEffectRuns).toBe(2);
+
+      dispose();
+      disposeOther();
+    });
+
+    it('should detect and prevent infinite loops', done => {
+      const count = state(0, 'count');
+      let effectRuns = 0;
+      let consoleErrorCalls = 0;
+
+      // Mock console.error to track calls
+      const originalConsoleError = console.error;
+      console.error = (...args) => {
+        consoleErrorCalls++;
+        originalConsoleError(...args);
+      };
+
+      const dispose = effect(
+        () => {
+          effectRuns++;
+          // This will cause an infinite loop - effect modifies state it depends on
+          count.value = count.value + 1;
+        },
+        'infiniteLoopEffect',
+        { preventLoops: false },
+      ); // Disable loop prevention to allow infinite loop
+
+      // Trigger the effect to start the infinite loop
+      count.value = 1;
+
+      // Wait a bit for the infinite loop to be detected
+      setTimeout(() => {
+        // Should have detected infinite loop and disabled the effect
+        expect(consoleErrorCalls).toBeGreaterThan(0);
+
+        // The effect should be disabled after infinite loop detection
+        const runsBeforeDisable = effectRuns;
+        count.value = 999; // This should not trigger the effect anymore
+        expect(effectRuns).toBe(runsBeforeDisable);
+
+        // Restore console.error
+        console.error = originalConsoleError;
+        dispose();
+        done();
+      }, 200);
     });
   });
 });

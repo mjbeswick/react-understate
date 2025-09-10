@@ -12,6 +12,7 @@ import {
   setCurrentEffect,
   configureDebug,
   validateStateName,
+  batch,
 } from './core';
 import { logDebug } from './debug-utils';
 
@@ -152,6 +153,13 @@ export function effect(
   let hasRunOnce = false;
   let isExecuting = false;
 
+  // Infinite loop detection
+  const executionTimes: number[] = [];
+  const MAX_EXECUTIONS_PER_SECOND = 10; // Threshold for detecting infinite loops
+  const EXECUTION_HISTORY_SIZE = 20; // Keep track of last 20 executions
+  const MIN_EXECUTIONS_FOR_DETECTION = 5; // Minimum executions before checking
+  const DETECTION_WINDOW_MS = 1000; // Time window for detection in milliseconds
+
   // Set default options
   const effectOptions: EffectOptions = {
     preventLoops: true, // Default to preventing loops
@@ -167,6 +175,38 @@ export function effect(
     // Handle preventOverlap option
     if (effectOptions.preventOverlap && isExecuting) {
       return;
+    }
+
+    // Infinite loop detection (only when preventLoops is true)
+    if (effectOptions.preventLoops) {
+      const now = Date.now();
+      executionTimes.push(now);
+
+      // Keep only the last N executions
+      if (executionTimes.length > EXECUTION_HISTORY_SIZE) {
+        executionTimes.shift();
+      }
+
+      // Check for infinite loop if we have enough execution history
+      if (executionTimes.length >= MIN_EXECUTIONS_FOR_DETECTION) {
+        const recentExecutions = executionTimes.filter(
+          time => now - time < DETECTION_WINDOW_MS,
+        );
+        if (recentExecutions.length > MAX_EXECUTIONS_PER_SECOND) {
+          const effectName = validatedName ?? 'unnamed effect';
+          // eslint-disable-next-line no-console
+          console.error(
+            `🚨 INFINITE LOOP DETECTED in effect '${effectName}'!\n` +
+              `Effect has run ${recentExecutions.length} times in the last second.\n` +
+              'This usually happens when an effect modifies a state it depends on.\n' +
+              'Consider using preventLoops: false or restructuring your effect.',
+          );
+
+          // Disable the effect to prevent further infinite loops
+          disposed = true;
+          return;
+        }
+      }
     }
 
     isExecuting = true;
@@ -194,7 +234,17 @@ export function effect(
     const prevEffect = setActiveEffect(runEffect);
 
     try {
-      const result = fn();
+      // Automatically batch state updates within effects to prevent infinite loops
+      let result:
+        | void
+        | (() => void)
+        | Promise<void>
+        | Promise<() => void>
+        | undefined;
+      batch(() => {
+        result = fn();
+      });
+
       if (result instanceof Promise) {
         // Handle async result asynchronously
         result
@@ -229,7 +279,7 @@ export function effect(
             hasRunOnce = true;
           });
       } else {
-        cleanup = result;
+        cleanup = result as void | (() => void);
         setActiveEffect(prevEffect);
         setActiveEffectOptions(prevOptions);
         setCurrentEffect(null);
@@ -253,18 +303,28 @@ export function effect(
   // Register named effects for debugging
   if (validatedName && typeof window !== 'undefined') {
     // Initialize window.understate if not already done
-    if (!(window as any).understate) {
-      (window as any).understate = {
+    if (!(window as unknown as { understate?: unknown }).understate) {
+      (
+        window as unknown as {
+          understate: {
+            configureDebug: () => Record<string, unknown>;
+            states: Record<string, unknown>;
+          };
+        }
+      ).understate = {
         configureDebug: () => ({}),
         states: {},
       };
     }
-    if ((window as any).understate.states[validatedName]) {
+    const windowUnderstate = (
+      window as unknown as { understate: { states: Record<string, unknown> } }
+    ).understate;
+    if (windowUnderstate.states[validatedName]) {
       throw new Error(
         `Effect with name '${validatedName}' already exists. State names must be unique.`,
       );
     }
-    (window as any).understate.states[validatedName] = {
+    windowUnderstate.states[validatedName] = {
       value: 'effect',
       dispose: () => {
         disposed = true;
