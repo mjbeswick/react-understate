@@ -9,19 +9,19 @@ effect(() => {
   batch(() => {
     count.value = count.value + 1;
     name.value = name.value + '!';
-  });
+  }, 'updateInEffect');
 }, 'testEffect');
 
 // This should NOT trigger the ESLint rule - batch() outside of effects is fine
 batch(() => {
   count.value = 5;
   name.value = 'Jane';
-});
+}, 'updateOutsideEffect');
 
 // This should NOT trigger the ESLint rule - batch() in action is fine
 const updateBoth = () => {
   batch(() => {
     count.value = count.value + 1;
     name.value = name.value + '!';
-  });
+  }, 'updateInAction');
 };

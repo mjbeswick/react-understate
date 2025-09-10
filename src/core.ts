@@ -640,6 +640,7 @@ export function setIsBatching(batching: boolean): boolean {
  * unnecessary intermediate updates.
  *
  * @param fn - A function that performs multiple signal updates
+ * @param name - Optional name for debugging purposes
  *
  * @example
  * ```tsx
@@ -664,10 +665,18 @@ export function setIsBatching(batching: boolean): boolean {
  *   firstName.value = 'Bob';
  *   lastName.value = 'Johnson';
  *   age.value = 35;
- * });
+ * }, 'updateUserInfo');
  * ```
  */
-export function batch(fn: () => void): void {
+export function batch(fn: () => void, name?: string): void {
+  // Validate name if provided
+  const validatedName = name ? validateStateName(name) : undefined;
+
+  // Debug logging
+  if (validatedName) {
+    logDebug(`batch: '${validatedName}'`, debugConfig);
+  }
+
   if (setIsBatching(false)) {
     fn();
     return;
