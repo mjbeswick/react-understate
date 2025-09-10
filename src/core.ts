@@ -690,7 +690,6 @@ export function batch(fn: () => void, name?: string): void {
     flushUpdates();
   }
 }
-
 // Expose debug API and states on window for browser debugging
 // Use lazy initialization to avoid issues with React hooks
 let windowUnderstateInitialized = false;
