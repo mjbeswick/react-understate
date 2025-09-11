@@ -121,6 +121,33 @@ setCount(5);
 console.log(count.value); // 5
 ```
 
+**Invariant Assertion:**
+
+For states that may be null or undefined, use the `.invariant()` method for runtime-safe non-null assertions:
+
+```tsx
+const user = state<User | null>(null);
+
+// After ensuring user is loaded
+if (user.value) {
+  // TypeScript knows user.value is User | null
+  console.log(user.value.name); // Type error: name might not exist
+
+  // Use non-null assertion when you know it's safe
+  console.log(user.value!.name); // Works, but no runtime safety
+
+  // Or use the invariant method for runtime safety
+  console.log(user.invariant().name); // Works with runtime check
+}
+
+// The invariant method throws if the value is null/undefined
+try {
+  const name = user.invariant().name; // Throws: "State invariant violated: value is null"
+} catch (error) {
+  console.log('User not loaded yet');
+}
+```
+
 ### Derived Values
 
 Derived values automatically update when their dependencies change:

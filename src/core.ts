@@ -211,6 +211,35 @@ export interface State<T> {
    */
   get value(): T;
   set value(newValue: T | ((prev: T) => T | Promise<T>));
+
+  /**
+   * Invariant assertion for the state value.
+   *
+   * This method asserts that the state value is not null or undefined,
+   * returning the value or throwing an error if the invariant is violated.
+   * Useful when you know the state should have a value but TypeScript can't infer it.
+   *
+   * @returns The non-null value
+   * @throws {Error} If the value is null or undefined
+   *
+   * @example
+   * ```tsx
+   * const user = state<User | null>(null);
+   *
+   * // After ensuring user is loaded
+   * if (user.value) {
+   *   // TypeScript knows user.value is User | null
+   *   console.log(user.value.name); // Type error: name might not exist
+   *
+   *   // Use non-null assertion when you know it's safe
+   *   console.log(user.value!.name); // Works, but no runtime safety
+   *
+   *   // Or use the invariant method for runtime safety
+   *   console.log(user.invariant().name); // Works with runtime check
+   * }
+   * ```
+   */
+  invariant(): NonNullable<T>;
 }
 
 /**
@@ -532,6 +561,22 @@ export function state<T>(initialValue: T, name?: string): State<T> {
       } else {
         setValue(newValue);
       }
+    },
+
+    invariant() {
+      // Track this state as a dependency if we're in an effect or computed
+      if (activeEffect) {
+        addReadValue(stateObj);
+        dependencies.add(activeEffect);
+      }
+
+      if (value === null || value === undefined) {
+        throw new Error(
+          `State invariant violated: value is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the state is initialized.`,
+        );
+      }
+
+      return value as NonNullable<T>;
     },
 
     toString() {

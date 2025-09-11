@@ -1,0 +1,107 @@
+import { state } from './core';
+import { effect } from './state';
+
+describe('State invariant method', () => {
+  it('should return the value when it is not null or undefined', () => {
+    const count = state(42);
+    expect(count.invariant()).toBe(42);
+  });
+
+  it('should return the value when it is 0', () => {
+    const count = state(0);
+    expect(count.invariant()).toBe(0);
+  });
+
+  it('should return the value when it is false', () => {
+    const flag = state(false);
+    expect(flag.invariant()).toBe(false);
+  });
+
+  it('should return the value when it is empty string', () => {
+    const name = state('');
+    expect(name.invariant()).toBe('');
+  });
+
+  it('should throw error when value is null', () => {
+    const user = state<User | null>(null);
+    expect(() => user.invariant()).toThrow(
+      'State invariant violated: value is null. Use .value to access the actual value or ensure the state is initialized.',
+    );
+  });
+
+  it('should throw error when value is undefined', () => {
+    const data = state<Data | undefined>(undefined);
+    expect(() => data.invariant()).toThrow(
+      'State invariant violated: value is undefined. Use .value to access the actual value or ensure the state is initialized.',
+    );
+  });
+
+  it('should track dependencies like .value', () => {
+    const count = state(0);
+    let effectRuns = 0;
+
+    const dispose = effect(() => {
+      effectRuns++;
+      const _ = count.invariant(); // Should track dependency
+    }, 'testEffect');
+
+    expect(effectRuns).toBe(1);
+
+    count.value = 1;
+    expect(effectRuns).toBe(2);
+
+    dispose();
+  });
+
+  it('should work with TypeScript non-null assertion', () => {
+    const user = state<User | null>(null);
+
+    // This should compile without TypeScript errors
+    // but will throw at runtime if user is null
+    expect(() => {
+      const name: string = user.invariant().name; // TypeScript knows this is string
+    }).toThrow();
+  });
+
+  it('should work after setting a non-null value', () => {
+    const user = state<User | null>(null);
+
+    // Initially throws
+    expect(() => user.invariant()).toThrow();
+
+    // After setting a value, should work
+    user.value = { id: 1, name: 'John' };
+    expect(user.invariant().name).toBe('John');
+    expect(user.invariant().id).toBe(1);
+  });
+
+  it('should work with complex objects', () => {
+    const data = state<ComplexData | null>(null);
+
+    data.value = {
+      user: { id: 1, name: 'John' },
+      settings: { theme: 'dark' },
+      items: [1, 2, 3],
+    };
+
+    expect(data.invariant().user.name).toBe('John');
+    expect(data.invariant().settings.theme).toBe('dark');
+    expect(data.invariant().items).toEqual([1, 2, 3]);
+  });
+});
+
+// Test types
+type User = {
+  id: number;
+  name: string;
+};
+
+type Data = {
+  value: string;
+};
+
+type ComplexData = {
+  user: User;
+  settings: { theme: string };
+  items: number[];
+};
