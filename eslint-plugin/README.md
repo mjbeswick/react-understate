@@ -736,6 +736,37 @@ function MyComponent() {
 }
 ```
 
+#### `require-full-reactive-access`
+
+Ensures proper reactive subscriptions in derived functions by detecting nested property access on reactive values.
+
+This rule prevents a common issue where accessing nested properties of reactive values (like `imageCache.value[product.id]`) doesn't create proper subscriptions, leading to derived values that don't update when the reactive value changes.
+
+#### ❌ Incorrect
+
+```tsx
+const sortedProductsWithImages = derived(() => {
+  return sortedProducts.value.map(product => ({
+    ...product,
+    imageUrl: imageCache.value[product.gtin] ?? null, // Nested access - no subscription!
+  }));
+});
+```
+
+#### ✅ Correct
+
+```tsx
+const sortedProductsWithImages = derived(() => {
+  const cache = imageCache.value; // Full reactive access - creates subscription
+  return sortedProducts.value.map(product => ({
+    ...product,
+    imageUrl: cache[product.gtin] ?? null,
+  }));
+});
+```
+
+**Why this matters:** The reactive system only tracks direct property access on the root value. When you access `imageCache.value[product.gtin]`, it reads `imageCache.value` (creating a subscription) but then accesses `[product.gtin]` (no subscription). This means the derived value won't update when `imageCache` changes.
+
 ## Configuration Options
 
 ### `prefer-batch-for-multiple-updates`
@@ -824,7 +855,7 @@ const currentCount = count;
 - `no-library-functions-in-actions` - Prevents library function calls in actions
 - `no-unused-action-parameters` - Detects unused action parameters
 
-### **Best Practice Rules** (6 rules)
+### **Best Practice Rules** (7 rules)
 
 - `prefer-derived-for-computed` - Suggests derived for computed values
 - `prefer-effect-for-side-effects` - Suggests effects for side effects
@@ -832,9 +863,10 @@ const currentCount = count;
 - `prefer-object-spread-for-updates` - Suggests immutable object updates
 - `require-error-handling-in-async-updates` - Suggests error handling in async updates
 - `require-state-subscription-cleanup` - Suggests proper subscription cleanup
+- `require-full-reactive-access` - Ensures proper reactive subscriptions in derived functions
 - `no-unused-states` - Detects unused states
 
-**Total: 24 rules** (11 errors, 13 warnings)
+**Total: 25 rules** (11 errors, 14 warnings)
 
 ## Why these rules matter
 

@@ -43,23 +43,19 @@ module.exports = {
     }
 
     function isStateVariableName(name) {
-      // Check if the variable name suggests it's a state
-      // This is a heuristic - we'll check if it's been assigned a state() call
-      const scope = context.getScope();
-      const variable = scope.variables.find(v => v.name === name);
-
-      if (variable && variable.defs.length > 0) {
-        const def = variable.defs[0];
-        if (def.node.type === 'VariableDeclarator' && def.node.init) {
-          const init = def.node.init;
-          return (
-            init.type === 'CallExpression' &&
-            init.callee.type === 'Identifier' &&
-            init.callee.name === 'state'
-          );
-        }
-      }
-      return false;
+      // Simple heuristic: check if variable name ends with common state patterns
+      // This avoids complex scope analysis that can break with ESLint v9
+      const statePatterns = [
+        /^[a-z][a-zA-Z]*State$/,
+        /^[a-z][a-zA-Z]*Cache$/,
+        /^[a-z][a-zA-Z]*Data$/,
+        /^[a-z][a-zA-Z]*List$/,
+        /^[a-z][a-zA-Z]*Map$/,
+        /^[a-z][a-zA-Z]*Store$/,
+        /^[a-z][a-zA-Z]*Value$/,
+      ];
+      
+      return statePatterns.some(pattern => pattern.test(name));
     }
 
     return {
