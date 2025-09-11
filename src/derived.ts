@@ -164,6 +164,20 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
     set value(_newValue: T) {
       throw new Error('Cannot update derived values directly');
     },
+    invariant() {
+      // Track this derived value as a dependency if we're in an effect
+      const activeEffect = setActiveEffect(null);
+      if (activeEffect) {
+        dependencies.add(activeEffect);
+      }
+      const value = computeValue();
+      if (value === null || value === undefined) {
+        throw new Error(
+          `Derived invariant violated: value is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the derived value is properly computed.`,
+        );
+      }
+      return value as NonNullable<T>;
+    },
   } as State<T>;
 
   // Register named derived values for debugging
@@ -353,6 +367,30 @@ export function asyncDerived<T>(
     subscribe(callback: () => void) {
       subscribers.add(callback);
       return () => subscribers.delete(callback);
+    },
+
+    async invariant(): Promise<NonNullable<T>> {
+      // Track this state as a dependency if we're in an effect or computed
+      const activeEffect = setActiveEffect(null);
+      if (activeEffect) {
+        dependencies.add(activeEffect);
+      }
+
+      // Trigger computation if dirty
+      if (dirty) {
+        await computeValue().catch(error => {
+          // eslint-disable-next-line no-console
+          console.error('AsyncDerived computation failed:', error);
+        });
+      }
+
+      const value = await cachedValue;
+      if (value === null || value === undefined) {
+        throw new Error(
+          `AsyncDerived invariant violated: value is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the async derived value is properly computed.`,
+        );
+      }
+      return value as NonNullable<T>;
     },
   };
 
