@@ -575,8 +575,9 @@ export function state<T>(initialValue: T, name?: string): State<T> {
       }
 
       if (value === null || value === undefined) {
+        const stateName = validatedName ? ` '${validatedName}'` : '';
         throw new Error(
-          `Required value is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the state is initialized.`,
+          `Required value${stateName} is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the state is initialized.`,
         );
       }
 
@@ -585,8 +586,9 @@ export function state<T>(initialValue: T, name?: string): State<T> {
 
     set requiredValue(newValue: NonNullable<T>) {
       if (newValue === null || newValue === undefined) {
+        const stateName = validatedName ? ` '${validatedName}'` : '';
         throw new Error(
-          `Cannot set required value to ${newValue === null ? 'null' : 'undefined'}. Use .value to set null/undefined values.`,
+          `Cannot set required value${stateName} to ${newValue === null ? 'null' : 'undefined'}. Use .value to set null/undefined values.`,
         );
       }
 

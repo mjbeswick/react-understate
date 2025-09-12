@@ -172,16 +172,18 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
       }
       const value = computeValue();
       if (value === null || value === undefined) {
+        const derivedName = validatedName ? ` '${validatedName}'` : '';
         throw new Error(
-          `Required derived value is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the derived value is properly computed.`,
+          `Required derived value${derivedName} is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the derived value is properly computed.`,
         );
       }
       return value as NonNullable<T>;
     },
 
     set requiredValue(_newValue: NonNullable<T>) {
+      const derivedName = validatedName ? ` '${validatedName}'` : '';
       throw new Error(
-        'Cannot set required value on derived values - they are computed from dependencies',
+        `Cannot set required value on derived value${derivedName} - they are computed from dependencies`,
       );
     },
   } as State<T>;
@@ -392,8 +394,9 @@ export function asyncDerived<T>(
 
       return cachedValue.then(value => {
         if (value === null || value === undefined) {
+          const asyncDerivedName = validatedName ? ` '${validatedName}'` : '';
           throw new Error(
-            `Required async derived value is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the async derived value is properly computed.`,
+            `Required async derived value${asyncDerivedName} is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the async derived value is properly computed.`,
           );
         }
         return value as NonNullable<T>;
@@ -401,8 +404,9 @@ export function asyncDerived<T>(
     },
 
     set requiredValue(_newValue: NonNullable<T>) {
+      const asyncDerivedName = validatedName ? ` '${validatedName}'` : '';
       throw new Error(
-        'Cannot set required value on async derived values - they are computed from dependencies',
+        `Cannot set required value on async derived value${asyncDerivedName} - they are computed from dependencies`,
       );
     },
   };

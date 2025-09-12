@@ -1,5 +1,6 @@
 import { state } from './core';
 import { effect } from './state';
+import { derived, asyncDerived } from './derived';
 
 describe('State requiredValue property', () => {
   it('should return the value when it is not null or undefined', () => {
@@ -34,6 +35,20 @@ describe('State requiredValue property', () => {
     expect(() => data.requiredValue).toThrow(
       'Required value is undefined. Use .value to access the actual value or ensure the state is initialized.',
     );
+  });
+
+  it('should include state name in error message when available', () => {
+    const user = state<User | null>(null, 'userState');
+    expect(() => user.requiredValue).toThrow(
+      "Required value 'userState' is null. Use .value to access the actual value or ensure the state is initialized.",
+    );
+  });
+
+  it('should include state name in setter error message when available', () => {
+    const user = state<User | null>(null, 'userState');
+    expect(() => {
+      user.requiredValue = null as any;
+    }).toThrow("Cannot set required value 'userState' to null. Use .value to set null/undefined values.");
   });
 
   it('should track dependencies like .value', () => {
@@ -111,6 +126,46 @@ describe('State requiredValue property', () => {
     expect(() => {
       user.requiredValue = undefined as any;
     }).toThrow('Cannot set required value to undefined. Use .value to set null/undefined values.');
+  });
+});
+
+describe('Derived requiredValue property', () => {
+  it('should include derived name in error message when available', () => {
+    const count = state(0, 'count');
+    const derivedValue = derived(() => count.value > 0 ? null : undefined, 'derivedValue');
+    
+    expect(() => derivedValue.requiredValue).toThrow(
+      "Required derived value 'derivedValue' is undefined. Use .value to access the actual value or ensure the derived value is properly computed.",
+    );
+  });
+
+  it('should include derived name in setter error message when available', () => {
+    const count = state(0, 'count');
+    const derivedValue = derived(() => count.value, 'derivedValue');
+    
+    expect(() => {
+      derivedValue.requiredValue = 42 as any;
+    }).toThrow("Cannot set required value on derived value 'derivedValue' - they are computed from dependencies");
+  });
+});
+
+describe('AsyncDerived requiredValue property', () => {
+  it('should include async derived name in error message when available', async () => {
+    const count = state(0, 'count');
+    const asyncDerivedValue = asyncDerived(async () => count.value > 0 ? null : undefined, 'asyncDerivedValue');
+    
+    await expect(asyncDerivedValue.requiredValue).rejects.toThrow(
+      "Required async derived value 'asyncDerivedValue' is undefined. Use .value to access the actual value or ensure the async derived value is properly computed.",
+    );
+  });
+
+  it('should include async derived name in setter error message when available', () => {
+    const count = state(0, 'count');
+    const asyncDerivedValue = asyncDerived(async () => count.value, 'asyncDerivedValue');
+    
+    expect(() => {
+      asyncDerivedValue.requiredValue = 42 as any;
+    }).toThrow("Cannot set required value on async derived value 'asyncDerivedValue' - they are computed from dependencies");
   });
 });
 

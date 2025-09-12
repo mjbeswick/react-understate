@@ -150,6 +150,11 @@ try {
 // The requiredValue setter prevents setting null/undefined
 user.requiredValue = { id: 1, name: 'John' }; // Works
 user.requiredValue = null; // Throws: "Cannot set required value to null"
+
+// Named states include the name in error messages for better debugging
+const userState = state<User | null>(null, 'userState');
+userState.requiredValue; // Throws: "Required value 'userState' is null"
+userState.requiredValue = null; // Throws: "Cannot set required value 'userState' to null"
 ```
 
 ### Derived Values
