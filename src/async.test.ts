@@ -125,8 +125,6 @@ describe('Async Functionality', () => {
     });
 
     it('should recompute when dependencies change', async () => {
-      configureDebug({ enabled: true, logger: console.log });
-
       const userId = state(1, 'userId');
       const userData = asyncDerived(async () => {
         await new Promise(resolve => setTimeout(resolve, 10));

@@ -43,6 +43,10 @@ let activeEffect: (() => void) | null = null;
 let isBatching = false;
 const pendingUpdates = new Set<() => void>();
 
+// Global state for tracking running actions and their queues
+const runningActions = new Map<string, Promise<any>>();
+const actionQueues = new Map<string, Array<() => void>>();
+
 // Global state for tracking effect dependency filtering
 let activeEffectOptions: {
   once?: boolean;
@@ -328,11 +332,61 @@ export function action<T extends (...args: any[]) => any>(
       logDebug(`action: '${validatedName}'`, debugConfig);
     }
 
+    // Handle async queuing for named actions
+    if (validatedName) {
+      const isCurrentlyRunning = runningActions.has(validatedName);
+
+      if (isCurrentlyRunning) {
+        // Queue this execution if action is already running
+        if (!actionQueues.has(validatedName)) {
+          actionQueues.set(validatedName, []);
+        }
+
+        return new Promise<ReturnType<T>>((resolve, reject) => {
+          const queuedExecution = () => {
+            try {
+              const result = action(fn, validatedName)(...args);
+              if (result instanceof Promise) {
+                result.then(resolve).catch(reject);
+              } else {
+                resolve(result);
+              }
+            } catch (error) {
+              reject(error);
+            }
+          };
+          actionQueues.get(validatedName)!.push(queuedExecution);
+        });
+      }
+    }
+
     // Automatically batch the action
-    let result: ReturnType<T>;
+    let result: ReturnType<T> = undefined as any;
     batch(() => {
       result = fn(...args);
     });
+
+    // Handle async result for named actions
+    if (
+      validatedName &&
+      result &&
+      typeof result === 'object' &&
+      'then' in result
+    ) {
+      const promiseResult = result as Promise<any>;
+      runningActions.set(validatedName, promiseResult);
+
+      promiseResult.finally(() => {
+        runningActions.delete(validatedName);
+        const queue = actionQueues.get(validatedName);
+        if (queue && queue.length > 0) {
+          const nextExecution = queue.shift()!;
+          // Process next execution asynchronously to avoid stack overflow
+          setTimeout(() => nextExecution(), 0);
+        }
+      });
+    }
+
     return result!;
   }) as T;
 }
@@ -738,7 +792,8 @@ export function batch(fn: () => void, name?: string): void {
     logDebug(`batch: '${validatedName}'`, debugConfig);
   }
 
-  if (setIsBatching(false)) {
+  // If already batching, just execute the function
+  if (isBatching) {
     fn();
     return;
   }

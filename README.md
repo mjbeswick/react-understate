@@ -327,6 +327,42 @@ addTodo('Learn React');
 toggleTodo(1);
 ```
 
+### Async Queuing
+
+Named actions automatically queue async calls to prevent race conditions and ensure proper execution order:
+
+```tsx
+import { action, state } from 'react-understate';
+
+const data = state(null, 'data');
+
+// Named async action - calls are queued
+const fetchData = action(async (id: string) => {
+  console.log(`Fetching data for ID: ${id}`);
+  const response = await fetch(`/api/data/${id}`);
+  const result = await response.json();
+  data.value = result;
+  return result;
+}, 'fetchData');
+
+// Multiple rapid calls are queued and executed in order
+fetchData('1'); // Executes immediately
+fetchData('2'); // Queued until first call completes
+fetchData('3'); // Queued until second call completes
+
+// Actions without names are not queued
+const unqueuedAction = action(async (id: string) => {
+  console.log('This may overlap with other calls');
+});
+```
+
+**Key Benefits:**
+
+- **Prevents Race Conditions**: Ensures async operations complete in the correct order
+- **Automatic Batching**: Multiple state updates within queued operations are batched together
+- **Better Performance**: Avoids unnecessary concurrent operations that could conflict
+- **Named Only**: Queuing only applies to named actions for better control
+
 ### Debugging
 
 Enable debug logging to track state changes, derived value updates, effect runs, and action executions:

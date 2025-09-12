@@ -16,6 +16,10 @@ import {
 } from './core';
 import { logDebug } from './debug-utils';
 
+// Global state for tracking running effects and their queues
+const runningEffects = new Map<string, Promise<void>>();
+const effectQueues = new Map<string, Array<() => void>>();
+
 /**
  * Options for controlling effect execution behavior.
  */
@@ -166,11 +170,25 @@ export function effect(
     ...options,
   };
 
-  const runEffect = () => {
+  const runEffect = (isManualCall = false) => {
     if (disposed) return;
 
     // Handle once option
     if (effectOptions.once && hasRunOnce) return;
+
+    // Handle async queuing for named effects (only for manual calls)
+    if (validatedName && isManualCall) {
+      const isCurrentlyRunning = runningEffects.has(validatedName);
+
+      if (isCurrentlyRunning) {
+        // Queue this execution if effect is already running
+        if (!effectQueues.has(validatedName)) {
+          effectQueues.set(validatedName, []);
+        }
+        effectQueues.get(validatedName)!.push(() => runEffect(true));
+        return;
+      }
+    }
 
     // Handle preventOverlap option
     if (effectOptions.preventOverlap && isExecuting) {
@@ -246,6 +264,11 @@ export function effect(
       });
 
       if (result instanceof Promise) {
+        // Track running effect for named effects
+        if (validatedName) {
+          runningEffects.set(validatedName, result as Promise<void>);
+        }
+
         // Handle async result asynchronously
         result
           .then(cleanupResult => {
@@ -277,6 +300,17 @@ export function effect(
             setCurrentEffect(null);
             isExecuting = false;
             hasRunOnce = true;
+
+            // Process queued executions for named effects
+            if (validatedName) {
+              runningEffects.delete(validatedName);
+              const queue = effectQueues.get(validatedName);
+              if (queue && queue.length > 0) {
+                const nextExecution = queue.shift()!;
+                // Process next execution asynchronously to avoid stack overflow
+                setTimeout(() => nextExecution(), 0);
+              }
+            }
           });
       } else {
         cleanup = result as void | (() => void);

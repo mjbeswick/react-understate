@@ -242,15 +242,15 @@ export function asyncDerived<T>(
   const markDirty = () => {
     if (!dirty) {
       dirty = true;
-      // Notify subscribers and dependent effects
+      // Debug logging
+      if (validatedName) {
+        const debugConfig = configureDebug();
+        logDebug(`asyncDerived: '${validatedName}' marked dirty`, debugConfig);
+      }
+      // Notify subscribers only
       subscribers.forEach(sub => {
         if (sub !== markDirty) {
           sub();
-        }
-      });
-      dependencies.forEach(dep => {
-        if (dep !== markDirty) {
-          dep();
         }
       });
     }
@@ -307,6 +307,7 @@ export function asyncDerived<T>(
   try {
     const prevEffect = setActiveEffect(markDirty);
     try {
+      // Track dependencies by running the compute function
       cachedValue = computeFn();
       dirty = false;
 
