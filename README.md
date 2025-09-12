@@ -242,6 +242,203 @@ setName('Jane'); // Logs: "Count: 5, Name: Jane"
 - `preventOverlap: boolean` - Prevent overlapping executions of async effects
 - `preventLoops: boolean` - Automatically prevent infinite loops (default: true)
 
+### Effect Options Deep Dive
+
+Effect options provide fine-grained control over how effects behave. Here's a comprehensive guide:
+
+#### `once: true` - One-Time Effects
+
+Perfect for initialization, setup, or cleanup that should only happen once:
+
+```tsx
+import { state, effect } from 'react-understate';
+
+const user = state(null);
+
+// Initialize user data only once
+effect(
+  () => {
+    console.log('Initializing user session...');
+    // This will only run once, even if user changes
+    initializeUserSession();
+  },
+  'initUser',
+  { once: true },
+);
+
+// Setup global event listeners
+effect(
+  () => {
+    const handleResize = () => console.log('Window resized');
+    window.addEventListener('resize', handleResize);
+
+    // Return cleanup function
+    return () => window.removeEventListener('resize', handleResize);
+  },
+  'setupListeners',
+  { once: true },
+);
+```
+
+#### `preventOverlap: true` - Prevent Concurrent Executions
+
+Essential for async effects that shouldn't run concurrently:
+
+```tsx
+import { state, effect } from 'react-understate';
+
+const searchQuery = state('');
+const searchResults = state([]);
+const isLoading = state(false);
+
+// Search effect that prevents overlapping API calls
+effect(
+  async () => {
+    if (!searchQuery.value) {
+      searchResults.value = [];
+      return;
+    }
+
+    isLoading.value = true;
+    try {
+      const results = await fetchSearchResults(searchQuery.value);
+      searchResults.value = results;
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      isLoading.value = false;
+    }
+  },
+  'searchEffect',
+  { preventOverlap: true }, // Prevents multiple concurrent searches
+);
+
+// Multiple rapid changes won't cause overlapping API calls
+searchQuery.value = 'react';
+searchQuery.value = 'vue';
+searchQuery.value = 'angular';
+// Only the last search will execute
+```
+
+#### `preventLoops: true` - Infinite Loop Prevention (Default)
+
+Automatically prevents infinite loops by ignoring re-execution when effects modify their dependencies:
+
+```tsx
+import { state, effect } from 'react-understate';
+
+const count = state(0);
+const doubled = state(0);
+
+// This effect reads count and modifies doubled
+// Without preventLoops, this would cause an infinite loop
+effect(
+  () => {
+    doubled.value = count.value * 2; // Modifies doubled
+    console.log(`Count: ${count.value}, Doubled: ${doubled.value}`);
+  },
+  'updateDoubled',
+  { preventLoops: true }, // This is the default
+);
+
+count.value = 5; // Logs: "Count: 5, Doubled: 10"
+// The effect won't re-run when doubled changes
+```
+
+#### `preventLoops: false` - Allow All Re-executions
+
+Use with caution - allows effects to re-run on any dependency change:
+
+```tsx
+import { state, effect } from 'react-understate';
+
+const data = state({ items: [] });
+const processedData = state([]);
+
+// This effect processes data and updates processedData
+// We want it to re-run when either changes
+effect(
+  () => {
+    const items = data.value.items;
+    const processed = items.map(item => ({ ...item, processed: true }));
+    processedData.value = processed;
+  },
+  'processData',
+  { preventLoops: false }, // Will re-run when processedData changes too
+);
+```
+
+#### Combining Options
+
+You can combine multiple options for complex scenarios:
+
+```tsx
+import { state, effect } from 'react-understate';
+
+const config = state(null);
+const isInitialized = state(false);
+
+// One-time initialization that prevents overlapping
+effect(
+  async () => {
+    if (isInitialized.value) return;
+
+    console.log('Initializing application...');
+    const appConfig = await loadConfiguration();
+    config.value = appConfig;
+    isInitialized.value = true;
+  },
+  'appInit',
+  {
+    once: true, // Only run once
+    preventOverlap: true, // Prevent overlapping if called multiple times
+  },
+);
+
+// Data synchronization that allows all re-executions
+effect(
+  async () => {
+    if (!config.value) return;
+
+    await syncDataWithServer(config.value);
+  },
+  'dataSync',
+  {
+    preventOverlap: true, // Prevent overlapping syncs
+    preventLoops: false, // Allow re-runs when config changes
+  },
+);
+```
+
+#### Effect Options Best Practices
+
+**When to use `once: true`:**
+
+- Application initialization
+- Setting up global event listeners
+- One-time data loading
+- Cleanup operations
+
+**When to use `preventOverlap: true`:**
+
+- API calls that shouldn't overlap
+- File operations
+- Database queries
+- Any async operation that could conflict
+
+**When to use `preventLoops: false`:**
+
+- Data transformation pipelines
+- Bidirectional synchronization
+- Complex state derivations
+- When you need full reactivity
+
+**Default behavior:**
+
+- `once: false` - Effect runs on every dependency change
+- `preventOverlap: false` - Allow overlapping executions
+- `preventLoops: true` - Prevent infinite loops (recommended)
+
 **Automatic Batching:**
 
 Effects automatically batch state updates to prevent infinite loops and improve performance. Multiple state updates within an effect are collected and processed together:
