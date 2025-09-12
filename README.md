@@ -1152,6 +1152,14 @@ console.log(window.understate.states.count.value);
 
 // Update a state from the console
 window.understate.states.count.value = 100;
+
+// Access all named actions
+console.log(window.understate.actions);
+// { increment: Function, addTodo: Function, ... }
+
+// Call an action from the console
+window.understate.actions.increment(5);
+window.understate.actions.addTodo('Debug from console');
 ```
 
 ### Types

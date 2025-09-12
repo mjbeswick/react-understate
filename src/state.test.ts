@@ -11,6 +11,14 @@ import {
 describe('States', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Clear window.understate for clean test state
+    if (typeof global !== 'undefined' && (global as any).window) {
+      (global as any).window.understate = {
+        configureDebug: () => ({}),
+        states: {},
+        actions: {},
+      };
+    }
   });
 
   describe('Basic signal functionality', () => {
@@ -631,6 +639,46 @@ describe('States', () => {
       expect(typeof (global as any).window.understate.configureDebug).toBe(
         'function',
       );
+    });
+
+    it('should register named actions on window.understate.actions', () => {
+      const testState = state(0, 'testState');
+      const increment = action((amount: number) => {
+        testState.value += amount;
+      }, 'increment');
+
+      expect((global as any).window.understate.actions.increment).toBeDefined();
+      expect(typeof (global as any).window.understate.actions.increment).toBe(
+        'function',
+      );
+
+      // Test that the action can be called from window.understate.actions
+      (global as any).window.understate.actions.increment(5);
+      expect(testState.value).toBe(5);
+    });
+
+    it('should not register unnamed actions on window.understate.actions', () => {
+      const testState = state(0);
+      const unnamedAction = action((amount: number) => {
+        testState.value += amount;
+      }); // No name
+
+      // Check that no action with the name 'unnamedAction' exists
+      expect(
+        (global as any).window.understate.actions.unnamedAction,
+      ).toBeUndefined();
+
+      // The action should still work
+      unnamedAction(3);
+      expect(testState.value).toBe(3);
+    });
+
+    it('should throw error when creating two actions with the same name', () => {
+      const action1 = action(() => {}, 'duplicateAction');
+      
+      expect(() => {
+        action(() => {}, 'duplicateAction');
+      }).toThrow("Action with name 'duplicateAction' already exists. Action names must be unique.");
     });
   });
 

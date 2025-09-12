@@ -29,6 +29,14 @@ declare global {
        * allowing you to inspect and manipulate them from the browser console.
        */
       states: Record<string, any>;
+
+      /**
+       * All named actions registered for debugging.
+       *
+       * This object contains all actions that were created with names,
+       * allowing you to call them directly from the browser console.
+       */
+      actions: Record<string, (...args: any[]) => any>;
     };
   }
 }

@@ -6,6 +6,7 @@ describe('Batching Fix', () => {
     // Clear any existing state
     if (typeof window !== 'undefined' && (window as any).understate) {
       (window as any).understate.states = {};
+      (window as any).understate.actions = {};
     }
   });
 

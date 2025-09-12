@@ -195,6 +195,7 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
       (window as any).understate = {
         configureDebug: () => ({}),
         states: {},
+        actions: {},
       };
     }
     if ((window as any).understate.states[validatedName]) {
@@ -419,6 +420,7 @@ export function asyncDerived<T>(
       (window as any).understate = {
         configureDebug: () => ({}),
         states: {},
+        actions: {},
       };
     }
     if ((window as any).understate.states[validatedName]) {

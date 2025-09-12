@@ -326,6 +326,21 @@ export function action<T extends (...args: any[]) => any>(
 ): T {
   // Validate name if provided
   const validatedName = name ? validateStateName(name) : undefined;
+  
+  // Register named actions for debugging (only once when action is created)
+  if (validatedName && typeof window !== 'undefined') {
+    // Initialize window.understate if not already done
+    initializeWindowUnderstate();
+    const windowUnderstate = (window as any).understate;
+    if (windowUnderstate.actions[validatedName]) {
+      throw new Error(
+        `Action with name '${validatedName}' already exists. Action names must be unique.`,
+      );
+    }
+    // Store the action function for console debugging
+    windowUnderstate.actions[validatedName] = fn;
+  }
+  
   return ((...args: Parameters<T>) => {
     // Debug logging
     if (validatedName) {
@@ -359,7 +374,27 @@ export function action<T extends (...args: any[]) => any>(
         return new Promise<ReturnType<T>>((resolve, reject) => {
           const queuedExecution = () => {
             try {
-              const result = action(fn, validatedName)(...args);
+              // Create a new system object for the queued execution
+              const abortController = new AbortController();
+              const system = { signal: abortController.signal };
+              
+              // Prepare args with system object
+              const preparedArgs = [...args];
+              if (fn.length > 0) {
+                const lastArg = preparedArgs[preparedArgs.length - 1];
+                if (
+                  typeof lastArg === 'object' &&
+                  lastArg !== null &&
+                  'signal' in lastArg
+                ) {
+                  preparedArgs[preparedArgs.length - 1] = system;
+                } else {
+                  preparedArgs.push(system as any);
+                }
+              }
+              
+              // Call the function directly instead of creating a new action
+              const result = fn(...preparedArgs);
               if (result instanceof Promise) {
                 result.then(resolve).catch(reject);
               } else {
@@ -849,6 +884,7 @@ function initializeWindowUnderstate() {
     (window as any).understate = {
       configureDebug,
       states: {},
+      actions: {},
     };
     windowUnderstateInitialized = true;
   }

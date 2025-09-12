@@ -375,15 +375,17 @@ export function effect(
           understate: {
             configureDebug: () => Record<string, unknown>;
             states: Record<string, unknown>;
+            actions: Record<string, unknown>;
           };
         }
       ).understate = {
         configureDebug: () => ({}),
         states: {},
+        actions: {},
       };
     }
     const windowUnderstate = (
-      window as unknown as { understate: { states: Record<string, unknown> } }
+      window as unknown as { understate: { states: Record<string, unknown>; actions: Record<string, unknown> } }
     ).understate;
     if (windowUnderstate.states[validatedName]) {
       throw new Error(
