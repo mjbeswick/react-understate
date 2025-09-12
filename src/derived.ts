@@ -190,20 +190,20 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
 
   // Register named derived values for debugging
   if (validatedName && typeof window !== 'undefined') {
-    // Initialize window.understate if not already done
-    if (!(window as any).understate) {
-      (window as any).understate = {
+    // Initialize window.reactUnderstate if not already done
+    if (!(window as any).reactUnderstate) {
+      (window as any).reactUnderstate = {
         configureDebug: () => ({}),
         states: {},
         actions: {},
       };
     }
-    if ((window as any).understate.states[validatedName]) {
+    if ((window as any).reactUnderstate.states[validatedName]) {
       throw new Error(
         `Derived value with name '${validatedName}' already exists. State names must be unique.`,
       );
     }
-    (window as any).understate.states[validatedName] = derivedObj;
+    (window as any).reactUnderstate.states[validatedName] = derivedObj;
   }
 
   return derivedObj;
@@ -415,20 +415,20 @@ export function asyncDerived<T>(
 
   // Register named async derived values for debugging
   if (validatedName && typeof window !== 'undefined') {
-    // Initialize window.understate if not already done
-    if (!(window as any).understate) {
-      (window as any).understate = {
+    // Initialize window.reactUnderstate if not already done
+    if (!(window as any).reactUnderstate) {
+      (window as any).reactUnderstate = {
         configureDebug: () => ({}),
         states: {},
         actions: {},
       };
     }
-    if ((window as any).understate.states[validatedName]) {
+    if ((window as any).reactUnderstate.states[validatedName]) {
       throw new Error(
         `Async derived value with name '${validatedName}' already exists. State names must be unique.`,
       );
     }
-    (window as any).understate.states[validatedName] = asyncDerivedObj;
+    (window as any).reactUnderstate.states[validatedName] = asyncDerivedObj;
   }
 
   return asyncDerivedObj;

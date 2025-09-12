@@ -2,12 +2,12 @@
  * @fileoverview Browser debugging API declarations
  *
  * This file provides TypeScript declarations for the browser debugging API
- * that is exposed on window.understate in development builds.
+ * that is exposed on window.reactUnderstate in development builds.
  */
 
 declare global {
   interface Window {
-    understate: {
+    reactUnderstate: {
       /**
        * Configure debug logging for the reactive system.
        *

@@ -329,9 +329,9 @@ export function action<T extends (...args: any[]) => any>(
   
   // Register named actions for debugging (only once when action is created)
   if (validatedName && typeof window !== 'undefined') {
-    // Initialize window.understate if not already done
+    // Initialize window.reactUnderstate if not already done
     initializeWindowUnderstate();
-    const windowUnderstate = (window as any).understate;
+    const windowUnderstate = (window as any).reactUnderstate;
     if (windowUnderstate.actions[validatedName]) {
       throw new Error(
         `Action with name '${validatedName}' already exists. Action names must be unique.`,
@@ -727,12 +727,12 @@ export function state<T>(initialValue: T, name?: string): State<T> {
   // Register named states for debugging
   if (validatedName && typeof window !== 'undefined') {
     initializeWindowUnderstate();
-    if ((window as any).understate.states[validatedName]) {
+    if ((window as any).reactUnderstate.states[validatedName]) {
       throw new Error(
         `State with name '${validatedName}' already exists. State names must be unique.`,
       );
     }
-    (window as any).understate.states[validatedName] = stateObj;
+    (window as any).reactUnderstate.states[validatedName] = stateObj;
   }
 
   return stateObj as State<T>;
@@ -881,7 +881,7 @@ export function batch(fn: () => void, name?: string): void {
 let windowUnderstateInitialized = false;
 function initializeWindowUnderstate() {
   if (typeof window !== 'undefined' && !windowUnderstateInitialized) {
-    (window as any).understate = {
+    (window as any).reactUnderstate = {
       configureDebug,
       states: {},
       actions: {},
@@ -893,5 +893,5 @@ function initializeWindowUnderstate() {
 // Initialize on first state creation
 export function getWindowUnderstate() {
   initializeWindowUnderstate();
-  return (window as any).understate;
+  return (window as any).reactUnderstate;
 }

@@ -368,25 +368,30 @@ export function effect(
 
   // Register named effects for debugging
   if (validatedName && typeof window !== 'undefined') {
-    // Initialize window.understate if not already done
-    if (!(window as unknown as { understate?: unknown }).understate) {
+    // Initialize window.reactUnderstate if not already done
+    if (!(window as unknown as { reactUnderstate?: unknown }).reactUnderstate) {
       (
         window as unknown as {
-          understate: {
+          reactUnderstate: {
             configureDebug: () => Record<string, unknown>;
             states: Record<string, unknown>;
             actions: Record<string, unknown>;
           };
         }
-      ).understate = {
+      ).reactUnderstate = {
         configureDebug: () => ({}),
         states: {},
         actions: {},
       };
     }
     const windowUnderstate = (
-      window as unknown as { understate: { states: Record<string, unknown>; actions: Record<string, unknown> } }
-    ).understate;
+      window as unknown as {
+        reactUnderstate: {
+          states: Record<string, unknown>;
+          actions: Record<string, unknown>;
+        };
+      }
+    ).reactUnderstate;
     if (windowUnderstate.states[validatedName]) {
       throw new Error(
         `Effect with name '${validatedName}' already exists. State names must be unique.`,

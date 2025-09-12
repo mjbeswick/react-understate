@@ -4,9 +4,9 @@ import { effect } from './effects';
 describe('Batching Fix', () => {
   beforeEach(() => {
     // Clear any existing state
-    if (typeof window !== 'undefined' && (window as any).understate) {
-      (window as any).understate.states = {};
-      (window as any).understate.actions = {};
+    if (typeof window !== 'undefined' && (window as any).reactUnderstate) {
+      (window as any).reactUnderstate.states = {};
+      (window as any).reactUnderstate.actions = {};
     }
   });
 

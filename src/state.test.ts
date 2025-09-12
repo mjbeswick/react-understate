@@ -11,9 +11,9 @@ import {
 describe('States', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Clear window.understate for clean test state
+    // Clear window.reactUnderstate for clean test state
     if (typeof global !== 'undefined' && (global as any).window) {
-      (global as any).window.understate = {
+      (global as any).window.reactUnderstate = {
         configureDebug: () => ({}),
         states: {},
         actions: {},
@@ -611,53 +611,53 @@ describe('States', () => {
   });
 
   describe('Browser Debugging', () => {
-    it('should register named states on window.understate.states', () => {
+    it('should register named states on window.reactUnderstate.states', () => {
       const testState = state(42, 'browserDebugState');
 
       expect(
-        (global as any).window.understate.states.browserDebugState,
+        (global as any).window.reactUnderstate.states.browserDebugState,
       ).toBeDefined();
       expect(
-        (global as any).window.understate.states.browserDebugState.value,
+        (global as any).window.reactUnderstate.states.browserDebugState.value,
       ).toBe(42);
     });
 
-    it('should not register unnamed states on window.understate.states', () => {
+    it('should not register unnamed states on window.reactUnderstate.states', () => {
       const unnamedState = state(42); // No name
 
       // Check that no state with the name 'unnamedState' exists
       expect(
-        (global as any).window.understate.states.unnamedState,
+        (global as any).window.reactUnderstate.states.unnamedState,
       ).toBeUndefined();
 
       // The state should still exist but not be registered
       expect(unnamedState.value).toBe(42);
     });
 
-    it('should expose configureDebug on window.understate', () => {
-      expect((global as any).window.understate.configureDebug).toBeDefined();
-      expect(typeof (global as any).window.understate.configureDebug).toBe(
+    it('should expose configureDebug on window.reactUnderstate', () => {
+      expect((global as any).window.reactUnderstate.configureDebug).toBeDefined();
+      expect(typeof (global as any).window.reactUnderstate.configureDebug).toBe(
         'function',
       );
     });
 
-    it('should register named actions on window.understate.actions', () => {
+    it('should register named actions on window.reactUnderstate.actions', () => {
       const testState = state(0, 'testState');
       const increment = action((amount: number) => {
         testState.value += amount;
       }, 'increment');
 
-      expect((global as any).window.understate.actions.increment).toBeDefined();
-      expect(typeof (global as any).window.understate.actions.increment).toBe(
+      expect((global as any).window.reactUnderstate.actions.increment).toBeDefined();
+      expect(typeof (global as any).window.reactUnderstate.actions.increment).toBe(
         'function',
       );
 
-      // Test that the action can be called from window.understate.actions
-      (global as any).window.understate.actions.increment(5);
+      // Test that the action can be called from window.reactUnderstate.actions
+      (global as any).window.reactUnderstate.actions.increment(5);
       expect(testState.value).toBe(5);
     });
 
-    it('should not register unnamed actions on window.understate.actions', () => {
+    it('should not register unnamed actions on window.reactUnderstate.actions', () => {
       const testState = state(0);
       const unnamedAction = action((amount: number) => {
         testState.value += amount;
@@ -665,7 +665,7 @@ describe('States', () => {
 
       // Check that no action with the name 'unnamedAction' exists
       expect(
-        (global as any).window.understate.actions.unnamedAction,
+        (global as any).window.reactUnderstate.actions.unnamedAction,
       ).toBeUndefined();
 
       // The action should still work
@@ -780,9 +780,9 @@ describe('States', () => {
       expect(state3.value).toBe('third');
 
       // All should be registered
-      expect((global as any).window.understate.states.name1).toBeDefined();
-      expect((global as any).window.understate.states.name2).toBeDefined();
-      expect((global as any).window.understate.states.name3).toBeDefined();
+      expect((global as any).window.reactUnderstate.states.name1).toBeDefined();
+      expect((global as any).window.reactUnderstate.states.name2).toBeDefined();
+      expect((global as any).window.reactUnderstate.states.name3).toBeDefined();
     });
 
     it('should allow creating unnamed states even if named states exist', () => {
@@ -795,12 +795,12 @@ describe('States', () => {
       expect(unnamedState2.value).toBe('unnamed2');
 
       // Only named state should be registered
-      expect((global as any).window.understate.states.namedState).toBeDefined();
+      expect((global as any).window.reactUnderstate.states.namedState).toBeDefined();
       expect(
-        (global as any).window.understate.states.unnamedState1,
+        (global as any).window.reactUnderstate.states.unnamedState1,
       ).toBeUndefined();
       expect(
-        (global as any).window.understate.states.unnamedState2,
+        (global as any).window.reactUnderstate.states.unnamedState2,
       ).toBeUndefined();
     });
 

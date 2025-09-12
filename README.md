@@ -1140,26 +1140,26 @@ In development, you can access the debug API and all named states through the br
 
 ```tsx
 // Access debug configuration
-window.understate.configureDebug({ enabled: true, showFile: true });
+window.reactUnderstate.configureDebug({ enabled: true, showFile: true });
 
 // Access all named states
-console.log(window.understate.states);
+console.log(window.reactUnderstate.states);
 // { count: State<number>, user: State<User>, ... }
 
 // Inspect a specific state
-console.log(window.understate.states.count.value);
+console.log(window.reactUnderstate.states.count.value);
 // 42
 
 // Update a state from the console
-window.understate.states.count.value = 100;
+window.reactUnderstate.states.count.value = 100;
 
 // Access all named actions
-console.log(window.understate.actions);
+console.log(window.reactUnderstate.actions);
 // { increment: Function, addTodo: Function, ... }
 
 // Call an action from the console
-window.understate.actions.increment(5);
-window.understate.actions.addTodo('Debug from console');
+window.reactUnderstate.actions.increment(5);
+window.reactUnderstate.actions.addTodo('Debug from console');
 ```
 
 ### Types
