@@ -363,6 +363,49 @@ const unqueuedAction = action(async (id: string) => {
 - **Better Performance**: Avoids unnecessary concurrent operations that could conflict
 - **Named Only**: Queuing only applies to named actions for better control
 
+### Abort Signals
+
+Async actions and effects automatically receive AbortController signals for request cancellation:
+
+```tsx
+import { action, effect, state } from 'react-understate';
+
+const data1 = state(null, 'data1');
+const data2 = state(null, 'data2');
+
+// Actions receive abort signal as second parameter
+const fetchData = action(
+  async (id: number, { signal }: { signal: AbortSignal }) => {
+    const response = await fetch(`https://api.example.com/data/${id}`, {
+      signal,
+    });
+    data1.value = await response.json();
+  },
+  'fetchData',
+);
+
+// Effects receive abort signal as first parameter
+const processData = effect(async ({ signal }: { signal: AbortSignal }) => {
+  const { id } = data1.requiredValue;
+  const response = await fetch(`https://api.example.com/process/${id}`, {
+    signal,
+  });
+  data2.value = await response.json();
+}, 'processData');
+
+// Multiple rapid calls automatically abort previous requests
+fetchData(1); // Starts request
+fetchData(2); // Aborts previous request, starts new one
+fetchData(3); // Aborts previous request, starts new one
+```
+
+**Key Features:**
+
+- **Automatic Cancellation**: Previous requests are automatically aborted when new ones start
+- **Standard Web API**: Uses native AbortController and AbortSignal
+- **Fetch Integration**: Works seamlessly with fetch API and other abortable operations
+- **Error Handling**: AbortError is automatically handled for cancelled requests
+
 ### Debugging
 
 Enable debug logging to track state changes, derived value updates, effect runs, and action executions:

@@ -181,6 +181,16 @@ export function effect(
       const isCurrentlyRunning = runningEffects.has(validatedName);
 
       if (isCurrentlyRunning) {
+        // Abort the previous effect
+        const previousEffect = runningEffects.get(validatedName);
+        if (
+          previousEffect &&
+          typeof previousEffect === 'object' &&
+          'abort' in previousEffect
+        ) {
+          (previousEffect as any).abort();
+        }
+
         // Queue this execution if effect is already running
         if (!effectQueues.has(validatedName)) {
           effectQueues.set(validatedName, []);
@@ -252,6 +262,22 @@ export function effect(
     const prevEffect = setActiveEffect(runEffect);
 
     try {
+      // Abort previous effect if it's running
+      if (validatedName) {
+        const previousEffect = runningEffects.get(validatedName);
+        if (
+          previousEffect &&
+          typeof previousEffect === 'object' &&
+          'abort' in previousEffect
+        ) {
+          (previousEffect as any).abort();
+        }
+      }
+
+      // Create abort controller for async effects
+      const abortController = new AbortController();
+      const system = { signal: abortController.signal };
+
       // Automatically batch state updates within effects to prevent infinite loops
       let result:
         | void
@@ -260,13 +286,19 @@ export function effect(
         | Promise<() => void>
         | undefined;
       batch(() => {
-        result = fn();
+        // Pass system object with signal to async effects
+        result = (fn as any)(system);
       });
 
       if (result instanceof Promise) {
         // Track running effect for named effects
         if (validatedName) {
-          runningEffects.set(validatedName, result as Promise<void>);
+          // Store both the promise and abort controller
+          const effectInfo = {
+            promise: result as Promise<void>,
+            abort: () => abortController.abort(),
+          };
+          runningEffects.set(validatedName, effectInfo as any);
         }
 
         // Handle async result asynchronously

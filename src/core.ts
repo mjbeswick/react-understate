@@ -332,11 +332,25 @@ export function action<T extends (...args: any[]) => any>(
       logDebug(`action: '${validatedName}'`, debugConfig);
     }
 
+    // Create abort controller for async functions
+    const abortController = new AbortController();
+    const system = { signal: abortController.signal };
+
     // Handle async queuing for named actions
     if (validatedName) {
       const isCurrentlyRunning = runningActions.has(validatedName);
 
       if (isCurrentlyRunning) {
+        // Abort the previous request
+        const previousAction = runningActions.get(validatedName);
+        if (
+          previousAction &&
+          typeof previousAction === 'object' &&
+          'abort' in previousAction
+        ) {
+          (previousAction as any).abort();
+        }
+
         // Queue this execution if action is already running
         if (!actionQueues.has(validatedName)) {
           actionQueues.set(validatedName, []);
@@ -363,6 +377,22 @@ export function action<T extends (...args: any[]) => any>(
     // Automatically batch the action
     let result: ReturnType<T> = undefined as any;
     batch(() => {
+      // Pass system object with signal to async functions
+      if (fn.length > 0) {
+        // Check if the function expects a system parameter
+        const lastArg = args[args.length - 1];
+        if (
+          typeof lastArg === 'object' &&
+          lastArg !== null &&
+          'signal' in lastArg
+        ) {
+          // Replace the existing system object
+          args[args.length - 1] = system;
+        } else {
+          // Add system object as last parameter
+          args.push(system as any);
+        }
+      }
       result = fn(...args);
     });
 
@@ -374,7 +404,12 @@ export function action<T extends (...args: any[]) => any>(
       'then' in result
     ) {
       const promiseResult = result as Promise<any>;
-      runningActions.set(validatedName, promiseResult);
+      // Store both the promise and abort controller
+      const actionInfo = {
+        promise: promiseResult,
+        abort: () => abortController.abort(),
+      };
+      runningActions.set(validatedName, actionInfo as any);
 
       promiseResult.finally(() => {
         runningActions.delete(validatedName);
