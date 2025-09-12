@@ -121,9 +121,9 @@ setCount(5);
 console.log(count.value); // 5
 ```
 
-**Invariant Assertion:**
+**Required Value Property:**
 
-For states that may be null or undefined, use the `.invariant()` method for runtime-safe non-null assertions:
+For states that may be null or undefined, use the `.requiredValue` property for runtime-safe non-null assertions:
 
 ```tsx
 const user = state<User | null>(null);
@@ -136,16 +136,20 @@ if (user.value) {
   // Use non-null assertion when you know it's safe
   console.log(user.value!.name); // Works, but no runtime safety
 
-  // Or use the invariant method for runtime safety
-  console.log(user.invariant().name); // Works with runtime check
+  // Or use the requiredValue property for runtime safety
+  console.log(user.requiredValue.name); // Works with runtime check
 }
 
-// The invariant method throws if the value is null/undefined
+// The requiredValue getter throws if the value is null/undefined
 try {
-  const name = user.invariant().name; // Throws: "State invariant violated: value is null"
+  const name = user.requiredValue.name; // Throws: "Required value is null"
 } catch (error) {
   console.log('User not loaded yet');
 }
+
+// The requiredValue setter prevents setting null/undefined
+user.requiredValue = { id: 1, name: 'John' }; // Works
+user.requiredValue = null; // Throws: "Cannot set required value to null"
 ```
 
 ### Derived Values

@@ -1,38 +1,38 @@
 import { state } from './core';
 import { effect } from './state';
 
-describe('State invariant method', () => {
+describe('State requiredValue property', () => {
   it('should return the value when it is not null or undefined', () => {
     const count = state(42);
-    expect(count.invariant()).toBe(42);
+    expect(count.requiredValue).toBe(42);
   });
 
   it('should return the value when it is 0', () => {
     const count = state(0);
-    expect(count.invariant()).toBe(0);
+    expect(count.requiredValue).toBe(0);
   });
 
   it('should return the value when it is false', () => {
     const flag = state(false);
-    expect(flag.invariant()).toBe(false);
+    expect(flag.requiredValue).toBe(false);
   });
 
   it('should return the value when it is empty string', () => {
     const name = state('');
-    expect(name.invariant()).toBe('');
+    expect(name.requiredValue).toBe('');
   });
 
   it('should throw error when value is null', () => {
     const user = state<User | null>(null);
-    expect(() => user.invariant()).toThrow(
-      'State invariant violated: value is null. Use .value to access the actual value or ensure the state is initialized.',
+    expect(() => user.requiredValue).toThrow(
+      'Required value is null. Use .value to access the actual value or ensure the state is initialized.',
     );
   });
 
   it('should throw error when value is undefined', () => {
     const data = state<Data | undefined>(undefined);
-    expect(() => data.invariant()).toThrow(
-      'State invariant violated: value is undefined. Use .value to access the actual value or ensure the state is initialized.',
+    expect(() => data.requiredValue).toThrow(
+      'Required value is undefined. Use .value to access the actual value or ensure the state is initialized.',
     );
   });
 
@@ -42,7 +42,7 @@ describe('State invariant method', () => {
 
     const dispose = effect(() => {
       effectRuns++;
-      const _ = count.invariant(); // Should track dependency
+      const _ = count.requiredValue; // Should track dependency
     }, 'testEffect');
 
     expect(effectRuns).toBe(1);
@@ -59,7 +59,7 @@ describe('State invariant method', () => {
     // This should compile without TypeScript errors
     // but will throw at runtime if user is null
     expect(() => {
-      const name: string = user.invariant().name; // TypeScript knows this is string
+      const name: string = user.requiredValue.name; // TypeScript knows this is string
     }).toThrow();
   });
 
@@ -67,12 +67,12 @@ describe('State invariant method', () => {
     const user = state<User | null>(null);
 
     // Initially throws
-    expect(() => user.invariant()).toThrow();
+    expect(() => user.requiredValue).toThrow();
 
     // After setting a value, should work
     user.value = { id: 1, name: 'John' };
-    expect(user.invariant().name).toBe('John');
-    expect(user.invariant().id).toBe(1);
+    expect(user.requiredValue.name).toBe('John');
+    expect(user.requiredValue.id).toBe(1);
   });
 
   it('should work with complex objects', () => {
@@ -84,9 +84,33 @@ describe('State invariant method', () => {
       items: [1, 2, 3],
     };
 
-    expect(data.invariant().user.name).toBe('John');
-    expect(data.invariant().settings.theme).toBe('dark');
-    expect(data.invariant().items).toEqual([1, 2, 3]);
+    expect(data.requiredValue.user.name).toBe('John');
+    expect(data.requiredValue.settings.theme).toBe('dark');
+    expect(data.requiredValue.items).toEqual([1, 2, 3]);
+  });
+
+  it('should allow setting non-null values', () => {
+    const user = state<User | null>(null);
+    
+    // Should work
+    user.requiredValue = { id: 1, name: 'John' };
+    expect(user.requiredValue.name).toBe('John');
+  });
+
+  it('should throw when setting null values', () => {
+    const user = state<User | null>(null);
+    
+    expect(() => {
+      user.requiredValue = null as any;
+    }).toThrow('Cannot set required value to null. Use .value to set null/undefined values.');
+  });
+
+  it('should throw when setting undefined values', () => {
+    const user = state<User | null>(null);
+    
+    expect(() => {
+      user.requiredValue = undefined as any;
+    }).toThrow('Cannot set required value to undefined. Use .value to set null/undefined values.');
   });
 });
 

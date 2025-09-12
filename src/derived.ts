@@ -164,7 +164,7 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
     set value(_newValue: T) {
       throw new Error('Cannot update derived values directly');
     },
-    invariant() {
+    get requiredValue() {
       // Track this derived value as a dependency if we're in an effect
       const activeEffect = setActiveEffect(null);
       if (activeEffect) {
@@ -173,10 +173,14 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
       const value = computeValue();
       if (value === null || value === undefined) {
         throw new Error(
-          `Derived invariant violated: value is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the derived value is properly computed.`,
+          `Required derived value is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the derived value is properly computed.`,
         );
       }
       return value as NonNullable<T>;
+    },
+
+    set requiredValue(_newValue: NonNullable<T>) {
+      throw new Error('Cannot set required value on derived values - they are computed from dependencies');
     },
   } as State<T>;
 
@@ -369,7 +373,7 @@ export function asyncDerived<T>(
       return () => subscribers.delete(callback);
     },
 
-    async invariant(): Promise<NonNullable<T>> {
+    get requiredValue(): Promise<NonNullable<T>> {
       // Track this state as a dependency if we're in an effect or computed
       const activeEffect = setActiveEffect(null);
       if (activeEffect) {
@@ -378,19 +382,24 @@ export function asyncDerived<T>(
 
       // Trigger computation if dirty
       if (dirty) {
-        await computeValue().catch(error => {
+        computeValue().catch(error => {
           // eslint-disable-next-line no-console
           console.error('AsyncDerived computation failed:', error);
         });
       }
 
-      const value = await cachedValue;
-      if (value === null || value === undefined) {
-        throw new Error(
-          `AsyncDerived invariant violated: value is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the async derived value is properly computed.`,
-        );
-      }
-      return value as NonNullable<T>;
+      return cachedValue.then(value => {
+        if (value === null || value === undefined) {
+          throw new Error(
+            `Required async derived value is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the async derived value is properly computed.`,
+          );
+        }
+        return value as NonNullable<T>;
+      });
+    },
+
+    set requiredValue(_newValue: NonNullable<T>) {
+      throw new Error('Cannot set required value on async derived values - they are computed from dependencies');
     },
   };
 

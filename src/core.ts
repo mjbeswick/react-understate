@@ -213,14 +213,13 @@ export interface State<T> {
   set value(newValue: T | ((prev: T) => T | Promise<T>));
 
   /**
-   * Invariant assertion for the state value.
+   * Required value property with runtime null/undefined checking.
    *
-   * This method asserts that the state value is not null or undefined,
-   * returning the value or throwing an error if the invariant is violated.
-   * Useful when you know the state should have a value but TypeScript can't infer it.
+   * This property provides a non-null assertion that returns the value
+   * or throws an error if the value is null or undefined. The setter
+   * also prevents setting null or undefined values.
    *
-   * @returns The non-null value
-   * @throws {Error} If the value is null or undefined
+   * @throws {Error} If the value is null or undefined (getter) or if trying to set null/undefined (setter)
    *
    * @example
    * ```tsx
@@ -234,12 +233,17 @@ export interface State<T> {
    *   // Use non-null assertion when you know it's safe
    *   console.log(user.value!.name); // Works, but no runtime safety
    *
-   *   // Or use the invariant method for runtime safety
-   *   console.log(user.invariant().name); // Works with runtime check
+   *   // Or use the requiredValue property for runtime safety
+   *   console.log(user.requiredValue.name); // Works with runtime check
    * }
+   *
+   * // Setter also prevents null/undefined values
+   * user.requiredValue = { id: 1, name: 'John' }; // Works
+   * user.requiredValue = null; // Throws error
    * ```
    */
-  invariant(): NonNullable<T>;
+  get requiredValue(): NonNullable<T>;
+  set requiredValue(newValue: NonNullable<T>);
 }
 
 /**
@@ -563,7 +567,7 @@ export function state<T>(initialValue: T, name?: string): State<T> {
       }
     },
 
-    invariant() {
+    get requiredValue() {
       // Track this state as a dependency if we're in an effect or computed
       if (activeEffect) {
         addReadValue(stateObj);
@@ -572,11 +576,21 @@ export function state<T>(initialValue: T, name?: string): State<T> {
 
       if (value === null || value === undefined) {
         throw new Error(
-          `State invariant violated: value is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the state is initialized.`,
+          `Required value is ${value === null ? 'null' : 'undefined'}. Use .value to access the actual value or ensure the state is initialized.`,
         );
       }
 
       return value as NonNullable<T>;
+    },
+
+    set requiredValue(newValue: NonNullable<T>) {
+      if (newValue === null || newValue === undefined) {
+        throw new Error(
+          `Cannot set required value to ${newValue === null ? 'null' : 'undefined'}. Use .value to set null/undefined values.`,
+        );
+      }
+
+      setValue(newValue as T);
     },
 
     toString() {
