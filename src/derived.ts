@@ -180,7 +180,9 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
     },
 
     set requiredValue(_newValue: NonNullable<T>) {
-      throw new Error('Cannot set required value on derived values - they are computed from dependencies');
+      throw new Error(
+        'Cannot set required value on derived values - they are computed from dependencies',
+      );
     },
   } as State<T>;
 
@@ -399,7 +401,9 @@ export function asyncDerived<T>(
     },
 
     set requiredValue(_newValue: NonNullable<T>) {
-      throw new Error('Cannot set required value on async derived values - they are computed from dependencies');
+      throw new Error(
+        'Cannot set required value on async derived values - they are computed from dependencies',
+      );
     },
   };
 
