@@ -21,7 +21,7 @@ export type { State } from './core';
 export * from './debug-utils';
 
 // Browser debugging types
-/// <reference path="./browser-debug.d.ts" />
+import './browser-debug';
 
 // Reactive exports
 export { derived, asyncDerived } from './derived';
