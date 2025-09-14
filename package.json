@@ -16,6 +16,10 @@
       "types": "./dist/core.d.ts",
       "import": "./dist/react-understate.signals.js",
       "require": "./dist/react-understate.signals.cjs.js"
+    },
+    "./browser-debug": {
+      "types": "./src/browser-debug.d.ts",
+      "import": "./src/browser-debug.d.ts"
     }
   },
   "scripts": {
