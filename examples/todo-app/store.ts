@@ -5,6 +5,7 @@ import {
   persistLocalStorage,
   configureDebug,
 } from 'react-understate';
+
 configureDebug({ enabled: true, showFile: true });
 
 // Define the Todo type

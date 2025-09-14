@@ -20,8 +20,7 @@ export type { State } from './core';
 // Debug utilities
 export * from './debug-utils';
 
-// Browser debugging types
-import './browser-debug';
+// Browser debugging types are automatically available
 
 // Reactive exports
 export { derived, asyncDerived } from './derived';
