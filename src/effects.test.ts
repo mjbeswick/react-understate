@@ -448,9 +448,7 @@ describe('Effects', () => {
         async () => {
           effectRuns++;
           concurrentRuns++;
-          console.log(
-            `Effect run ${effectRuns}, concurrent: ${concurrentRuns}`,
-          );
+          // no-op
 
           // Read the dependency to track it
           const a = valueA.value;
@@ -459,9 +457,7 @@ describe('Effects', () => {
           await new Promise(resolve => setTimeout(resolve, 50));
 
           concurrentRuns--;
-          console.log(
-            `Effect run ${effectRuns} completed, concurrent: ${concurrentRuns}`,
-          );
+          // no-op
         },
         'overlapTest',
         { preventOverlap: true },
@@ -470,11 +466,8 @@ describe('Effects', () => {
       expect(effectRuns).toBe(1); // Initial run
 
       // Trigger multiple rapid changes
-      console.log('Changing valueA to 2');
       valueA.value = 2;
-      console.log('Changing valueA to 3');
       valueA.value = 3;
-      console.log('Changing valueA to 4');
       valueA.value = 4;
 
       // Wait for async work to complete

@@ -25,7 +25,6 @@ describe('Async Queuing', () => {
         await new Promise(resolve => setTimeout(resolve, 50));
 
         count.value = value;
-        console.log(`Action completed for value: ${value}`);
         return value;
       }, 'asyncAction');
 
@@ -54,7 +53,6 @@ describe('Async Queuing', () => {
         await new Promise(resolve => setTimeout(resolve, 50));
 
         count.value = value;
-        console.log(`Action completed for value: ${value}`);
         return value;
       }); // No name provided
 
@@ -85,7 +83,6 @@ describe('Async Queuing', () => {
         }
 
         count.value = value;
-        console.log(`Action completed for value: ${value}, async: ${isAsync}`);
         return value;
       }, 'mixedAction');
 

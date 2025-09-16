@@ -635,7 +635,9 @@ describe('States', () => {
     });
 
     it('should expose configureDebug on window.reactUnderstate', () => {
-      expect((global as any).window.reactUnderstate.configureDebug).toBeDefined();
+      expect(
+        (global as any).window.reactUnderstate.configureDebug,
+      ).toBeDefined();
       expect(typeof (global as any).window.reactUnderstate.configureDebug).toBe(
         'function',
       );
@@ -647,10 +649,12 @@ describe('States', () => {
         testState.value += amount;
       }, 'increment');
 
-      expect((global as any).window.reactUnderstate.actions.increment).toBeDefined();
-      expect(typeof (global as any).window.reactUnderstate.actions.increment).toBe(
-        'function',
-      );
+      expect(
+        (global as any).window.reactUnderstate.actions.increment,
+      ).toBeDefined();
+      expect(
+        typeof (global as any).window.reactUnderstate.actions.increment,
+      ).toBe('function');
 
       // Test that the action can be called from window.reactUnderstate.actions
       (global as any).window.reactUnderstate.actions.increment(5);
@@ -675,10 +679,12 @@ describe('States', () => {
 
     it('should throw error when creating two actions with the same name', () => {
       const action1 = action(() => {}, 'duplicateAction');
-      
+
       expect(() => {
         action(() => {}, 'duplicateAction');
-      }).toThrow("Action with name 'duplicateAction' already exists. Action names must be unique.");
+      }).toThrow(
+        "Action with name 'duplicateAction' already exists. Action names must be unique.",
+      );
     });
   });
 
@@ -748,18 +754,14 @@ describe('States', () => {
       expect(state1.value).toBe(1);
 
       expect(() => {
-        effect(() => {
-          console.log('test');
-        }, 'duplicateName');
+        effect(() => {}, 'duplicateName');
       }).toThrow(
         "Effect with name 'duplicateName' already exists. State names must be unique.",
       );
     });
 
     it('should throw error when creating state with same name as effect', () => {
-      const dispose = effect(() => {
-        console.log('test');
-      }, 'duplicateName');
+      const dispose = effect(() => {}, 'duplicateName');
 
       expect(() => {
         state('test', 'duplicateName');
@@ -795,7 +797,9 @@ describe('States', () => {
       expect(unnamedState2.value).toBe('unnamed2');
 
       // Only named state should be registered
-      expect((global as any).window.reactUnderstate.states.namedState).toBeDefined();
+      expect(
+        (global as any).window.reactUnderstate.states.namedState,
+      ).toBeDefined();
       expect(
         (global as any).window.reactUnderstate.states.unnamedState1,
       ).toBeUndefined();

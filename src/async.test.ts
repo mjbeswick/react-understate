@@ -60,9 +60,7 @@ describe('Async Functionality', () => {
       const dispose = effect(async () => {
         effectRunCount++;
         await new Promise(resolve => setTimeout(resolve, 10));
-        console.log(
-          `Effect ran ${effectRunCount} times, count: ${count.value}`,
-        );
+        // no-op
       }, 'asyncEffect');
 
       // Wait for initial effect to run
@@ -86,11 +84,11 @@ describe('Async Functionality', () => {
       let cleanupCount = 0;
 
       const dispose = effect(async () => {
-        console.log(`Effect running, count: ${count.value}`);
+        // no-op
         await new Promise(resolve => setTimeout(resolve, 10));
         return () => {
           cleanupCount++;
-          console.log('Cleanup called');
+          // no-op
         };
       }, 'asyncEffectWithCleanup');
 
