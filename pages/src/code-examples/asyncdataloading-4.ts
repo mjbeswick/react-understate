@@ -1,4 +1,3 @@
-
 type ResourceState<T> = {
   data: T | null;
   loading: boolean;

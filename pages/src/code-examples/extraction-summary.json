@@ -25,16 +25,6 @@
     "language": "typescript"
   },
   {
-    "originalFile": "QuickStart.tsx",
-    "extractedFile": "quickstart-2.tsx",
-    "language": "tsx"
-  },
-  {
-    "originalFile": "QuickStart.tsx",
-    "extractedFile": "quickstart-3.tsx",
-    "language": "tsx"
-  },
-  {
     "originalFile": "api/BatchAPI.tsx",
     "extractedFile": "batchapi.tsx",
     "language": "tsx"
@@ -242,31 +232,6 @@
   {
     "originalFile": "api/StateAPIContent.tsx",
     "extractedFile": "stateapicontent-6.tsx",
-    "language": "tsx"
-  },
-  {
-    "originalFile": "api/StateAPIContent.tsx",
-    "extractedFile": "stateapicontent-7.tsx",
-    "language": "tsx"
-  },
-  {
-    "originalFile": "api/StateAPIContent.tsx",
-    "extractedFile": "stateapicontent-8.tsx",
-    "language": "tsx"
-  },
-  {
-    "originalFile": "api/StateAPIContent.tsx",
-    "extractedFile": "stateapicontent-9.tsx",
-    "language": "tsx"
-  },
-  {
-    "originalFile": "api/StateAPIContent.tsx",
-    "extractedFile": "stateapicontent-10.tsx",
-    "language": "tsx"
-  },
-  {
-    "originalFile": "api/StateAPIContent.tsx",
-    "extractedFile": "stateapicontent-11.tsx",
     "language": "tsx"
   },
   {
@@ -652,6 +617,81 @@
   {
     "originalFile": "patterns/LocalStorage.tsx",
     "extractedFile": "localstorage-7.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-2.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-3.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-4.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-5.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-6.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-7.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-8.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-9.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-10.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-11.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StateComposition.tsx",
+    "extractedFile": "statecomposition.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StateComposition.tsx",
+    "extractedFile": "statecomposition-2.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StateComposition.tsx",
+    "extractedFile": "statecomposition-3.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StateComposition.tsx",
+    "extractedFile": "statecomposition-4.tsx",
     "language": "tsx"
   },
   {
