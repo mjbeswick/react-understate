@@ -1,0 +1,310 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #0070f3;
+  --primary-hover: #0051a2;
+  --accent: #7c3aed;
+  --bg: #ffffff;
+  --bg-secondary: #fafafa;
+  --text: #171717;
+  --text-secondary: #737373;
+  --text-muted: #a3a3a3;
+  --border: #e5e5e5;
+  --border-light: #f5f5f5;
+  --code-bg: #f8f8f8;
+  --sidebar-bg: #fcfcfc;
+  --search-bg: #f4f4f5;
+}
+
+[data-theme="dark"] {
+  --bg: #000000;
+  --bg-secondary: #111111;
+  --text: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
+  --border: #262626;
+  --border-light: #171717;
+  --code-bg: #1a1a1a;
+  --sidebar-bg: #0a0a0a;
+  --search-bg: #1a1a1a;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 2rem;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+h3 {
+  font-size: 1.5rem;
+  margin-top: 2rem;
+}
+
+h4 {
+  font-size: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+p {
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+}
+
+/* Links */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+/* Code */
+code {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', monospace;
+  font-size: 0.875em;
+  background-color: var(--code-bg);
+  padding: 0.125em 0.375em;
+  border-radius: 0.25rem;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+pre {
+  background-color: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Lists */
+ul, ol {
+  margin: 1.5rem 0;
+  padding-left: 2rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background-color: var(--primary-hover);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text);
+  border-color: var(--primary);
+}
+
+/* Utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+/* Documentation specific styles */
+.docs-content {
+  max-width: none;
+}
+
+.docs-header {
+  margin-bottom: 3rem;
+}
+
+.docs-header h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+
+.docs-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  margin-bottom: 0;
+}
+
+.logo-section {
+  margin: 3rem 0;
+  text-align: center;
+}
+
+.logo-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  justify-content: center;
+}
+
+.logo-icon-large {
+  font-size: 3rem;
+}
+
+.logo-text-large {
+  font-size: 2rem;
+}
+
+.docs-link {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.docs-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+.docs-navigation {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.docs-nav-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nav-label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.nav-link {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--primary-hover);
+  text-decoration: none;
+}
+
+/* Code blocks with syntax highlighting feel */
+pre {
+  position: relative;
+}
+
+pre::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .docs-header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .logo-display {
+    padding: 1.5rem 2rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .logo-icon-large {
+    font-size: 2.5rem;
+  }
+  
+  .logo-text-large {
+    font-size: 1.5rem;
+  }
+}

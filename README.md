@@ -6,6 +6,16 @@ The state management library that's so lightweight, it makes Redux feel like you
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
 
+## 📚 Documentation
+
+**📖 [Complete Documentation Site](https://mjbeswick.github.io/react-understate/)** - Comprehensive guides, API reference, and examples
+
+**🚀 [Quick Start Guide](https://mjbeswick.github.io/react-understate/getting-started/introduction)** - Get up and running in minutes
+
+**📋 [API Reference](https://mjbeswick.github.io/react-understate/api/state)** - Complete API documentation with examples
+
+**💡 [Examples](https://mjbeswick.github.io/react-understate/examples/todo)** - Real-world applications and patterns
+
 ## Features
 
 - 🎯 **Simple API** - Just use `.value` to read/write state values
@@ -1104,12 +1114,16 @@ This pattern is used in both the [Calculator](examples/calculator/) and [Todo Ap
 
 ## Examples
 
-Check out the complete examples in the `examples/` directory:
+**🌐 [Live Examples on Documentation Site](https://mjbeswick.github.io/react-understate/examples/todo)** - Interactive examples you can try in your browser
+
+**📁 [Source Code Examples](examples/)** - Complete working examples in the repository:
 
 - **Calculator** - Basic state management with derived values
 - **Todo App** - Full-featured todo app with persistence
 
 ## API Reference
+
+> **📚 For complete API documentation with detailed examples, visit the [Documentation Site](https://mjbeswick.github.io/react-understate/api/state)**
 
 ### Core Functions
 

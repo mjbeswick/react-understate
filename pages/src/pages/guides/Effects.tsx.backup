@@ -1,0 +1,1038 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import styles from '../shared.module.css';
+import CodeBlock from '../../components/CodeBlock';
+
+const Effects: React.FC = () => {
+  return (
+    <div className={styles.content}>
+      <div className={styles.header}>
+        <h1>Effects Guide</h1>
+        <p className={styles.subtitle}>
+          Master side effects and reactive programming with effects
+        </p>
+      </div>
+
+      <nav className={styles.navigation}>
+        <div className={styles.navItem}>
+          <span className={styles.navLabel}>Guide:</span>
+          <Link to="/guides/effects" className={styles.navLink}>
+            Effects
+          </Link>
+        </div>
+      </nav>
+
+      <h2>Introduction</h2>
+      <p>
+        Effects are the reactive side of React Understate, allowing you to respond
+        to state changes with side effects like API calls, DOM manipulation,
+        timers, and more. They provide a clean way to handle complex reactive
+        logic while maintaining excellent performance.
+      </p>
+
+      <div
+        className="guide-overview"
+        style={{
+          background: '#f8fafc',
+          padding: '1.5rem',
+          borderRadius: '0.5rem',
+          margin: '2rem 0',
+        }}
+      >
+        <h3 style={{ margin: '0 0 1rem 0' }}>🎯 What You'll Learn</h3>
+        <ul style={{ margin: 0 }}>
+          <li>Creating and managing effects</li>
+          <li>Dependency tracking and cleanup</li>
+          <li>Common effect patterns</li>
+          <li>Performance optimization</li>
+          <li>Error handling and debugging</li>
+          <li>Best practices and anti-patterns</li>
+        </ul>
+      </div>
+
+      <h2>Basic Effects</h2>
+      <p>
+        The `effect()` function creates reactive side effects that automatically
+        run when their dependencies change and clean up when dependencies change
+        or the effect is disposed.
+      </p>
+
+      <CodeBlock
+        language="typescript"
+        code={`import { state, effect } from 'react-understate';
+
+      />
+
+      <h2>Effect Dependencies</h2>
+      <p>
+        Effects automatically track their dependencies and re-run when any
+        dependency changes. Understanding dependency tracking is crucial for
+        writing efficient effects.
+      </p>
+
+      <CodeBlock
+        language="typescript"
+        code={`// Multiple dependencies
+const user = state({ id: 1, name: 'John' }, { name: 'user' });
+const theme = state('light', { name: 'theme' });
+const language = state('en', { name: 'language' });
+
+// Effect depends on all three
+export const userPreferencesEffect = effect(() => {
+  const userData = user();
+  const currentTheme = theme();
+  const currentLanguage = language();
+  
+  console.log('effect: user preferences changed', {
+    user: userData.name,
+    theme: currentTheme,
+    language: currentLanguage,
+  });
+  
+  // Apply theme to document
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  
+  // Set language
+  document.documentElement.lang = currentLanguage;
+}, { name: 'userPreferencesEffect' });
+
+// Conditional dependencies
+const showAdvancedFeatures = state(false, { name: 'showAdvancedFeatures' });
+const advancedData = state(null, { name: 'advancedData' });
+
+export const conditionalEffect = effect(() => {
+  const showAdvanced = showAdvancedFeatures();
+  
+  if (showAdvanced) {
+    // Only depends on advancedData when showAdvanced is true
+    const data = advancedData();
+    console.log('effect: processing advanced data', data);
+  } else {
+    console.log('effect: advanced features disabled');
+  }
+}, { name: 'conditionalEffect' });
+
+// Derived dependencies
+const firstName = state('John', { name: 'firstName' });
+const lastName = state('Doe', { name: 'lastName' });
+
+const fullName = derived(() => \`\${firstName()} \${lastName()}\`, {
+  name: 'fullName',
+});
+
+export const nameEffect = effect(() => {
+  const name = fullName();
+  console.log('effect: full name changed to', name);
+  
+  // This effect will re-run when either firstName or lastName changes
+  // because it depends on the derived fullName
+}, { name: 'nameEffect' });`}
+      />
+
+      <h2>Common Effect Patterns</h2>
+      <p>
+        Here are the most common patterns for using effects in real applications.
+      </p>
+
+      <CodeBlock
+        language="typescript"
+        code={`// 1. API synchronization
+const userId = state<number | null>(null, { name: 'userId' });
+const userData = state<any>(null, { name: 'userData' });
+const loading = state(false, { name: 'loading' });
+const error = state<string | null>(null, { name: 'error' });
+
+export const userSyncEffect = effect(() => {
+  const id = userId();
+  
+  if (!id) {
+    userData(null);
+    return;
+  }
+  
+  loading(true);
+  error(null);
+  
+  let cancelled = false;
+  
+  fetchUser(id)
+    .then(data => {
+      if (!cancelled) {
+        userData(data);
+        loading(false);
+      }
+    })
+    .catch(err => {
+      if (!cancelled) {
+        error(err.message);
+        loading(false);
+      }
+    });
+  
+  return () => {
+    cancelled = true;
+  };
+}, { name: 'userSyncEffect' });
+
+// 2. Local storage persistence
+const settings = state({
+  theme: 'light',
+  language: 'en',
+  notifications: true,
+}, { name: 'settings' });
+
+export const settingsPersistenceEffect = effect(() => {
+  const currentSettings = settings();
+  
+  try {
+    localStorage.setItem('app-settings', JSON.stringify(currentSettings));
+  } catch (error) {
+    console.error('effect: failed to save settings', error);
+  }
+}, { name: 'settingsPersistenceEffect' });
+
+// Load settings on initialization
+export const loadSettingsEffect = effect(() => {
+  try {
+    const saved = localStorage.getItem('app-settings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      settings(parsed);
+    }
+  } catch (error) {
+    console.error('effect: failed to load settings', error);
+  }
+}, { name: 'loadSettingsEffect' });
+
+// 3. Document title updates
+const pageTitle = state('Home', { name: 'pageTitle' });
+const unreadCount = state(0, { name: 'unreadCount' });
+
+export const documentTitleEffect = effect(() => {
+  const title = pageTitle();
+  const unread = unreadCount();
+  
+  const fullTitle = unread > 0 ? \`(\${unread}) \${title}\` : title;
+  document.title = \`\${fullTitle} - My App\`;
+}, { name: 'documentTitleEffect' });
+
+// 4. Analytics tracking
+const currentPage = state('/', { name: 'currentPage' });
+const user = state(null, { name: 'user' });
+
+export const analyticsEffect = effect(() => {
+  const page = currentPage();
+  const userData = user();
+  
+  // Track page views
+  if (typeof gtag !== 'undefined') {
+    gtag('config', 'GA_MEASUREMENT_ID', {
+      page_title: document.title,
+      page_location: window.location.href,
+    });
+  }
+  
+  // Track user events
+  if (userData) {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'user_login', {
+        user_id: userData.id,
+      });
+    }
+  }
+}, { name: 'analyticsEffect' });
+
+// 5. WebSocket connections
+const isConnected = state(false, { name: 'isConnected' });
+const messages = state<any[]>([], { name: 'messages' });
+
+export const websocketEffect = effect(() => {
+  const connected = isConnected();
+  
+  if (!connected) return;
+  
+  const ws = new WebSocket('ws://localhost:8080');
+  
+  ws.onopen = () => {
+    console.log('effect: websocket connected');
+  };
+  
+  ws.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    messages(prev => [...prev, message]);
+  };
+  
+  ws.onclose = () => {
+    console.log('effect: websocket disconnected');
+    isConnected(false);
+  };
+  
+  ws.onerror = (error) => {
+    console.error('effect: websocket error', error);
+    isConnected(false);
+  };
+  
+  return () => {
+    console.log('effect: closing websocket');
+    ws.close();
+  };
+}, { name: 'websocketEffect' });`}
+      />
+
+      <h2>Advanced Effect Patterns</h2>
+      <p>
+        More sophisticated patterns for complex reactive scenarios.
+      </p>
+
+      <CodeBlock
+        language="typescript"
+        code={`// 1. Debounced effects
+const createDebouncedEffect = <T>(
+  computation: () => T,
+  delay: number,
+  name: string
+) => {
+  let timeoutId: number | null = null;
+  
+  return effect(() => {
+    // Clear previous timeout
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    
+    // Set new timeout
+    timeoutId = window.setTimeout(() => {
+      computation();
+      timeoutId = null;
+    }, delay);
+    
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    };
+  }, { name });
+};
+
+// Usage: Debounced search
+const searchQuery = state('', { name: 'searchQuery' });
+const searchResults = state<any[]>([], { name: 'searchResults' });
+
+export const debouncedSearchEffect = createDebouncedEffect(
+  () => {
+    const query = searchQuery();
+    if (!query.trim()) {
+      searchResults([]);
+      return;
+    }
+    
+    performSearch(query).then(results => {
+      searchResults(results);
+    });
+  },
+  300,
+  'debouncedSearchEffect'
+);
+
+// 2. Effect chains
+const data = state<any[]>([], { name: 'data' });
+const filtered = state<any[]>([], { name: 'filtered' });
+const sorted = state<any[]>([], { name: 'sorted' });
+
+// First effect: filter data
+export const filterEffect = effect(() => {
+  const items = data();
+  const filteredItems = items.filter(item => item.active);
+  filtered(filteredItems);
+}, { name: 'filterEffect' });
+
+// Second effect: sort filtered data
+export const sortEffect = effect(() => {
+  const items = filtered();
+  const sortedItems = [...items].sort((a, b) => a.name.localeCompare(b.name));
+  sorted(sortedItems);
+}, { name: 'sortEffect' });
+
+// 3. Effect with manual triggers
+const createTriggeredEffect = <T>(
+  computation: () => T,
+  name: string
+) => {
+  const trigger = state(0, { name: \`\${name}Trigger\` });
+  
+  const effectInstance = effect(() => {
+    trigger(); // Depend on trigger
+    return computation();
+  }, { name });
+  
+  return {
+    effect: effectInstance,
+    trigger: () => trigger(prev => prev + 1),
+  };
+};
+
+// Usage
+const { effect: manualEffect, trigger: triggerManual } = createTriggeredEffect(
+  () => {
+    console.log('effect: manual effect triggered');
+    return performExpensiveOperation();
+  },
+  'manualEffect'
+);
+
+// 4. Effect with retry logic
+const createRetryEffect = <T>(
+  computation: () => Promise<T>,
+  maxRetries: number = 3,
+  retryDelay: number = 1000,
+  name: string
+) => {
+  const retryCount = state(0, { name: \`\${name}RetryCount\` });
+  const isRetrying = state(false, { name: \`\${name}IsRetrying\` });
+  
+  return effect(() => {
+    const retries = retryCount();
+    
+    if (retries >= maxRetries) {
+      console.error(\`effect: max retries (\${maxRetries}) exceeded for \${name}\`);
+      return;
+    }
+    
+    isRetrying(true);
+    
+    computation()
+      .then(() => {
+        retryCount(0);
+        isRetrying(false);
+      })
+      .catch(error => {
+        console.error(\`effect: attempt \${retries + 1} failed for \${name}\`, error);
+        
+        setTimeout(() => {
+          retryCount(prev => prev + 1);
+        }, retryDelay * (retries + 1)); // Exponential backoff
+      });
+  }, { name });
+};
+
+// Usage
+export const retryEffect = createRetryEffect(
+  () => fetch('/api/data'),
+  3,
+  1000,
+  'retryEffect'
+);
+
+// 5. Effect with caching
+const createCachedEffect = <T>(
+  computation: () => T,
+  cacheKey: () => string,
+  name: string
+) => {
+  const cache = new Map<string, T>();
+  
+  return effect(() => {
+    const key = cacheKey();
+    
+    if (cache.has(key)) {
+      console.log(\`effect: cache hit for \${name} with key \${key}\`);
+      return cache.get(key);
+    }
+    
+    console.log(\`effect: computing \${name} for key \${key}\`);
+    const result = computation();
+    cache.set(key, result);
+    
+    return result;
+  }, { name });
+};
+
+// Usage
+const userId = state(1, { name: 'userId' });
+const userData = state(null, { name: 'userData' });
+
+export const cachedUserEffect = createCachedEffect(
+  () => {
+    return fetchUser(userId());
+  },
+  () => \`user-\${userId()}\`,
+  'cachedUserEffect'
+);`}
+      />
+
+      <h2>Effect Lifecycle Management</h2>
+      <p>
+        Understanding when effects run, how to clean them up, and managing
+        their lifecycle effectively.
+      </p>
+
+      <CodeBlock
+        language="typescript"
+        code={`// 1. Manual effect disposal
+const createDisposableEffect = <T>(
+  computation: () => T,
+  name: string
+) => {
+  let disposed = false;
+  
+  const effectInstance = effect(() => {
+    if (disposed) return;
+    
+    return computation();
+  }, { name });
+  
+  return {
+    effect: effectInstance,
+    dispose: () => {
+      disposed = true;
+      // In a real implementation, you'd call the actual dispose method
+      console.log(\`effect: disposed \${name}\`);
+    },
+  };
+};
+
+// 2. Effect with dependencies cleanup
+const createDependentEffect = <T>(
+  computation: () => T,
+  dependencies: () => any[],
+  name: string
+) => {
+  let cleanupFunctions: (() => void)[] = [];
+  
+  return effect(() => {
+    // Clean up previous dependencies
+    cleanupFunctions.forEach(cleanup => cleanup());
+    cleanupFunctions = [];
+    
+    // Get current dependencies
+    const deps = dependencies();
+    
+    // Run computation and collect cleanup functions
+    const result = computation();
+    
+    return () => {
+      // Clean up all collected functions
+      cleanupFunctions.forEach(cleanup => cleanup());
+    };
+  }, { name });
+};
+
+// 3. Effect with conditional execution
+const createConditionalEffect = <T>(
+  condition: () => boolean,
+  computation: () => T,
+  name: string
+) => {
+  return effect(() => {
+    const shouldRun = condition();
+    
+    if (!shouldRun) {
+      console.log(\`effect: \${name} skipped due to condition\`);
+      return;
+    }
+    
+    return computation();
+  }, { name });
+};
+
+// Usage
+const isEnabled = state(false, { name: 'isEnabled' });
+const data = state(null, { name: 'data' });
+
+export const conditionalDataEffect = createConditionalEffect(
+  () => isEnabled(),
+  () => {
+    console.log('effect: fetching data because enabled');
+    return fetchData();
+  },
+  'conditionalDataEffect'
+);
+
+// 4. Effect with error boundaries
+const createErrorBoundaryEffect = <T>(
+  computation: () => T,
+  onError: (error: Error) => void,
+  name: string
+) => {
+  return effect(() => {
+    try {
+      return computation();
+    } catch (error) {
+      console.error(\`effect: error in \${name}\`, error);
+      onError(error as Error);
+    }
+  }, { name });
+};
+
+// Usage
+const errorCount = state(0, { name: 'errorCount' });
+
+export const errorBoundaryEffect = createErrorBoundaryEffect(
+  () => {
+    // This might throw
+    return riskyOperation();
+  },
+  (error) => {
+    errorCount(prev => prev + 1);
+    console.error('effect: caught error', error);
+  },
+  'errorBoundaryEffect'
+);
+
+// 5. Effect with performance monitoring
+const createMonitoredEffect = <T>(
+  computation: () => T,
+  name: string,
+  performanceThreshold = 16 // ms
+) => {
+  let executionCount = 0;
+  let totalTime = 0;
+  
+  return effect(() => {
+    const start = performance.now();
+    executionCount++;
+    
+    const result = computation();
+    
+    const duration = performance.now() - start;
+    totalTime += duration;
+    
+    if (duration > performanceThreshold) {
+      console.warn(
+        `effect: ${name} took ${duration.toFixed(2)}ms ` +
+        `(avg: ${(totalTime / executionCount).toFixed(2)}ms over ${executionCount} runs)`
+      );
+    }
+    
+    return result;
+  }, { name });
+};
+      />
+
+      <h2>Effect Testing</h2>
+      <p>
+        Strategies for testing effects and ensuring they work correctly.
+      </p>
+
+      <CodeBlock
+        language="typescript"
+        code={`// 1. Testing effect execution
+const testEffectExecution = () => {
+  const logs: string[] = [];
+  const originalLog = console.log;
+  
+  // Mock console.log
+  console.log = (...args: any[]) => {
+    logs.push(args.join(' '));
+  };
+  
+  // Create test state
+  const testState = state(0, { name: 'testState' });
+  
+  // Create effect
+  const testEffect = effect(() => {
+    console.log('effect: state is', testState());
+  }, { name: 'testEffect' });
+  
+  // Test initial execution
+  testState(1);
+  testState(2);
+  testState(3);
+  
+  // Restore console.log
+  console.log = originalLog;
+  
+  // Verify logs
+  console.assert(logs.includes('effect: state is 1'));
+  console.assert(logs.includes('effect: state is 2'));
+  console.assert(logs.includes('effect: state is 3'));
+  
+  console.log('✅ Effect execution test passed');
+};
+
+// 2. Testing effect cleanup
+const testEffectCleanup = () => {
+  let cleanupCalled = false;
+  
+  const testState = state(0, { name: 'testState' });
+  
+  const testEffect = effect(() => {
+    const value = testState();
+    
+    if (value > 0) {
+      const interval = setInterval(() => {
+        console.log('interval tick');
+      }, 100);
+      
+      return () => {
+        cleanupCalled = true;
+        clearInterval(interval);
+      };
+    }
+  }, { name: 'testEffect' });
+  
+  // Trigger effect
+  testState(1);
+  
+  // Trigger cleanup
+  testState(0);
+  
+  // Wait for cleanup
+  setTimeout(() => {
+    console.assert(cleanupCalled, 'Cleanup should have been called');
+    console.log('✅ Effect cleanup test passed');
+  }, 200);
+};
+
+// 3. Testing effect dependencies
+const testEffectDependencies = () => {
+  const dependency1 = state(0, { name: 'dependency1' });
+  const dependency2 = state(0, { name: 'dependency2' });
+  const executionLog: string[] = [];
+  
+  const testEffect = effect(() => {
+    const d1 = dependency1();
+    const d2 = dependency2();
+    executionLog.push(\`\${d1}-\${d2}\`);
+  }, { name: 'testEffect' });
+  
+  // Test dependency tracking
+  dependency1(1); // Should trigger: "1-0"
+  dependency2(1); // Should trigger: "1-1"
+  dependency1(2); // Should trigger: "2-1"
+  
+  console.assert(executionLog.includes('1-0'));
+  console.assert(executionLog.includes('1-1'));
+  console.assert(executionLog.includes('2-1'));
+  
+  console.log('✅ Effect dependencies test passed');
+};
+
+// 4. Testing async effects
+const testAsyncEffect = async () => {
+  const testState = state(0, { name: 'testState' });
+  const result = state<string | null>(null, { name: 'result' });
+  
+  const asyncEffect = effect(async () => {
+    const value = testState();
+    
+    if (value > 0) {
+      // Simulate async operation
+      await new Promise(resolve => setTimeout(resolve, 100));
+      result(\`async result for \${value}\`);
+    }
+  }, { name: 'asyncEffect' });
+  
+  // Trigger effect
+  testState(1);
+  
+  // Wait for async operation
+  await new Promise(resolve => setTimeout(resolve, 200));
+  
+  console.assert(result() === 'async result for 1');
+  console.log('✅ Async effect test passed');
+};
+
+// 5. Effect testing utilities
+export const createTestEffect = <T>(
+  computation: () => T,
+  name: string
+) => {
+  const executionCount = state(0, { name: \`\${name}ExecutionCount\` });
+  const lastResult = state<T | null>(null, { name: \`\${name}LastResult\` });
+  const errors = state<Error[]>([], { name: \`\${name}Errors\` });
+  
+  const effectInstance = effect(() => {
+    try {
+      executionCount(prev => prev + 1);
+      const result = computation();
+      lastResult(result);
+      return result;
+    } catch (error) {
+      errors(prev => [...prev, error as Error]);
+      throw error;
+    }
+  }, { name });
+  
+  return {
+    effect: effectInstance,
+    executionCount,
+    lastResult,
+    errors,
+    reset: () => {
+      executionCount(0);
+      lastResult(null);
+      errors([]);
+    },
+  };
+};
+
+// Usage
+const testState = state(0, { name: 'testState' });
+const { executionCount, lastResult, errors, reset } = createTestEffect(
+  () => testState() * 2,
+  'testEffect'
+);
+
+// Run tests
+testState(5);
+console.log('Execution count:', executionCount()); // 1
+console.log('Last result:', lastResult()); // 10
+console.log('Errors:', errors()); // []
+
+reset();
+console.log('After reset:', {
+  executionCount: executionCount(),
+  lastResult: lastResult(),
+  errors: errors().length,
+});`}
+      />
+
+      <h2>Best Practices</h2>
+      <p>
+        Follow these best practices to write effective and maintainable effects.
+      </p>
+
+      <CodeBlock
+        language="typescript"
+        code={`// ✅ DO: Keep effects focused and single-purpose
+const focusedEffect = effect(() => {
+  const user = currentUser();
+  if (user) {
+    document.title = \`Welcome, \${user.name}\`;
+  }
+}, { name: 'focusedEffect' });
+
+// ❌ DON'T: Create monolithic effects
+const badEffect = effect(() => {
+  // Too many responsibilities
+  updateDocumentTitle();
+  syncWithServer();
+  updateAnalytics();
+  manageWebSocket();
+  handleNotifications();
+  // ... hundreds of lines
+}, { name: 'badEffect' });
+
+// ✅ DO: Use descriptive names
+const userSyncEffect = effect(() => {
+  // Clear what this effect does
+}, { name: 'userSyncEffect' });
+
+// ❌ DON'T: Use generic names
+const effect1 = effect(() => {
+  // What does this do?
+}, { name: 'effect1' });
+
+// ✅ DO: Handle cleanup properly
+const cleanupEffect = effect(() => {
+  const interval = setInterval(() => {
+    console.log('tick');
+  }, 1000);
+  
+  return () => {
+    clearInterval(interval);
+  };
+}, { name: 'cleanupEffect' });
+
+// ❌ DON'T: Forget cleanup
+const badCleanupEffect = effect(() => {
+  setInterval(() => {
+    console.log('tick');
+  }, 1000);
+  // Memory leak! No cleanup
+}, { name: 'badCleanupEffect' });
+
+// ✅ DO: Use early returns for conditions
+const conditionalEffect = effect(() => {
+  const user = currentUser();
+  if (!user) return; // Early return
+  
+  const settings = userSettings();
+  if (!settings) return; // Early return
+  
+  // Main logic here
+  applyUserSettings(settings);
+}, { name: 'conditionalEffect' });
+
+// ❌ DON'T: Nest conditions deeply
+const badConditionalEffect = effect(() => {
+  const user = currentUser();
+  if (user) {
+    const settings = userSettings();
+    if (settings) {
+      const theme = settings.theme;
+      if (theme) {
+        // Deep nesting makes it hard to read
+        applyTheme(theme);
+      }
+    }
+  }
+}, { name: 'badConditionalEffect' });
+
+// ✅ DO: Handle errors gracefully
+const errorHandlingEffect = effect(() => {
+  try {
+    riskyOperation();
+  } catch (error) {
+    console.error('effect: operation failed', error);
+    // Handle error appropriately
+  }
+}, { name: 'errorHandlingEffect' });
+
+// ❌ DON'T: Let errors crash the effect
+const badErrorEffect = effect(() => {
+  riskyOperation(); // Might throw and crash the effect
+}, { name: 'badErrorEffect' });
+
+// ✅ DO: Use effects for side effects only
+const sideEffectEffect = effect(() => {
+  // Side effects: DOM manipulation, API calls, etc.
+  document.title = pageTitle();
+  localStorage.setItem('data', JSON.stringify(data()));
+}, { name: 'sideEffectEffect' });
+
+// ❌ DON'T: Use effects for data transformation
+const badDataEffect = effect(() => {
+  // This should be a derived value, not an effect
+  const processed = data().map(item => processItem(item));
+  processedData(processed);
+}, { name: 'badDataEffect' });
+
+// ✅ DO: Use derived values for data transformation
+const processedData = derived(() => {
+  return data().map(item => processItem(item));
+}, { name: 'processedData' });`}
+      />
+
+      <h2>Common Anti-Patterns</h2>
+      <p>
+        Avoid these common mistakes when working with effects.
+      </p>
+
+      <CodeBlock
+        language="typescript"
+        code={`// ❌ Anti-pattern: Effects that modify their own dependencies
+const circularEffect = effect(() => {
+  const count = counter();
+  if (count < 10) {
+    counter(count + 1); // Modifying dependency causes infinite loop!
+  }
+}, { name: 'circularEffect' });
+
+// ✅ Solution: Use actions for state updates
+const incrementAction = action(() => {
+  const count = counter();
+  if (count < 10) {
+    counter(count + 1);
+  }
+}, { name: 'incrementAction' });
+
+// ❌ Anti-pattern: Effects without cleanup
+const memoryLeakEffect = effect(() => {
+  const interval = setInterval(() => {
+    console.log('tick');
+  }, 1000);
+  // No cleanup - memory leak!
+}, { name: 'memoryLeakEffect' });
+
+// ✅ Solution: Always clean up resources
+const properCleanupEffect = effect(() => {
+  const interval = setInterval(() => {
+    console.log('tick');
+  }, 1000);
+  
+  return () => clearInterval(interval);
+}, { name: 'properCleanupEffect' });
+
+// ❌ Anti-pattern: Effects that depend on everything
+const overDependentEffect = effect(() => {
+  const user = currentUser();
+  const settings = userSettings();
+  const theme = themeSettings();
+  const language = languageSettings();
+  const notifications = notificationSettings();
+  // ... depends on everything!
+  
+  // Only actually uses user and theme
+  if (user && theme) {
+    updateUI(user, theme);
+  }
+}, { name: 'overDependentEffect' });
+
+// ✅ Solution: Only depend on what you need
+const focusedEffect = effect(() => {
+  const user = currentUser();
+  const theme = themeSettings();
+  
+  if (user && theme) {
+    updateUI(user, theme);
+  }
+}, { name: 'focusedEffect' });
+
+// ❌ Anti-pattern: Effects that cause side effects in derived values
+const badDerived = derived(() => {
+  // Side effects in derived values!
+  localStorage.setItem('data', JSON.stringify(data()));
+  document.title = 'Updated';
+  
+  return data().length;
+}, { name: 'badDerived' });
+
+// ✅ Solution: Use effects for side effects
+const goodDerived = derived(() => {
+  return data().length; // Pure computation only
+}, { name: 'goodDerived' });
+
+const sideEffectEffect = effect(() => {
+  const dataLength = goodDerived();
+  localStorage.setItem('data', JSON.stringify(data()));
+  document.title = \`Items: \${dataLength}\`;
+}, { name: 'sideEffectEffect' });
+
+// ❌ Anti-pattern: Effects that run too frequently
+const frequentEffect = effect(() => {
+  // Runs on every state change
+  console.log('effect: running frequently');
+  performExpensiveOperation();
+}, { name: 'frequentEffect' });
+
+// ✅ Solution: Use debouncing or conditional execution
+const debouncedEffect = createDebouncedEffect(
+  () => {
+    console.log('effect: running after delay');
+    performExpensiveOperation();
+  },
+  300,
+  'debouncedEffect'
+);`}
+      />
+
+      <h2>Next Steps</h2>
+      <p>
+        Now that you understand effects, explore these related topics:
+      </p>
+
+      <div className={styles.navigation}>
+        <Link to="/guides/batching" className={styles.navLink}>
+          Batching Guide
+        </Link>
+        <span className={styles.navLabel}>•</span>
+        <Link to="/patterns/async-data" className={styles.navLink}>
+          Async Data Loading
+        </Link>
+        <span className={styles.navLabel}>•</span>
+        <Link to="/patterns/local-storage" className={styles.navLink}>
+          Local Storage
+        </Link>
+        <span className={styles.navLabel}>•</span>
+        <Link to="/api/effect" className={styles.navLink}>
+          effect() API Reference
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+export default Effects;

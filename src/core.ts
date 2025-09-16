@@ -326,7 +326,7 @@ export function action<T extends (...args: any[]) => any>(
 ): T {
   // Validate name if provided
   const validatedName = name ? validateStateName(name) : undefined;
-  
+
   // Register named actions for debugging (only once when action is created)
   if (validatedName && typeof window !== 'undefined') {
     // Initialize window.reactUnderstate if not already done
@@ -340,7 +340,7 @@ export function action<T extends (...args: any[]) => any>(
     // Store the action function for console debugging
     windowUnderstate.actions[validatedName] = fn;
   }
-  
+
   return ((...args: Parameters<T>) => {
     // Debug logging
     if (validatedName) {
@@ -377,7 +377,7 @@ export function action<T extends (...args: any[]) => any>(
               // Create a new system object for the queued execution
               const abortController = new AbortController();
               const system = { signal: abortController.signal };
-              
+
               // Prepare args with system object
               const preparedArgs = [...args];
               if (fn.length > 0) {
@@ -392,7 +392,7 @@ export function action<T extends (...args: any[]) => any>(
                   preparedArgs.push(system as any);
                 }
               }
-              
+
               // Call the function directly instead of creating a new action
               const result = fn(...preparedArgs);
               if (result instanceof Promise) {
