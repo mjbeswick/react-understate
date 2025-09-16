@@ -110,43 +110,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </button>
 
           <Link to="/getting-started/introduction" className="logo">
-            <svg
-              className="logo-icon"
-              width="24"
-              height="24"
-              viewBox="0 0 32 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M 8 6 L 8 18 A 8 8 0 0 0 24 18 L 24 6 L 20 6 L 20 16 A 4 4 0 0 1 12 16 L 12 6 Z"
-                fill="url(#uGradient)"
-              />
-              <circle cx="16" cy="18" r="4" fill="url(#sphere1)" />
-              <circle cx="24" cy="10" r="2.5" fill="url(#sphere2)" />
-              <defs>
-                <linearGradient
-                  id="uGradient"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="100%"
-                >
-                  <stop offset="0%" stopColor="#1e3a8a" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#0f172a" stopOpacity="1" />
-                </linearGradient>
-                <radialGradient id="sphere1" cx="30%" cy="30%">
-                  <stop offset="0%" stopColor="#60a5fa" stopOpacity="1" />
-                  <stop offset="50%" stopColor="#3b82f6" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#059669" stopOpacity="1" />
-                </radialGradient>
-                <radialGradient id="sphere2" cx="30%" cy="30%">
-                  <stop offset="0%" stopColor="#a7f3d0" stopOpacity="1" />
-                  <stop offset="50%" stopColor="#34d399" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#059669" stopOpacity="1" />
-                </radialGradient>
-              </defs>
-            </svg>
             <span className="logo-text">React Understate</span>
           </Link>
 
