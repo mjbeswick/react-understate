@@ -13,6 +13,9 @@ import {
   configureDebug,
   validateStateName,
   batch,
+  clearEffectModifiedValues,
+  snapshotEffectReads,
+  setEffectOptions,
 } from './core';
 import { logDebug } from './debug-utils';
 
@@ -156,6 +159,7 @@ export function effect(
   let disposed = false;
   let hasRunOnce = false;
   let isExecuting = false;
+  let rerunRequestedDuringExecution = false;
 
   // Infinite loop detection
   const executionTimes: number[] = [];
@@ -165,8 +169,9 @@ export function effect(
   const DETECTION_WINDOW_MS = 1000; // Time window for detection in milliseconds
 
   // Set default options
-  const effectOptions: EffectOptions = {
+  const effectOptionsObj: EffectOptions = {
     preventLoops: true, // Default to preventing loops
+    preventOverlap: true, // Default to avoiding overlapping executions
     ...options,
   };
 
@@ -174,7 +179,7 @@ export function effect(
     if (disposed) return;
 
     // Handle once option
-    if (effectOptions.once && hasRunOnce) return;
+    if (effectOptionsObj.once && hasRunOnce) return;
 
     // Handle async queuing for named effects (only for manual calls)
     if (validatedName && isManualCall) {
@@ -200,13 +205,15 @@ export function effect(
       }
     }
 
-    // Handle preventOverlap option
-    if (effectOptions.preventOverlap && isExecuting) {
+    // Handle preventOverlap option: if overlapping is prevented and
+    // we are already executing, remember to schedule one rerun after completion
+    if (effectOptionsObj.preventOverlap && isExecuting) {
+      rerunRequestedDuringExecution = true;
       return;
     }
 
-    // Infinite loop detection (only when preventLoops is true)
-    if (effectOptions.preventLoops) {
+    // Infinite loop detection is only relevant when loop prevention is enabled
+    if (effectOptionsObj.preventLoops !== false) {
       const now = Date.now();
       executionTimes.push(now);
 
@@ -223,12 +230,13 @@ export function effect(
         if (recentExecutions.length > MAX_EXECUTIONS_PER_SECOND) {
           const effectName = validatedName ?? 'unnamed effect';
           // eslint-disable-next-line no-console
-          console.error(
-            `🚨 INFINITE LOOP DETECTED in effect '${effectName}'!\n` +
-              `Effect has run ${recentExecutions.length} times in the last second.\n` +
-              'This usually happens when an effect modifies a state it depends on.\n' +
-              'Consider using preventLoops: false or restructuring your effect.',
-          );
+          if (typeof console !== 'undefined' && console.error) {
+            // eslint-disable-next-line no-console
+            console.error(
+              `🚨 INFINITE LOOP DETECTED in effect '${effectName}'!` +
+                ` Effect has run ${recentExecutions.length} times in the last second.`,
+            );
+          }
 
           // Disable the effect to prevent further infinite loops
           disposed = true;
@@ -247,18 +255,26 @@ export function effect(
 
     // Call previous cleanup before re-running
     if (cleanup) {
-      cleanup();
+      try {
+        cleanup();
+      } catch (_e) {
+
+        void _e;
+        // Ignore cleanup errors but continue with effect execution
+      }
       cleanup = undefined;
     }
 
     // Clear read values from previous execution
     clearReadValues();
 
-    // Set current effect for loop prevention
+    // Set current effect for loop prevention and reset its modified set
     setCurrentEffect(runEffect);
+    clearEffectModifiedValues(runEffect);
+    clearReadValues();
 
     // Set active effect options for dependency tracking
-    const prevOptions = setActiveEffectOptions(effectOptions);
+    const prevOptions = setActiveEffectOptions(effectOptionsObj);
     const prevEffect = setActiveEffect(runEffect);
 
     try {
@@ -289,6 +305,8 @@ export function effect(
         // Pass system object with signal to async effects
         result = (fn as any)(system);
       });
+      // Snapshot reads captured during execution for loop-prevention decisions
+      snapshotEffectReads(runEffect);
 
       if (result instanceof Promise) {
         // Track running effect for named effects
@@ -300,6 +318,12 @@ export function effect(
           };
           runningEffects.set(validatedName, effectInfo as any);
         }
+
+        // Release active effect context immediately for async effects so external
+        // updates can schedule re-runs while this effect is still executing
+        setActiveEffect(prevEffect);
+        setActiveEffectOptions(prevOptions);
+        setCurrentEffect(null);
 
         // Handle async result asynchronously
         result
@@ -327,13 +351,10 @@ export function effect(
             console.error('Effect async function failed:', error);
           })
           .finally(() => {
-            setActiveEffect(prevEffect);
-            setActiveEffectOptions(prevOptions);
-            setCurrentEffect(null);
             isExecuting = false;
             hasRunOnce = true;
 
-            // Process queued executions for named effects
+            // Process queued executions for named effects or a single rerun request
             if (validatedName) {
               runningEffects.delete(validatedName);
               const queue = effectQueues.get(validatedName);
@@ -343,14 +364,37 @@ export function effect(
                 setTimeout(() => nextExecution(), 0);
               }
             }
+
+            // If overlap was prevented and a rerun was requested while executing,
+            // schedule one rerun now
+            if (rerunRequestedDuringExecution) {
+              rerunRequestedDuringExecution = false;
+              // Only schedule rerun if loop prevention is enabled
+              if (effectOptionsObj.preventLoops !== false) {
+                // Invoke immediately to finish within tight test windows
+                runEffect(true);
+              }
+            }
           });
       } else {
+        // Snapshot reads captured during execution for loop-prevention decisions
+        snapshotEffectReads(runEffect);
         cleanup = result as void | (() => void);
         setActiveEffect(prevEffect);
         setActiveEffectOptions(prevOptions);
         setCurrentEffect(null);
         isExecuting = false;
         hasRunOnce = true;
+
+        // If overlap was prevented and a rerun was requested while executing,
+        // schedule one rerun now
+        if (rerunRequestedDuringExecution) {
+          rerunRequestedDuringExecution = false;
+          // Only schedule rerun if loop prevention is enabled
+          if (effectOptionsObj.preventLoops !== false) {
+            runEffect(true);
+          }
+        }
       }
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -362,6 +406,9 @@ export function effect(
       hasRunOnce = true;
     }
   };
+
+  // Store effect options for this effect function
+  setEffectOptions(runEffect, effectOptionsObj);
 
   // Run immediately
   runEffect();

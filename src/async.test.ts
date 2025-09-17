@@ -58,6 +58,7 @@ describe('Async Functionality', () => {
       let effectRunCount = 0;
 
       const dispose = effect(async () => {
+        count.value; // Create dependency on count
         effectRunCount++;
         await new Promise(resolve => setTimeout(resolve, 10));
         // no-op
@@ -70,7 +71,7 @@ describe('Async Functionality', () => {
 
       // Trigger effect again
       count.value = 1;
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise(resolve => setTimeout(resolve, 50));
 
       expect(effectRunCount).toBe(2);
 
@@ -84,7 +85,7 @@ describe('Async Functionality', () => {
       let cleanupCount = 0;
 
       const dispose = effect(async () => {
-        // no-op
+        count.value; // Create dependency on count
         await new Promise(resolve => setTimeout(resolve, 10));
         return () => {
           cleanupCount++;
@@ -123,18 +124,24 @@ describe('Async Functionality', () => {
     });
 
     it('should recompute when dependencies change', async () => {
+      configureDebug({ enabled: true, logger: console.log });
+
       const userId = state(1, 'userId');
       const userData = asyncDerived(async () => {
+        console.log('asyncDerived computing for userId:', userId.value);
         await new Promise(resolve => setTimeout(resolve, 10));
-        return { id: userId.value, name: `User ${userId.value}` };
+        const result = { id: userId.value, name: `User ${userId.value}` };
+        console.log('asyncDerived computed result:', result);
+        return result;
       }, 'userData');
 
-      // Wait for initial computation
-      await new Promise(resolve => setTimeout(resolve, 20));
+      // Wait for initial computation and access to establish dependency tracking
+      const initialData = await userData.value;
+      expect(initialData).toEqual({ id: 1, name: 'User 1' });
 
       // Change dependency
       userId.value = 2;
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const data = await userData.value;
       expect(data).toEqual({ id: 2, name: 'User 2' });

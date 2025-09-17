@@ -57,6 +57,12 @@ let activeEffectOptions: {
 // Track which reactive values were read by the current effect
 const readValues = new Set<{ value: any }>();
 let currentEffect: (() => void) | null = null;
+const effectModifiedValues = new WeakMap<() => void, Set<{ value: any }>>();
+const effectReadValues = new WeakMap<() => void, Set<{ value: any }>>();
+const effectOptions = new WeakMap<
+  () => void,
+  { once?: boolean; preventOverlap?: boolean; preventLoops?: boolean }
+>();
 
 // Debug configuration
 type DebugOptions = {
@@ -375,8 +381,8 @@ export function action<T extends (...args: any[]) => any>(
           const queuedExecution = () => {
             try {
               // Create a new system object for the queued execution
-              const abortController = new AbortController();
-              const system = { signal: abortController.signal };
+              const innerAbortController = new AbortController();
+              const innerSystem = { signal: innerAbortController.signal };
 
               // Prepare args with system object
               const preparedArgs = [...args];
@@ -387,18 +393,40 @@ export function action<T extends (...args: any[]) => any>(
                   lastArg !== null &&
                   'signal' in lastArg
                 ) {
-                  preparedArgs[preparedArgs.length - 1] = system;
+                  preparedArgs[preparedArgs.length - 1] = innerSystem;
                 } else {
-                  preparedArgs.push(system as any);
+                  preparedArgs.push(innerSystem as any);
                 }
               }
 
               // Call the function directly instead of creating a new action
               const result = fn(...preparedArgs);
               if (result instanceof Promise) {
-                result.then(resolve).catch(reject);
+                // Track running action for queued execution as well
+                const promiseResult = result;
+                runningActions.set(validatedName, {
+                  promise: promiseResult,
+                  abort: () => innerAbortController.abort(),
+                } as any);
+                promiseResult
+                  .then(resolve)
+                  .catch(reject)
+                  .finally(() => {
+                    runningActions.delete(validatedName);
+                    const queue = actionQueues.get(validatedName);
+                    if (queue && queue.length > 0) {
+                      const nextExecution = queue.shift()!;
+                      setTimeout(() => nextExecution(), 0);
+                    }
+                  });
               } else {
                 resolve(result);
+                // Schedule next queued execution
+                const queue = actionQueues.get(validatedName);
+                if (queue && queue.length > 0) {
+                  const nextExecution = queue.shift()!;
+                  setTimeout(() => nextExecution(), 0);
+                }
               }
             } catch (error) {
               reject(error);
@@ -547,13 +575,22 @@ export function state<T>(initialValue: T, name?: string): State<T> {
 
     // Also notify dependencies (effects and computed values)
     dependencies.forEach(dep => {
-      // Skip notifying the current effect if it read this value and loop prevention is enabled
+      // Skip notifying the effect that is currently executing (loop prevention)
       if (
-        dep === activeEffect &&
         activeEffectOptions?.preventLoops !== false &&
-        wasValueRead(stateObj)
+        wasValueRead(stateObj) &&
+        (dep === activeEffect || dep === currentEffect)
       ) {
-        return; // Skip this notification to prevent infinite loop
+        return;
+      }
+      // Skip notifying effects that modified this value in their last run
+      // Only skip if loop prevention is enabled for this specific effect
+      const depOptions = getEffectOptions(dep as any);
+      if (
+        depOptions?.preventLoops !== false &&
+        wasValueModifiedByEffect(dep as any, stateObj)
+      ) {
+        return;
       }
       dep();
     });
@@ -608,6 +645,8 @@ export function state<T>(initialValue: T, name?: string): State<T> {
 
         // Store the new value directly - TypeScript handles immutability
         value = resolvedValue;
+        // Track that the current effect modified this value (if inside an effect)
+        registerEffectModification(stateObj);
         // Schedule updates
         pendingUpdates.add(notify);
         if (!isBatching) {
@@ -796,6 +835,18 @@ export function wasValueRead(value: { value: any }): boolean {
   return readValues.has(value);
 }
 
+export function snapshotEffectReads(effect: () => void): void {
+  effectReadValues.set(effect, new Set(readValues));
+}
+
+export function didEffectReadValue(
+  effect: () => void,
+  value: { value: any },
+): boolean {
+  const set = effectReadValues.get(effect);
+  return !!set && set.has(value);
+}
+
 export function setCurrentEffect(effect: (() => void) | null): void {
   currentEffect = effect;
 }
@@ -809,6 +860,43 @@ export function setIsEffectModifyingValues(modifying: boolean): void {
 
 export function getIsEffectModifyingValues(): boolean {
   return isEffectModifyingValues;
+}
+
+export function registerEffectModification(value: { value: any }): void {
+  if (!currentEffect) return;
+  let set = effectModifiedValues.get(currentEffect);
+  if (!set) {
+    set = new Set();
+    effectModifiedValues.set(currentEffect, set);
+  }
+  set.add(value);
+}
+
+export function clearEffectModifiedValues(effect: () => void): void {
+  effectModifiedValues.set(effect, new Set());
+}
+
+export function wasValueModifiedByEffect(
+  effect: () => void,
+  value: { value: any },
+): boolean {
+  const set = effectModifiedValues.get(effect);
+  return !!set && set.has(value);
+}
+
+export function setEffectOptions(
+  effect: () => void,
+  options: { once?: boolean; preventOverlap?: boolean; preventLoops?: boolean },
+): void {
+  effectOptions.set(effect, options);
+}
+
+export function getEffectOptions(
+  effect: () => void,
+):
+  | { once?: boolean; preventOverlap?: boolean; preventLoops?: boolean }
+  | undefined {
+  return effectOptions.get(effect);
 }
 export function setIsBatching(batching: boolean): boolean {
   const prev = isBatching;

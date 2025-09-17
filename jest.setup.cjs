@@ -16,17 +16,14 @@ global.console = {
   // error: jest.fn(),
 };
 
-// Setup window.understate for testing
-global.window = {
-  understate: {
-    configureDebug: jest.fn(),
-    states: {},
-  },
-};
+// Ensure a window object exists
+global.window = global.window || {};
 
-// Clear states between tests to prevent name conflicts
+// Setup window.reactUnderstate for testing and clear between tests
 beforeEach(() => {
-  if (global.window?.understate?.states) {
-    global.window.understate.states = {};
-  }
+  global.window.reactUnderstate = {
+    configureDebug: () => ({}),
+    states: {},
+    actions: {},
+  };
 });
