@@ -258,7 +258,6 @@ export function effect(
       try {
         cleanup();
       } catch (_e) {
-
         void _e;
         // Ignore cleanup errors but continue with effect execution
       }
