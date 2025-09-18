@@ -15,16 +15,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
 }) => {
   return (
     <div className={className}>
-      <SyntaxHighlighter
-        language={language}
-        style={vs}
-        customStyle={{
-          margin: '1.5rem 0',
-          borderRadius: '0.5rem',
-          fontSize: '0.875rem',
-          lineHeight: '1.6',
-        }}
-      >
+      <SyntaxHighlighter language={language} style={vs}>
         {code}
       </SyntaxHighlighter>
     </div>

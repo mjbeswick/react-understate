@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Introduction.module.css';
-import CodeBlock from '../components/CodeBlock';
 import CodeExample from '../components/CodeExample';
 
 const Introduction: React.FC = () => {
@@ -30,12 +29,7 @@ const Introduction: React.FC = () => {
 
       <p>React Understate is available as a package on NPM for use:</p>
 
-      <CodeBlock
-        language="bash"
-        code={`# NPM
-npm install react-understate
-# Or, use any package manager of your choice.`}
-      />
+      <CodeExample language="bash" filename="installation.ts" />
 
       <h2>First create a state</h2>
 
