@@ -23,13 +23,7 @@ const QuickStart: React.FC = () => {
 
       <h3>Step 1: Create State</h3>
 
-      <CodeBlock
-        language="typescript"
-        code={`import { state } from 'react-understate';
-
-// Create a reactive state with initial value
-const count = state(0);`}
-      />
+      <CodeExample filename="quickstart.ts" language="ts" />
 
       <h3>Step 2: Use in Components</h3>
 

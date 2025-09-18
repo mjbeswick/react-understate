@@ -29,7 +29,7 @@ const Introduction: React.FC = () => {
 
       <p>React Understate is available as a package on NPM for use:</p>
 
-      <CodeExample language="bash" filename="installation.ts" />
+      <CodeExample language="bash" filename="introduction.txt" />
 
       <h2>First create a state</h2>
 
