@@ -1,6 +1,6 @@
 import React from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { vs } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 interface CodeBlockProps {
   code: string;
@@ -8,16 +8,16 @@ interface CodeBlockProps {
   className?: string;
 }
 
-const CodeBlock: React.FC<CodeBlockProps> = ({ 
-  code, 
-  language = 'javascript', 
-  className = '' 
+const CodeBlock: React.FC<CodeBlockProps> = ({
+  code,
+  language = 'javascript',
+  className = '',
 }) => {
   return (
     <div className={className}>
       <SyntaxHighlighter
         language={language}
-        style={tomorrow}
+        style={vs}
         customStyle={{
           margin: '1.5rem 0',
           borderRadius: '0.5rem',

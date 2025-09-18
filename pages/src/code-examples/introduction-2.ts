@@ -1,15 +1,15 @@
-import { state, action } from 'react-understate'
+import { state, action } from 'react-understate';
 
-// Store object pattern (react-understate)
-export const store = {
-  count: state(0, 'count'),
-  increment: action(() => {
-    store.count.value = store.count.value + 1
-  }, 'increment'),
-  decrement: action(() => {
-    store.count.value = store.count.value - 1
-  }, 'decrement'),
-  reset: action(() => {
-    store.count.value = 0
-  }, 'reset'),
-}
+export const count = state(0, 'count');
+
+export const increment = action(() => {
+  count.value++;
+}, 'increment');
+
+export const decrement = action(() => {
+  count.value--;
+}, 'decrement');
+
+export const reset = action(() => {
+  count.value = 0;
+}, 'reset');
