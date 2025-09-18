@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Introduction.module.css';
 import CodeBlock from '../components/CodeBlock';
+import CodeExample from '../components/CodeExample';
 
 const Introduction: React.FC = () => {
   return (
@@ -43,17 +44,7 @@ npm install react-understate
         functions. The <code>set</code> function <em>replaces</em> state.
       </p>
 
-      <CodeBlock
-        language="typescript"
-        code={`import { state } from 'react-understate'
-
-const useCountStore = state((set) => ({
-  count: 0,
-  increment: () => set((state) => ({ count: state.count + 1 })),
-  decrement: () => set((state) => ({ count: state.count - 1 })),
-  reset: () => set({ count: 0 }),
-}))`}
-      />
+      <CodeExample filename="introduction-2.ts" language="typescript" />
 
       <h2>Then bind your components, and that's it!</h2>
 
