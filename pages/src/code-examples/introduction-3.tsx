@@ -1,9 +1,12 @@
+import { useUnderstate } from 'react-understate'
+import { store } from './introduction-2'
+
 function BearCounter() {
-  const count = useCountStore((state) => state.count)
+  const { count } = useUnderstate(store)
   return <h1>{count} bears around here...</h1>
 }
 
 function Controls() {
-  const increment = useCountStore((state) => state.increment)
+  const { increment } = useUnderstate(store)
   return <button onClick={increment}>one up</button>
 }
