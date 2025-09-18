@@ -4,7 +4,8 @@
 export const loadCodeExample = async (filename: string): Promise<string> => {
   try {
     // Try to load the actual file
-    const response = await fetch(`/src/code-examples/${filename}`);
+    const base = (import.meta as any).env?.BASE_URL ?? '/';
+    const response = await fetch(`${base}src/code-examples/${filename}`);
     if (response.ok) {
       return await response.text();
     }

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './QuickStart.module.css';
-import CodeBlock from '../components/CodeBlock';
 import CodeExample from '../components/CodeExample';
 
 const QuickStart: React.FC = () => {
