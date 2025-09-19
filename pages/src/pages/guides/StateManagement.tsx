@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from '../shared.module.css';
 import CodeBlock from '../../components/CodeBlock';
+import CodeExample from '../../components/CodeExample';
 
 const StateManagement: React.FC = () => {
   return (
@@ -57,41 +58,9 @@ const StateManagement: React.FC = () => {
         independently.
       </p>
 
-      <CodeBlock
-        language="typescript"
-        code={`import { state } from 'react-understate';
-
-// Simple primitive state
-export const count = state(0, { name: 'count' });
-export const message = state('Hello World', { name: 'message' });
-export const isVisible = state(true, { name: 'isVisible' });
-
-// Object state
-export const user = state({
-  id: null as number | null,
-  name: '',
-  email: '',
-  isLoggedIn: false,
-}, { name: 'user' });
-
-// Array state
-export const items = state<string[]>([], { name: 'items' });
-
-// Complex nested state
-export const appState = state({
-  ui: {
-    theme: 'light' as 'light' | 'dark',
-    sidebar: {
-      open: false,
-      width: 250,
-    },
-  },
-  data: {
-    users: [] as User[],
-    loading: false,
-    error: null as string | null,
-  },
-}, { name: 'appState' });`}
+      <CodeExample
+        filename="state-management-creating-state.ts"
+        language="ts"
       />
 
       <h2>Reading State</h2>
@@ -100,49 +69,9 @@ export const appState = state({
         on your use case and performance requirements.
       </p>
 
-      <CodeBlock
-        language="typescript"
-        code={`// Direct access (outside React components)
-const currentCount = count();
-const currentUser = user();
-
-// In React components - single state
-function Counter() {
-  const countValue = useUnderstate(count);
-  return <div>Count: {countValue}</div>;
-}
-
-// In React components - multiple states
-function UserProfile() {
-  const { user: userData, count: countValue } = useUnderstate({
-    user,
-    count,
-  });
-  
-  return (
-    <div>
-      <h1>{userData.name}</h1>
-      <p>Count: {countValue}</p>
-    </div>
-  );
-}
-
-// Selective subscription (performance optimization)
-function UserName() {
-  // Only re-renders when user.name changes
-  const userName = useUnderstate(derived(() => user().name));
-  return <h1>{userName}</h1>;
-}
-
-// Conditional subscription
-function ConditionalDisplay() {
-  const { isVisible: visible, message: msg } = useUnderstate({
-    isVisible,
-    message: isVisible() ? message : state(''), // Only subscribe when visible
-  });
-  
-  return visible ? <p>{msg}</p> : null;
-}`}
+      <CodeExample
+        filename="state-management-reading-state.tsx"
+        language="tsx"
       />
 
       <h2>Updating State</h2>
@@ -152,64 +81,65 @@ function ConditionalDisplay() {
         performance.
       </p>
 
+      <CodeExample filename="state-management-updates.ts" language="ts" />
+
+      <h3>Best Practice: Use Actions for State Updates</h3>
+      <p>
+        While you can update state directly, it's recommended to use{' '}
+        <code>action()</code> functions for all state updates. This provides
+        better debugging, performance, and maintainability.
+      </p>
+
       <CodeBlock
         language="typescript"
-        code={`// Direct updates
-count(42);
-message('New message');
-isVisible(false);
+        code={`// ❌ Avoid: Direct state updates
+const count = state(0, { name: 'count' });
 
-// Functional updates
+// Direct assignment
+count.value = 42;
+
+// Direct function call
 count(prev => prev + 1);
-items(prev => [...prev, 'new item']);
 
-// Object updates (shallow merge)
-user(prev => ({
-  ...prev,
-  name: 'John Doe',
-  isLoggedIn: true,
-}));
+// ✅ Good: Use actions for state updates
+const count = state(0, { name: 'count' });
 
-// Deep object updates
-appState(prev => ({
-  ...prev,
-  ui: {
-    ...prev.ui,
-    sidebar: {
-      ...prev.ui.sidebar,
-      open: !prev.ui.sidebar.open,
-    },
-  },
-}));
+const setCount = action((value: number) => {
+  count.value = value;
+}, 'setCount');
 
-// Multiple updates (automatically batched)
-function updateProfile(name: string, email: string) {
-  user(prev => ({ ...prev, name }));
-  user(prev => ({ ...prev, email }));
-  // Both updates are batched into a single re-render
-}
+const incrementCount = action(() => {
+  count.value = count.value + 1;
+}, 'incrementCount');
 
-// Async updates
-async function loadUser(id: number) {
-  user(prev => ({ ...prev, loading: true }));
-  
-  try {
-    const userData = await fetchUser(id);
-    user(prev => ({
-      ...prev,
-      ...userData,
-      loading: false,
-      isLoggedIn: true,
-    }));
-  } catch (error) {
-    user(prev => ({
-      ...prev,
-      loading: false,
-      error: error.message,
-    }));
-  }
-}`}
+// Use actions instead
+setCount(42);
+incrementCount();`}
       />
+
+      <p>
+        <strong>Benefits of using actions:</strong>
+      </p>
+      <ul>
+        <li>
+          <strong>Debugging:</strong> Actions appear in debug logs with clear
+          names
+        </li>
+        <li>
+          <strong>Performance:</strong> Actions can be batched and optimized
+        </li>
+        <li>
+          <strong>Consistency:</strong> All state updates follow the same
+          pattern
+        </li>
+        <li>
+          <strong>Testing:</strong> Actions are easier to test in isolation
+        </li>
+        <li>
+          <strong>ESLint support:</strong> The ESLint plugin can warn about
+          state updates in effects
+        </li>
+      </ul>
 
       <h2>State Composition Patterns</h2>
       <p>
@@ -217,45 +147,7 @@ async function loadUser(id: number) {
         application more maintainable and performant.
       </p>
 
-      <CodeBlock
-        language="typescript"
-        code={`// ❌ Avoid: Monolithic state
-const badAppState = state({
-  user: { id: 1, name: 'John' },
-  todos: [{ id: 1, text: 'Learn React' }],
-  ui: { theme: 'dark', sidebar: true },
-  settings: { notifications: true },
-  // ... everything in one giant object
-});
-
-// ✅ Good: Atomic state composition
-export const user = state({
-  id: null as number | null,
-  name: '',
-  email: '',
-}, { name: 'user' });
-
-export const todos = state<Todo[]>([], { name: 'todos' });
-
-export const uiSettings = state({
-  theme: 'light' as 'light' | 'dark',
-  sidebarOpen: false,
-}, { name: 'uiSettings' });
-
-export const userSettings = state({
-  notifications: true,
-  autoSave: false,
-  language: 'en',
-}, { name: 'userSettings' });
-
-// Compose when needed
-export const appData = derived(() => ({
-  user: user(),
-  todos: todos(),
-  ui: uiSettings(),
-  settings: userSettings(),
-}), { name: 'appData' });`}
-      />
+      <CodeExample filename="state-management-composition.ts" language="ts" />
 
       <h2>Managing Complex State</h2>
       <p>
@@ -263,83 +155,9 @@ export const appData = derived(() => ({
         and provide clear update semantics.
       </p>
 
-      <CodeBlock
-        language="typescript"
-        code={`// Entity management pattern
-type Todo = {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: Date;
-};
-
-export const todos = state<Todo[]>([], { name: 'todos' });
-export const selectedTodoId = state<string | null>(null, { name: 'selectedTodoId' });
-
-// Helper actions for complex operations
-export const addTodo = action((text: string) => {
-  console.log('action: adding todo', text);
-  
-  const newTodo: Todo = {
-    id: \`todo-\${Date.now()}\`,
-    text,
-    completed: false,
-    createdAt: new Date(),
-  };
-  
-  todos(prev => [...prev, newTodo]);
-}, { name: 'addTodo' });
-
-export const updateTodo = action((id: string, updates: Partial<Todo>) => {
-  console.log('action: updating todo', id, updates);
-  
-  todos(prev => prev.map(todo =>
-    todo.id === id ? { ...todo, ...updates } : todo
-  ));
-}, { name: 'updateTodo' });
-
-export const deleteTodo = action((id: string) => {
-  console.log('action: deleting todo', id);
-  
-  todos(prev => prev.filter(todo => todo.id !== id));
-  
-  // Clear selection if deleted todo was selected
-  if (selectedTodoId() === id) {
-    selectedTodoId(null);
-  }
-}, { name: 'deleteTodo' });
-
-export const toggleTodo = action((id: string) => {
-  console.log('action: toggling todo', id);
-  
-  updateTodo(id, { 
-    completed: !todos().find(t => t.id === id)?.completed 
-  });
-}, { name: 'toggleTodo' });
-
-// Batch operations for performance
-export const markAllCompleted = action(() => {
-  console.log('action: marking all todos completed');
-  
-  batch(() => {
-    todos(prev => prev.map(todo => ({ ...todo, completed: true })));
-  });
-}, { name: 'markAllCompleted' });
-
-export const clearCompleted = action(() => {
-  console.log('action: clearing completed todos');
-  
-  const completedIds = todos().filter(t => t.completed).map(t => t.id);
-  
-  batch(() => {
-    todos(prev => prev.filter(todo => !todo.completed));
-    
-    // Clear selection if selected todo was completed
-    if (selectedTodoId() && completedIds.includes(selectedTodoId()!)) {
-      selectedTodoId(null);
-    }
-  });
-}, { name: 'clearCompleted' });`}
+      <CodeExample
+        filename="state-management-entity-pattern.ts"
+        language="ts"
       />
 
       <h2>State Normalization</h2>
@@ -348,107 +166,7 @@ export const clearCompleted = action(() => {
         duplication and make updates more efficient.
       </p>
 
-      <CodeBlock
-        language="typescript"
-        code={`// ❌ Avoid: Nested relational data
-const badState = state({
-  posts: [
-    {
-      id: 1,
-      title: 'Post 1',
-      author: { id: 1, name: 'John', email: 'john@example.com' },
-      comments: [
-        { id: 1, text: 'Great post!', author: { id: 2, name: 'Jane' } },
-        { id: 2, text: 'Thanks!', author: { id: 1, name: 'John' } },
-      ],
-    },
-    // ... more posts with duplicated author data
-  ],
-});
-
-// ✅ Good: Normalized state structure
-export const users = state<Record<string, User>>({}, { name: 'users' });
-export const posts = state<Record<string, Post>>({}, { name: 'posts' });
-export const comments = state<Record<string, Comment>>({}, { name: 'comments' });
-
-type User = {
-  id: string;
-  name: string;
-  email: string;
-};
-
-type Post = {
-  id: string;
-  title: string;
-  content: string;
-  authorId: string;
-  commentIds: string[];
-};
-
-type Comment = {
-  id: string;
-  text: string;
-  postId: string;
-  authorId: string;
-};
-
-// Actions for normalized updates
-export const addUser = action((user: User) => {
-  console.log('action: adding user', user.id);
-  users(prev => ({ ...prev, [user.id]: user }));
-}, { name: 'addUser' });
-
-export const addPost = action((post: Omit<Post, 'commentIds'>) => {
-  console.log('action: adding post', post.id);
-  posts(prev => ({
-    ...prev,
-    [post.id]: { ...post, commentIds: [] },
-  }));
-}, { name: 'addPost' });
-
-export const addComment = action((comment: Comment) => {
-  console.log('action: adding comment', comment.id);
-  
-  batch(() => {
-    // Add comment
-    comments(prev => ({ ...prev, [comment.id]: comment }));
-    
-    // Update post's comment list
-    posts(prev => ({
-      ...prev,
-      [comment.postId]: {
-        ...prev[comment.postId],
-        commentIds: [...prev[comment.postId].commentIds, comment.id],
-      },
-    }));
-  });
-}, { name: 'addComment' });
-
-// Selectors for denormalized views
-export const getPostWithAuthor = (postId: string) => derived(() => {
-  const post = posts()[postId];
-  const author = post ? users()[post.authorId] : null;
-  
-  return post && author ? { ...post, author } : null;
-}, { name: \`postWithAuthor-\${postId}\` });
-
-export const getPostWithComments = (postId: string) => derived(() => {
-  const post = posts()[postId];
-  if (!post) return null;
-  
-  const postComments = post.commentIds.map(id => {
-    const comment = comments()[id];
-    const author = comment ? users()[comment.authorId] : null;
-    return comment && author ? { ...comment, author } : null;
-  }).filter(Boolean);
-  
-  return {
-    ...post,
-    author: users()[post.authorId],
-    comments: postComments,
-  };
-}, { name: \`postWithComments-\${postId}\` });`}
-      />
+      <CodeExample filename="state-management-normalization.ts" language="ts" />
 
       <h2>Performance Optimization</h2>
       <p>
@@ -456,97 +174,7 @@ export const getPostWithComments = (postId: string) => derived(() => {
         large applications.
       </p>
 
-      <CodeBlock
-        language="typescript"
-        code={`// 1. Granular subscriptions
-// ❌ Avoid: Subscribing to entire large objects
-function UserProfile() {
-  const userData = useUnderstate(user); // Re-renders on any user property change
-  return <h1>{userData.name}</h1>; // Only needs name
-}
-
-// ✅ Good: Subscribe to specific properties
-const userName = derived(() => user().name, { name: 'userName' });
-
-function UserProfile() {
-  const name = useUnderstate(userName); // Only re-renders when name changes
-  return <h1>{name}</h1>;
-}
-
-// 2. Memoized selectors for expensive computations
-export const expensiveComputation = derived(() => {
-  const data = largeDataSet();
-  
-  // Expensive calculation only runs when data changes
-  return data
-    .filter(item => item.active)
-    .sort((a, b) => b.priority - a.priority)
-    .map(item => ({
-      ...item,
-      displayName: \`\${item.name} (\${item.category})\`,
-    }));
-}, { name: 'expensiveComputation' });
-
-// 3. Conditional subscriptions
-function ConditionalList() {
-  const showList = useUnderstate(shouldShowList);
-  
-  // Only subscribe to items when list is visible
-  const items = useUnderstate(showList ? expensiveItems : state([]));
-  
-  return showList ? (
-    <ul>
-      {items.map(item => <li key={item.id}>{item.name}</li>)}
-    </ul>
-  ) : null;
-}
-
-// 4. Batching updates for better performance
-export const batchedUpdate = action(() => {
-  console.log('action: performing batched update');
-  
-  batch(() => {
-    // All these updates are batched into a single re-render
-    user(prev => ({ ...prev, name: 'New Name' }));
-    user(prev => ({ ...prev, email: 'new@email.com' }));
-    todos(prev => [...prev, newTodo]);
-    uiSettings(prev => ({ ...prev, theme: 'dark' }));
-  });
-}, { name: 'batchedUpdate' });
-
-// 5. Lazy initialization for expensive default values
-export const expensiveState = state(() => {
-  // This function only runs once, when state is first accessed
-  console.log('Initializing expensive state...');
-  return performExpensiveCalculation();
-}, { name: 'expensiveState' });
-
-// 6. State splitting for large lists
-// Instead of one large array, split into chunks
-export const createPaginatedState = <T>(pageSize = 50) => {
-  const allItems = state<T[]>([], { name: 'allItems' });
-  const currentPage = state(0, { name: 'currentPage' });
-  
-  const totalPages = derived(() => 
-    Math.ceil(allItems().length / pageSize)
-  , { name: 'totalPages' });
-  
-  const currentPageItems = derived(() => {
-    const items = allItems();
-    const page = currentPage();
-    const start = page * pageSize;
-    return items.slice(start, start + pageSize);
-  }, { name: 'currentPageItems' });
-  
-  return {
-    allItems,
-    currentPage,
-    totalPages,
-    currentPageItems,
-    pageSize,
-  };
-};`}
-      />
+      <CodeExample filename="state-management-performance.ts" language="ts" />
 
       <h2>Debugging State</h2>
       <p>

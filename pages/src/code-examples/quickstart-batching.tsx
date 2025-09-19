@@ -1,30 +1,16 @@
-import { state, batch, useSubscribe } from 'react-understate';
+import { state, batch, effect } from 'react-understate';
 
-const firstName = state('');
-const lastName = state('');
+export const firstName = state<null | string>(null, 'firstName');
+export const lastName = state<null | string>(null, 'lastName');
 
-function UserForm() {
-  const { firstName: first, lastName: last } = useSubscribe({
-    firstName,
-    lastName,
-  });
+effect(() => {
+  console.log(`${firstName.value} ${lastName.value}`);
+});
 
-  const updateFullName = (first: string, last: string) => {
-    // Batch updates to prevent multiple re-renders
-    batch(() => {
-      firstName.set(first);
-      lastName.set(last);
-    });
-  };
+// Batch updates to prevent multiple re-renders
+batch(() => {
+  firstName.value = 'John';
+  lastName.value = 'Doe';
+});
 
-  return (
-    <div>
-      <p>
-        Full Name: {first} {last}
-      </p>
-      <button onClick={() => updateFullName('Jane', 'Smith')}>
-        Update Name
-      </button>
-    </div>
-  );
-}
+// Logs: "John Doe"

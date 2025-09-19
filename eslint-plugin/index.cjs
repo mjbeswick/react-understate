@@ -22,6 +22,7 @@ module.exports = {
     'no-direct-state-mutation': require('./rules/no-direct-state-mutation.cjs'),
     'no-unused-action-parameters': require('./rules/no-unused-action-parameters.cjs'),
     'require-state-subscription-cleanup': require('./rules/require-state-subscription-cleanup.cjs'),
+    'no-state-updates-in-effects': require('./rules/no-state-updates-in-effects.cjs'),
   },
   configs: {
     recommended: {
@@ -43,6 +44,7 @@ module.exports = {
         'react-understate/no-direct-state-mutation': 'error',
         'react-understate/no-unused-action-parameters': 'warn',
         'react-understate/require-state-subscription-cleanup': 'warn',
+        'react-understate/no-state-updates-in-effects': 'warn',
 
         // Warning rules - these are best practices but not critical
         'react-understate/prefer-derived-for-computed': 'warn',

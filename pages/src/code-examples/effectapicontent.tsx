@@ -1,4 +1,4 @@
-import { state, effect } from 'react-understate';
+import { state, effect, action } from 'react-understate';
 
 const count = state(0, 'count');
 
@@ -7,8 +7,13 @@ const dispose = effect(() => {
   console.log(\`Count is now: \${count.value}\`);
 }, 'logCount');
 
-count.value = 5; // Logs: "Count is now: 5"
-count.value = 10; // Logs: "Count is now: 10"
+// Create action for state updates
+const setCount = action((value: number) => {
+  count.value = value;
+}, 'setCount');
+
+setCount(5); // Logs: "Count is now: 5"
+setCount(10); // Logs: "Count is now: 10"
 
 // Stop the effect when no longer needed
 dispose();

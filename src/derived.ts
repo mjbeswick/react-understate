@@ -69,7 +69,7 @@ import { logDebug } from './debug-utils';
 export function derived<T>(computeFn: () => T, name?: string): State<T> {
   // Validate name if provided
   const validatedName = name ? validateStateName(name) : undefined;
-  let cachedValue: T;
+  let cachedValue: T | undefined;
   let dirty = true;
   let isComputing = false;
   const subscribers = new Set<() => void>();
@@ -78,17 +78,7 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
   // Create a function to mark this derived value as dirty when dependencies change
   const markDirty = () => {
     dirty = true;
-    // Notify subscribers and dependent effects
-    subscribers.forEach(sub => {
-      if (sub !== markDirty) {
-        sub();
-      }
-    });
-    dependencies.forEach(dep => {
-      if (dep !== markDirty) {
-        dep();
-      }
-    });
+    // Don't notify here - we'll notify only when the value actually changes in computeValue
   };
 
   const computeValue = (): T => {
@@ -99,7 +89,20 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
       const prevEffect = setActiveEffect(markDirty);
 
       try {
-        cachedValue = computeFn();
+        const newValue = computeFn();
+        cachedValue = newValue;
+
+        // Notify subscribers and dependent effects
+        subscribers.forEach(sub => {
+          if (sub !== markDirty) {
+            sub();
+          }
+        });
+        dependencies.forEach(dep => {
+          if (dep !== markDirty) {
+            dep();
+          }
+        });
 
         // Debug logging
         if (validatedName) {
@@ -123,7 +126,7 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
       dependencies.add(activeEffect);
     }
 
-    return cachedValue;
+    return cachedValue!;
   };
 
   // Initialize the derived value immediately

@@ -1,17 +1,13 @@
-import React from 'react';
-import { useSubscribe } from 'react-understate';
+import { useUnderstate } from 'react-understate';
+import * as store from './quickstart';
 
-function Counter() {
+export function Counter() {
   // Subscribe to state changes
-  const { count: currentCount } = useSubscribe({ count });
-
-  const increment = () => count.set(currentCount + 1);
-  const decrement = () => count.set(currentCount - 1);
-  const reset = () => count.set(0);
+  const { count, increment, decrement, reset } = useUnderstate(store);
 
   return (
     <div>
-      <h2>Count: {currentCount}</h2>
+      <h2>Count: {count}</h2>
       <button onClick={increment}>+</button>
       <button onClick={decrement}>-</button>
       <button onClick={reset}>Reset</button>

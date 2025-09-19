@@ -24,6 +24,7 @@ import requireValidStateName from './rules/require-valid-state-name.cjs';
 import noBatchInEffects from './rules/no-batch-in-effects.cjs';
 import noNestedUnderstateFunctions from './rules/no-nested-understate-functions.cjs';
 import requireFullReactiveAccess from './rules/require-full-reactive-access.cjs';
+import noStateUpdatesInEffects from './rules/no-state-updates-in-effects.cjs';
 
 export default {
   rules: {
@@ -54,6 +55,7 @@ export default {
     'no-batch-in-effects': noBatchInEffects,
     'no-nested-understate-functions': noNestedUnderstateFunctions,
     'require-full-reactive-access': requireFullReactiveAccess,
+    'no-state-updates-in-effects': noStateUpdatesInEffects,
   },
   configs: {
     recommended: {
@@ -79,6 +81,7 @@ export default {
         'react-understate/no-batch-in-effects': 'warn',
         'react-understate/no-nested-understate-functions': 'error',
         'react-understate/require-full-reactive-access': 'warn',
+        'react-understate/no-state-updates-in-effects': 'warn',
 
         // Warning rules - these are best practices but not critical
         'react-understate/prefer-derived-for-computed': 'warn',

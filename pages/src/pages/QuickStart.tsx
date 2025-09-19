@@ -26,7 +26,7 @@ const QuickStart: React.FC = () => {
 
       <h3>Step 2: Use in Components</h3>
 
-      <CodeExample filename="quickstart-basic-counter" language="tsx" />
+      <CodeExample filename="quickstart-basic-counter.tsx" language="tsx" />
 
       <h3>Step 3: Add Derived State</h3>
 
@@ -35,25 +35,30 @@ const QuickStart: React.FC = () => {
         change:
       </p>
 
-      <CodeExample filename="quickstart-derived-state" language="tsx" />
+      <CodeExample filename="quickstart-derived-state.tsx" language="tsx" />
 
       <h2>Working with Objects</h2>
 
       <p>React Understate works seamlessly with complex state objects:</p>
 
-      <CodeExample filename="quickstart-objects" language="tsx" />
+      <CodeExample filename="quickstart-objects.tsx" language="tsx" />
 
       <h2>Adding Effects</h2>
 
       <p>Handle side effects that should run when state changes:</p>
 
-      <CodeExample filename="quickstart-effects" language="tsx" />
+      <CodeExample filename="quickstart-effects.tsx" language="tsx" />
 
       <h2>Performance with Batching</h2>
 
       <p>Batch multiple updates to prevent unnecessary re-renders:</p>
 
-      <CodeExample filename="quickstart-batching" language="tsx" />
+      <CodeExample filename="quickstart-batching.tsx" language="tsx" />
+
+      <p>
+        Note that batching is automatically done for you when you use actions or
+        effects.
+      </p>
 
       <h2>Next Steps</h2>
 

@@ -388,6 +388,79 @@ export const sortEffect = effect(() => {
 }, { name: 'sortEffect' });`}
       />
 
+      <h2>Best Practices</h2>
+      <p>
+        Following these best practices will help you write maintainable and
+        performant effects.
+      </p>
+
+      <h3>Use Actions for State Updates</h3>
+      <p>
+        <strong>❌ Avoid updating state directly in effects:</strong>
+      </p>
+      <CodeBlock
+        language="typescript"
+        code={`// ❌ Bad: State update in effect
+const count = state(0, { name: 'count' });
+
+effect(() => {
+  if (count.value > 10) {
+    count.value = 0; // This should be in an action
+  }
+}, { name: 'badEffect' });`}
+      />
+
+      <p>
+        <strong>✅ Good: Use actions for state updates:</strong>
+      </p>
+      <CodeBlock
+        language="typescript"
+        code={`// ✅ Good: State update in action
+const count = state(0, { name: 'count' });
+
+const resetCount = action(() => {
+  count.value = 0;
+}, 'resetCount');
+
+effect(() => {
+  if (count.value > 10) {
+    resetCount(); // Call action instead
+  }
+}, { name: 'goodEffect' });`}
+      />
+
+      <p>
+        <strong>Why use actions for state updates?</strong>
+      </p>
+      <ul>
+        <li>
+          <strong>Better debugging:</strong> Actions show up in debug logs with
+          clear names
+        </li>
+        <li>
+          <strong>Consistent patterns:</strong> All state updates go through the
+          same mechanism
+        </li>
+        <li>
+          <strong>Performance:</strong> Actions can be batched and optimized
+        </li>
+        <li>
+          <strong>Testability:</strong> Actions are easier to test in isolation
+        </li>
+      </ul>
+
+      <h3>Keep Effects Focused</h3>
+      <p>
+        Each effect should have a single responsibility. If you find yourself
+        doing multiple unrelated things in one effect, consider splitting it.
+      </p>
+
+      <h3>Handle Cleanup Properly</h3>
+      <p>
+        Always return cleanup functions for subscriptions, timers, and other
+        resources that need to be cleaned up.
+      </p>
+
       <h2>Next Steps</h2>
       <p>Now that you understand effects, explore these related topics:</p>
 

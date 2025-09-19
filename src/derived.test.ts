@@ -5,7 +5,7 @@
  * for derived.ts which currently has 68.88% coverage.
  */
 
-import { state, configureDebug } from './core';
+import { state, configureDebug, flushUpdates } from './core';
 import { derived } from './derived';
 
 describe('Derived Values', () => {
@@ -262,13 +262,17 @@ describe('Derived Values', () => {
       const derivedValue = derived(() => count.value * 2);
 
       let notifications = 0;
-      const unsubscribe = derivedValue.subscribe(() => notifications++);
 
-      // Initial subscription
+      // Access the derived value first to set up dependency tracking
+      expect(derivedValue.value).toBe(0);
+
+      const unsubscribe = derivedValue.subscribe(() => notifications++);
       expect(notifications).toBe(0);
 
       // Update dependency
       count.value = 5;
+      // Access the derived value to trigger recomputation
+      expect(derivedValue.value).toBe(10);
       expect(notifications).toBe(1);
 
       // Unsubscribe
@@ -284,15 +288,22 @@ describe('Derived Values', () => {
       let notifications1 = 0;
       let notifications2 = 0;
 
+      // Access the derived value first to set up dependency tracking
+      expect(derivedValue.value).toBe(0);
+
       const unsubscribe1 = derivedValue.subscribe(() => notifications1++);
       const unsubscribe2 = derivedValue.subscribe(() => notifications2++);
 
       count.value = 5;
+      // Access the derived value to trigger recomputation
+      expect(derivedValue.value).toBe(10);
       expect(notifications1).toBe(1);
       expect(notifications2).toBe(1);
 
       unsubscribe1();
       count.value = 10;
+      // Access the derived value to trigger recomputation
+      expect(derivedValue.value).toBe(20);
       expect(notifications1).toBe(1); // Should not increase
       expect(notifications2).toBe(2); // Should increase
 

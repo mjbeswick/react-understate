@@ -1,4 +1,4 @@
-import { state, effect } from 'react-understate';
+import { state, effect, action } from 'react-understate';
 
 const firstName = state('John', 'firstName');
 const lastName = state('Doe', 'lastName');
@@ -10,6 +10,19 @@ effect(() => {
   console.log(\`Full name: \${fullName}\`);
 }, 'updateFullName');
 
-firstName.value = 'Jane'; // Logs: "Full name: Mr. Jane Doe"
-title.value = 'Ms.';       // Logs: "Full name: Ms. Jane Doe"
-lastName.value = 'Smith';  // Logs: "Full name: Ms. Jane Smith"
+// Create actions for state updates
+const updateFirstName = action((name: string) => {
+  firstName.value = name;
+}, 'updateFirstName');
+
+const updateTitle = action((newTitle: string) => {
+  title.value = newTitle;
+}, 'updateTitle');
+
+const updateLastName = action((name: string) => {
+  lastName.value = name;
+}, 'updateLastName');
+
+updateFirstName('Jane'); // Logs: "Full name: Mr. Jane Doe"
+updateTitle('Ms.');       // Logs: "Full name: Ms. Jane Doe"
+updateLastName('Smith');  // Logs: "Full name: Ms. Jane Smith"
