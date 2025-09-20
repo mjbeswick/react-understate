@@ -13,7 +13,7 @@ const todoStore = {
 // Memoized todo item component
 const TodoItem = memo<{ todo: Todo; onToggle: (id: number) => void }>(
   ({ todo, onToggle }) => {
-    console.log(\`Rendering todo: \${todo.text}\`);
+    console.log(`Rendering todo: ${todo.text}`);
     
     return (
       <li>

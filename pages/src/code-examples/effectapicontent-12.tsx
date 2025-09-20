@@ -13,7 +13,7 @@ effect(async () => {
   
   // Only fetch when user is logged in and online
   try {
-    const response = await fetch(\`/api/users/\${user.value.id}/settings\`);
+    const response = await fetch(`/api/users/${user.value.id}/settings`);
     userSettings.value = await response.json();
   } catch (error) {
     console.error('Failed to load user settings:', error);

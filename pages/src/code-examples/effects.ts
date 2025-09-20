@@ -15,7 +15,7 @@ export const visibilityEffect = effect(() => {
   
   if (visible) {
     console.log('effect: element is now visible');
-    document.title = \`Count: \${count()}\`;
+    document.title = `Count: ${count()}`;
   } else {
     console.log('effect: element is now hidden');
     document.title = 'Hidden';

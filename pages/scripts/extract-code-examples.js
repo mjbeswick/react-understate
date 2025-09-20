@@ -21,23 +21,54 @@ function extractCodeBlocks(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
   const codeBlocks = [];
   
-  // Match CodeBlock components with code prop
-  const codeBlockRegex = /<CodeBlock\s+[^>]*code=\{`([\s\S]*?)`\}/g;
-  let match;
+  // Find all CodeBlock components
+  const codeBlockMatches = content.matchAll(/<CodeBlock\s+[^>]*code=\{`([\s\S]*?)`\}/g);
   
-  while ((match = codeBlockRegex.exec(content)) !== null) {
-    const code = match[1];
+  for (const match of codeBlockMatches) {
+    let code = match[1];
     const fullMatch = match[0];
+    
+    // Fix escaped template literals - replace \` with ` and \${ with ${
+    code = code.replace(/\\`/g, '`').replace(/\\\$\{/g, '${');
     
     // Extract language if present
     const languageMatch = fullMatch.match(/language=["']([^"']+)["']/);
     const language = languageMatch ? languageMatch[1] : 'tsx';
     
-    codeBlocks.push({
-      code,
-      language,
-      fullMatch
-    });
+    // Skip API documentation (method signatures) - only include executable code
+    const isApiDocumentation = code.includes('): ') || 
+                              code.includes('): T') ||
+                              code.includes('): number') ||
+                              code.includes('): void') ||
+                              code.includes('): boolean') ||
+                              code.includes('): string') ||
+                              code.includes('): Array') ||
+                              code.includes('): object') ||
+                              code.includes('): any') ||
+                              (code.includes('(') && code.includes(')') && !code.includes('{'));
+    
+    const isExecutableCode = code.includes('const ') || 
+                            code.includes('function ') || 
+                            code.includes('import ') || 
+                            code.includes('export ') ||
+                            code.includes('for ') ||
+                            code.includes('if ') ||
+                            code.includes('return ') ||
+                            code.includes('console.') ||
+                            code.includes('=') ||
+                            code.includes('{') ||
+                            code.includes('class ') ||
+                            code.includes('interface ') ||
+                            code.includes('type ') ||
+                            code.includes('enum ');
+    
+    if (isExecutableCode && !isApiDocumentation) {
+      codeBlocks.push({
+        code,
+        language,
+        fullMatch
+      });
+    }
   }
   
   return codeBlocks;

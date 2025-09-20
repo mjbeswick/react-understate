@@ -12,12 +12,12 @@ effect(() => {
   if (isConnected.value && room.value) {
     connectionStatus.value = 'connecting';
     
-    const ws = new WebSocket(\`ws://localhost:8080/rooms/\${room.value}\`);
+    const ws = new WebSocket(`ws://localhost:8080/rooms/${room.value}`);
     websocket = ws;
     
     ws.onopen = () => {
       connectionStatus.value = 'connected';
-      console.log(\`Connected to room: \${room.value}\`);
+      console.log(`Connected to room: ${room.value}`);
     };
     
     ws.onmessage = (event) => {

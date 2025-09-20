@@ -73,7 +73,7 @@ export const monitoredBatching = action(() => {
   const duration = endTime - startTime;
   
   if (duration > 16) { // Longer than one frame
-    console.warn(\`Batched update took \${duration.toFixed(2)}ms\`);
+    console.warn(`Batched update took ${duration.toFixed(2)}ms`);
   }
 }, { name: 'monitoredBatching' });
 

@@ -17,16 +17,16 @@ effect(async ({ signal }) => {
   
   try {
     // Fetch user data with cancellation support
-    const userResponse = await fetch(\`/api/users/\${userId.value}\`, { signal });
+    const userResponse = await fetch(`/api/users/${userId.value}`, { signal });
     const user = await userResponse.json();
     userData.value = user;
     
     // Fetch user posts with cancellation support
-    const postsResponse = await fetch(\`/api/users/\${userId.value}/posts\`, { signal });
+    const postsResponse = await fetch(`/api/users/${userId.value}/posts`, { signal });
     const posts = await postsResponse.json();
     userPosts.value = posts;
     
-    console.log(\`Loaded data for user \${user.name}\`);
+    console.log(`Loaded data for user ${user.name}`);
     
   } catch (error) {
     if (error.name === 'AbortError') {

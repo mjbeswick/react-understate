@@ -4,14 +4,14 @@ const userId = state(1);
 
 // Async derived value that fetches user data
 const userData = asyncDerived(async () => {
-  const response = await fetch(\`/api/users/\${userId.value}\`);
+  const response = await fetch(`/api/users/${userId.value}`);
   return response.json();
 }, null); // Initial value while loading
 
 const userPermissions = asyncDerived(async () => {
   if (!userData.value) return [];
   
-  const response = await fetch(\`/api/users/\${userData.value.id}/permissions\`);
+  const response = await fetch(`/api/users/${userData.value.id}/permissions`);
   return response.json();
 }, []);
 

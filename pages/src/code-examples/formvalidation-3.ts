@@ -34,7 +34,7 @@ export const submitForm = action(async () => {
     });
     
     if (!response.ok) {
-      throw new Error(\`HTTP \${response.status}: \${response.statusText}\`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
     const result = await response.json();

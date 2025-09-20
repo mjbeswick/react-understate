@@ -11,7 +11,7 @@ export const complexUpdate = action(() => {
     notifications(prev => ({ ...prev, enabled: true }));
     
     // Derived values won't recalculate until batch completes
-    const userDisplay = \`\${user().name} - \${settings().theme}\`;
+    const userDisplay = `${user().name} - ${settings().theme}`;
     console.log('User display:', userDisplay);
   });
   

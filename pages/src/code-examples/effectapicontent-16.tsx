@@ -8,12 +8,12 @@ const user = state(null, 'user');
 
 // Named effects for better debugging
 effect(() => {
-  console.log(\`Counter effect: count is \${count.value}\`);
+  console.log(`Counter effect: count is ${count.value}`);
 }, 'logCounter');
 
 effect(async ({ signal }) => {
   if (user.value) {
-    console.log(\`User effect: loading data for \${user.value.name}\`);
+    console.log(`User effect: loading data for ${user.value.name}`);
     // Async operations...
   }
 }, 'loadUserData', { preventOverlap: true });

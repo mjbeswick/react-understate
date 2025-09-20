@@ -6,13 +6,13 @@ const message = state('');
 // ✅ Automatically batched in event handlers
 function handleClick() {
   count.value++; // These updates are automatically
-  message.value = \`Count is \${count.value}\`; // batched together
+  message.value = `Count is ${count.value}`; // batched together
 }
 
 // ✅ Automatically batched in actions
 const incrementWithMessage = action(() => {
   count.value++;
-  message.value = \`Count is \${count.value}\`;
+  message.value = `Count is ${count.value}`;
 });
 
 // ❌ May need manual batching in async contexts

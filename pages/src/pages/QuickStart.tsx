@@ -49,6 +49,15 @@ const QuickStart: React.FC = () => {
 
       <CodeExample filename="quickstart-effects.tsx" language="tsx" />
 
+      <h2>Working with Arrays</h2>
+
+      <p>
+        Use <code>arrayState</code> for convenient array operations with
+        automatic reactivity:
+      </p>
+
+      <CodeExample filename="quickstart-arrays.tsx" language="tsx" />
+
       <h2>Performance with Batching</h2>
 
       <p>Batch multiple updates to prevent unnecessary re-renders:</p>

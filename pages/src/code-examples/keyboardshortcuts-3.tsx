@@ -1,59 +1,74 @@
-const mode = state<'normal' | 'editing' | 'selecting'>('normal', 'mode');
-const selectedItems = state<string[]>([], 'selectedItems');
+const handleShortcutsWithModifiers = action((event: KeyboardEvent) => {
+  const { key, ctrlKey, metaKey, shiftKey, altKey } = event;
+  const cmdOrCtrl = ctrlKey || metaKey; // Cmd on Mac, Ctrl on Windows/Linux
 
-const setupConditionalShortcuts = effect(() => {
-  const handleKeyDown = (event: KeyboardEvent) => {
-    const currentMode = mode.value;
-    
-    // Global shortcuts (work in any mode)
-    if (event.ctrlKey || event.metaKey) {
-      switch (event.key) {
-        case 's':
-          saveDocument();
-          event.preventDefault();
-          return;
-        case 'z':
-          if (event.shiftKey) {
-            redo();
-          } else {
-            undo();
-          }
-          event.preventDefault();
-          return;
-      }
+  // Text editing shortcuts
+  if (cmdOrCtrl) {
+    switch (key) {
+      case 'a':
+        selectAll();
+        event.preventDefault();
+        break;
+      case 'c':
+        copySelection();
+        event.preventDefault();
+        break;
+      case 'v':
+        pasteFromClipboard();
+        event.preventDefault();
+        break;
+      case 'x':
+        cutSelection();
+        event.preventDefault();
+        break;
+      case 'z':
+        if (shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
+        event.preventDefault();
+        break;
+      case 'f':
+        openFindDialog();
+        event.preventDefault();
+        break;
+      case 'n':
+        if (shiftKey) {
+          createNewFolder();
+        } else {
+          createNewFile();
+        }
+        event.preventDefault();
+        break;
     }
-    
-    // Mode-specific shortcuts
-    switch (currentMode) {
-      case 'normal':
-        handleNormalModeKeys(event);
-        break;
-      case 'editing':
-        handleEditingModeKeys(event);
-        break;
-      case 'selecting':
-        handleSelectingModeKeys(event);
-        break;
-    }
-  };
-
-  document.addEventListener('keydown', handleKeyDown);
-  return () => document.removeEventListener('keydown', handleKeyDown);
-}, [mode], 'conditionalShortcuts');
-
-const handleNormalModeKeys = action((event: KeyboardEvent) => {
-  switch (event.key) {
-    case 'n':
-      createNewItem();
-      event.preventDefault();
-      break;
-    case 'e':
-      enterEditMode();
-      event.preventDefault();
-      break;
-    case 'Delete':
-      deleteSelectedItems();
-      event.preventDefault();
-      break;
   }
-}, 'handleNormalModeKeys');
+  
+  // Alt/Option shortcuts
+  if (altKey) {
+    switch (key) {
+      case 'ArrowUp':
+        moveSelectionUp();
+        event.preventDefault();
+        break;
+      case 'ArrowDown':
+        moveSelectionDown();
+        event.preventDefault();
+        break;
+    }
+  }
+  
+  // Shift shortcuts (usually for selection)
+  if (shiftKey && !cmdOrCtrl) {
+    switch (key) {
+      case 'ArrowUp':
+        extendSelectionUp();
+        event.preventDefault();
+        break;
+      case 'ArrowDown':
+        extendSelectionDown();
+        event.preventDefault();
+        break;
+    }
+  }
+}, 'handleShortcutsWithModifiers');

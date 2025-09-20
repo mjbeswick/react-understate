@@ -5,23 +5,23 @@
     "language": "html"
   },
   {
-    "originalFile": "Introduction.tsx",
-    "extractedFile": "introduction.ts",
-    "language": "bash"
-  },
-  {
-    "originalFile": "Introduction.tsx",
-    "extractedFile": "introduction-2.ts",
+    "originalFile": "api/ArrayStateAPI.tsx",
+    "extractedFile": "arraystateapi.ts",
     "language": "typescript"
   },
   {
-    "originalFile": "Introduction.tsx",
-    "extractedFile": "introduction-3.tsx",
-    "language": "tsx"
+    "originalFile": "api/ArrayStateAPI.tsx",
+    "extractedFile": "arraystateapi-2.ts",
+    "language": "typescript"
   },
   {
-    "originalFile": "QuickStart.tsx",
-    "extractedFile": "quickstart.ts",
+    "originalFile": "api/ArrayStateAPI.tsx",
+    "extractedFile": "arraystateapi-3.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "api/ArrayStateAPI.tsx",
+    "extractedFile": "arraystateapi-4.ts",
     "language": "typescript"
   },
   {
@@ -355,6 +355,26 @@
     "language": "typescript"
   },
   {
+    "originalFile": "guides/ESLint.tsx",
+    "extractedFile": "eslint.js",
+    "language": "javascript"
+  },
+  {
+    "originalFile": "guides/ESLint.tsx",
+    "extractedFile": "eslint-2.ts",
+    "language": "json"
+  },
+  {
+    "originalFile": "guides/ESLint.tsx",
+    "extractedFile": "eslint-3.js",
+    "language": "javascript"
+  },
+  {
+    "originalFile": "guides/ESLint.tsx",
+    "extractedFile": "eslint-4.tsx",
+    "language": "tsx"
+  },
+  {
     "originalFile": "guides/Effects.tsx",
     "extractedFile": "effects.ts",
     "language": "typescript"
@@ -375,6 +395,16 @@
     "language": "typescript"
   },
   {
+    "originalFile": "guides/Effects.tsx",
+    "extractedFile": "effects-5.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Effects.tsx",
+    "extractedFile": "effects-6.ts",
+    "language": "typescript"
+  },
+  {
     "originalFile": "guides/StateManagement.tsx",
     "extractedFile": "statemanagement.ts",
     "language": "typescript"
@@ -392,36 +422,6 @@
   {
     "originalFile": "guides/StateManagement.tsx",
     "extractedFile": "statemanagement-4.ts",
-    "language": "typescript"
-  },
-  {
-    "originalFile": "guides/StateManagement.tsx",
-    "extractedFile": "statemanagement-5.ts",
-    "language": "typescript"
-  },
-  {
-    "originalFile": "guides/StateManagement.tsx",
-    "extractedFile": "statemanagement-6.ts",
-    "language": "typescript"
-  },
-  {
-    "originalFile": "guides/StateManagement.tsx",
-    "extractedFile": "statemanagement-7.ts",
-    "language": "typescript"
-  },
-  {
-    "originalFile": "guides/StateManagement.tsx",
-    "extractedFile": "statemanagement-8.ts",
-    "language": "typescript"
-  },
-  {
-    "originalFile": "guides/StateManagement.tsx",
-    "extractedFile": "statemanagement-9.ts",
-    "language": "typescript"
-  },
-  {
-    "originalFile": "guides/StateManagement.tsx",
-    "extractedFile": "statemanagement-10.ts",
     "language": "typescript"
   },
   {
@@ -580,11 +580,6 @@
     "language": "tsx"
   },
   {
-    "originalFile": "patterns/KeyboardShortcuts.tsx",
-    "extractedFile": "keyboardshortcuts-7.tsx",
-    "language": "tsx"
-  },
-  {
     "originalFile": "patterns/LocalStorage.tsx",
     "extractedFile": "localstorage.ts",
     "language": "typescript"
@@ -611,12 +606,7 @@
   },
   {
     "originalFile": "patterns/LocalStorage.tsx",
-    "extractedFile": "localstorage-6.ts",
-    "language": "typescript"
-  },
-  {
-    "originalFile": "patterns/LocalStorage.tsx",
-    "extractedFile": "localstorage-7.tsx",
+    "extractedFile": "localstorage-6.tsx",
     "language": "tsx"
   },
   {

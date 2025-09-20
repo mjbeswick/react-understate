@@ -17,6 +17,10 @@
 export { state, action, configureDebug } from './core';
 export type { State } from './core';
 
+// Array state exports
+export { arrayState } from './array-state';
+export type { ArrayState } from './array-state';
+
 // Debug utilities
 export * from './debug-utils';
 

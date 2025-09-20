@@ -60,7 +60,7 @@ function useCartSummary() {
     total,
     hasDiscount,
     savings: discount,
-    formattedTotal: \`$\${total.toFixed(2)}\`
+    formattedTotal: `$${total.toFixed(2)}`
   };
 }
 
@@ -70,8 +70,8 @@ function CartSummary() {
   
   return (
     <div>
-      <p>Subtotal: \${subtotal.toFixed(2)}</p>
-      {hasDiscount && <p>Discount: -\${discount.toFixed(2)}</p>}
+      <p>Subtotal: ${subtotal.toFixed(2)}</p>
+      {hasDiscount && <p>Discount: -${discount.toFixed(2)}</p>}
       <h3>Total: {formattedTotal}</h3>
     </div>
   );
@@ -85,7 +85,7 @@ function ProductList() {
       {products.map(product => (
         <div key={product.id}>
           <h3>{product.name}</h3>
-          <p>\${product.price}</p>
+          <p>${product.price}</p>
           <button onClick={() => addItem(product)}>
             Add to Cart
           </button>

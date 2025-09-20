@@ -90,7 +90,7 @@ export const waitForState = async (
     await new Promise(resolve => setTimeout(resolve, 10));
   }
   
-  throw new Error(\`State did not reach expected value within \${timeout}ms\`);
+  throw new Error(`State did not reach expected value within ${timeout}ms`);
 };
 
 // Usage

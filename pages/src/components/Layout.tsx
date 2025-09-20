@@ -39,6 +39,7 @@ const navigation: NavItem[] = [
     path: '/api',
     items: [
       { title: 'state()', path: '/api/state' },
+      { title: 'arrayState()', path: '/api/array-state' },
       { title: 'derived()', path: '/api/derived' },
       { title: 'action()', path: '/api/action' },
       { title: 'effect()', path: '/api/effect' },

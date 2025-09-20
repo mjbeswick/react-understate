@@ -6,7 +6,7 @@ export const storageUtils = {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : fallback;
     } catch (error) {
-      console.error(\`Failed to read from localStorage[\${key}]\`, error);
+      console.error(`Failed to read from localStorage[${key}]`, error);
       return fallback;
     }
   },
@@ -17,7 +17,7 @@ export const storageUtils = {
       localStorage.setItem(key, JSON.stringify(value));
       return true;
     } catch (error) {
-      console.error(\`Failed to write to localStorage[\${key}]\`, error);
+      console.error(`Failed to write to localStorage[${key}]`, error);
       
       // Handle quota exceeded
       if (error instanceof Error && error.name === 'QuotaExceededError') {
@@ -43,7 +43,7 @@ export const storageUtils = {
       localStorage.removeItem(key);
       return true;
     } catch (error) {
-      console.error(\`Failed to remove localStorage[\${key}]\`, error);
+      console.error(`Failed to remove localStorage[${key}]`, error);
       return false;
     }
   },
@@ -79,12 +79,12 @@ export const storageUtils = {
       localStorage.removeItem(item.key);
       freedSpace += item.size;
       
-      console.log(\`Removed \${item.key} (\${item.size} bytes)\`);
+      console.log(`Removed ${item.key} (${item.size} bytes)`);
       
       if (freedSpace >= targetSpace) break;
     }
     
-    console.log(\`Freed \${freedSpace} bytes from localStorage\`);
+    console.log(`Freed ${freedSpace} bytes from localStorage`);
   },
   
   // Check available space (approximate)
@@ -118,7 +118,7 @@ export const createRobustPersistentState = <T>(
     
     // Validate if validator provided
     if (validate && !validate(stored)) {
-      console.warn(\`Invalid data in localStorage[\${storageKey}], using default\`);
+      console.warn(`Invalid data in localStorage[${storageKey}], using default`);
       return defaultValue;
     }
     
@@ -134,12 +134,12 @@ export const createRobustPersistentState = <T>(
     
     // Check size limit
     if (maxSize && serialized.length > maxSize) {
-      console.warn(\`Data too large for localStorage[\${storageKey}]: \${serialized.length} bytes\`);
+      console.warn(`Data too large for localStorage[${storageKey}]: ${serialized.length} bytes`);
       return;
     }
     
     storageUtils.set(storageKey, currentValue);
-  }, { name: \`save-\${storageKey}\` });
+  }, { name: `save-${storageKey}` });
   
   return stateInstance;
 };

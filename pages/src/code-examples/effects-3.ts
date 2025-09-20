@@ -74,8 +74,8 @@ export const documentTitleEffect = effect(() => {
   const title = pageTitle();
   const unread = unreadCount();
   
-  const fullTitle = unread > 0 ? \`(\${unread}) \${title}\` : title;
-  document.title = \`\${fullTitle} - My App\`;
+  const fullTitle = unread > 0 ? `(${unread}) ${title}` : title;
+  document.title = `${fullTitle} - My App`;
 }, { name: 'documentTitleEffect' });
 
 // 4. Analytics tracking

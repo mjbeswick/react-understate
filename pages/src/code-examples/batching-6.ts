@@ -12,7 +12,7 @@ export const createBatchingDebugger = () => {
     isInBatch = true;
     updateCount = 0;
     
-    console.group(\`Batch #\${batchCount}\`);
+    console.group(`Batch #${batchCount}`);
     console.log('Starting batch');
     
     const startTime = performance.now();
@@ -24,7 +24,7 @@ export const createBatchingDebugger = () => {
     const endTime = performance.now();
     const duration = endTime - startTime;
     
-    console.log(\`Batch completed: \${updateCount} updates in \${duration.toFixed(2)}ms\`);
+    console.log(`Batch completed: ${updateCount} updates in ${duration.toFixed(2)}ms`);
     console.groupEnd();
     
     isInBatch = false;
@@ -37,7 +37,7 @@ export const createBatchingDebugger = () => {
     
     return (value: T | ((prev: T) => T)) => {
       updateCount++;
-      console.log(\`Update #\${updateCount} in \${isInBatch ? 'batch' : 'individual'}: \${name}\`);
+      console.log(`Update #${updateCount} in ${isInBatch ? 'batch' : 'individual'}: ${name}`);
       return originalSet(value);
     };
   };
@@ -91,13 +91,13 @@ export const analyzeBatching = () => {
   stateUpdatePatterns.forEach(pattern => {
     if (pattern.frequency > 10 && pattern.updatesPerSecond > 5) {
       analysis.recommendedBatches.push(
-        \`Consider batching updates to \${pattern.stateName} (updated \${pattern.frequency} times)\`
+        `Consider batching updates to ${pattern.stateName} (updated ${pattern.frequency} times)`
       );
     }
     
     if (pattern.averageUpdateTime > 5) {
       analysis.performanceIssues.push(
-        \`Slow updates detected for \${pattern.stateName} (\${pattern.averageUpdateTime}ms average)\`
+        `Slow updates detected for ${pattern.stateName} (${pattern.averageUpdateTime}ms average)`
       );
     }
   });
@@ -129,11 +129,11 @@ export const createRealtimeMonitor = () => {
     const individualUpdates = monitor.updates.length - batchedUpdates;
     
     console.log('📊 Batching Monitor Results:');
-    console.log(\`Duration: \${duration.toFixed(2)}ms\`);
-    console.log(\`Total Updates: \${monitor.updates.length}\`);
-    console.log(\`Batched Updates: \${batchedUpdates}\`);
-    console.log(\`Individual Updates: \${individualUpdates}\`);
-    console.log(\`Batching Efficiency: \${((batchedUpdates / monitor.updates.length) * 100).toFixed(1)}%\`);
+    console.log(`Duration: ${duration.toFixed(2)}ms`);
+    console.log(`Total Updates: ${monitor.updates.length}`);
+    console.log(`Batched Updates: ${batchedUpdates}`);
+    console.log(`Individual Updates: ${individualUpdates}`);
+    console.log(`Batching Efficiency: ${((batchedUpdates / monitor.updates.length) * 100).toFixed(1)}%`);
   };
   
   return { startMonitoring, stopMonitoring, monitor };

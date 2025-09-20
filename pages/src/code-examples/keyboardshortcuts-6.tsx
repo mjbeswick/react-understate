@@ -1,49 +1,42 @@
-// Calculator.tsx
-import React, { useEffect } from 'react';
-import { useUnderstate } from 'react-understate';
+// keyboardShortcuts.test.ts
+import { fireEvent } from '@testing-library/react';
 import { calculatorStore } from './calculatorStore';
 
-function Calculator() {
-  const { displayValue, operation, handleKeyDown, clear } = useUnderstate(calculatorStore);
+describe('Calculator Keyboard Shortcuts', () => {
+  beforeEach(() => {
+    calculatorStore.clear();
+  });
 
-  // Set up keyboard shortcuts
-  useEffect(() => {
-    const handleKey = (event: KeyboardEvent) => {
-      handleKeyDown(event);
-    };
+  test('number keys input digits', () => {
+    const event = new KeyboardEvent('keydown', { key: '5' });
+    calculatorStore.handleKeyDown(event);
+    
+    expect(calculatorStore.displayValue.value).toBe('5');
+  });
 
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [handleKeyDown]);
+  test('operation keys perform operations', () => {
+    // Input: 5 + 3 =
+    fireEvent.keyDown(document, { key: '5' });
+    fireEvent.keyDown(document, { key: '+' });
+    fireEvent.keyDown(document, { key: '3' });
+    fireEvent.keyDown(document, { key: 'Enter' });
+    
+    expect(calculatorStore.displayValue.value).toBe('8');
+  });
 
-  return (
-    <div 
-      className="calculator"
-      tabIndex={0} // Make it focusable
-      onKeyDown={(e) => handleKeyDown(e.nativeEvent)}
-    >
-      <div className="display">
-        {displayValue}
-        {operation && <span className="operation">{operation}</span>}
-      </div>
-      
-      <div className="keypad">
-        <button onClick={clear}>Clear (Esc)</button>
-        {/* Other buttons... */}
-      </div>
-      
-      <div className="shortcuts-help">
-        <h4>Keyboard Shortcuts:</h4>
-        <ul>
-          <li><kbd>0-9</kbd> - Input digits</li>
-          <li><kbd>+ - * /</kbd> - Operations</li>
-          <li><kbd>Enter</kbd> or <kbd>=</kbd> - Calculate</li>
-          <li><kbd>Esc</kbd> - Clear</li>
-          <li><kbd>.</kbd> - Decimal point</li>
-          <li><kbd>%</kbd> - Percentage</li>
-          <li><kbd>P</kbd> - Plus/minus toggle</li>
-        </ul>
-      </div>
-    </div>
-  );
-}
+  test('escape key clears calculator', () => {
+    calculatorStore.inputDigit('123');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    
+    expect(calculatorStore.displayValue.value).toBe('0');
+  });
+
+  test('prevents default for handled keys', () => {
+    const event = new KeyboardEvent('keydown', { key: '+' });
+    const preventDefaultSpy = jest.spyOn(event, 'preventDefault');
+    
+    calculatorStore.handleKeyDown(event);
+    
+    expect(preventDefaultSpy).toHaveBeenCalled();
+  });
+});

@@ -3,10 +3,10 @@ export const validators = {
   required: (value: string) => value ? '' : 'This field is required',
   
   minLength: (min: number) => (value: string) =>
-    value.length >= min ? '' : \`Must be at least \${min} characters\`,
+    value.length >= min ? '' : `Must be at least ${min} characters`,
   
   maxLength: (max: number) => (value: string) =>
-    value.length <= max ? '' : \`Must be no more than \${max} characters\`,
+    value.length <= max ? '' : `Must be no more than ${max} characters`,
   
   email: (value: string) => {
     if (!value) return '';
@@ -38,7 +38,7 @@ export const validators = {
   range: (min: number, max: number) => (value: string) => {
     if (!value) return '';
     const num = Number(value);
-    return num >= min && num <= max ? '' : \`Must be between \${min} and \${max}\`,
+    return num >= min && num <= max ? '' : `Must be between ${min} and ${max}`,
   },
   
   pattern: (regex: RegExp, message: string) => (value: string) =>

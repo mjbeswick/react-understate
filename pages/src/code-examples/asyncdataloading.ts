@@ -48,7 +48,7 @@ export const fetchUsers = action(async (signal?: AbortSignal) => {
     const response = await fetch('/api/users', { signal });
     
     if (!response.ok) {
-      throw new Error(\`Failed to fetch users: \${response.statusText}\`);
+      throw new Error(`Failed to fetch users: ${response.statusText}`);
     }
     
     const userData: User[] = await response.json();

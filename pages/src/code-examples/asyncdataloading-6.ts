@@ -20,7 +20,7 @@ export const addUserOptimistic = action(async (newUser: Omit<User, 'id'>) => {
     });
     
     if (!response.ok) {
-      throw new Error(\`Failed to add user: \${response.statusText}\`);
+      throw new Error(`Failed to add user: ${response.statusText}`);
     }
     
     const savedUser: User = await response.json();
@@ -54,12 +54,12 @@ export const deleteUserOptimistic = action(async (userId: number) => {
   users(prev => prev.filter(user => user.id !== userId));
   
   try {
-    const response = await fetch(\`/api/users/\${userId}\`, {
+    const response = await fetch(`/api/users/${userId}`, {
       method: 'DELETE',
     });
     
     if (!response.ok) {
-      throw new Error(\`Failed to delete user: \${response.statusText}\`);
+      throw new Error(`Failed to delete user: ${response.statusText}`);
     }
     
     // Success - no need to update UI, already removed

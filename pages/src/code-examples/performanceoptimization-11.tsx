@@ -9,7 +9,7 @@ const expensiveOperation = action(async (data) => {
     const duration = endTime - startTime;
     
     if (duration > 100) { // Log operations over 100ms
-      console.warn(\`Slow operation: \${duration.toFixed(2)}ms\`);
+      console.warn(`Slow operation: ${duration.toFixed(2)}ms`);
     }
     
     return result;

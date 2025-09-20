@@ -15,11 +15,11 @@ effect(async () => {
   isLoading.value = true;
   
   try {
-    const response = await fetch(\`/api/search?q=\${encodeURIComponent(searchQuery.value)}\`);
+    const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery.value)}`);
     const results = await response.json();
     
     searchResults.value = results;
-    console.log(\`Found \${results.length} results for "\${searchQuery.value}"\`);
+    console.log(`Found ${results.length} results for "${searchQuery.value}"`);
   } catch (error) {
     console.error('Search failed:', error);
     searchResults.value = [];

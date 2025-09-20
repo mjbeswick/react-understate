@@ -4,7 +4,7 @@ const count = state(0);
 
 // Subscribe to changes
 const unsubscribe = count.subscribe((newValue, previousValue) => {
-  console.log(\`Count changed from \${previousValue} to \${newValue}\`);
+  console.log(`Count changed from ${previousValue} to ${newValue}`);
 });
 
 // Trigger the subscription

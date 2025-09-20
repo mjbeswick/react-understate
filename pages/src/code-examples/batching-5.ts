@@ -62,7 +62,7 @@ const createMonitoredDerived = <T>(
     
     const duration = performance.now() - start;
     if (duration > 5) { // Log slow calculations
-      console.warn(\`Derived "\${name}" calculation #\${calculationCount} took \${duration.toFixed(2)}ms\`);
+      console.warn(`Derived "${name}" calculation #${calculationCount} took ${duration.toFixed(2)}ms`);
     }
     
     return result;

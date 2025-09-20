@@ -4,7 +4,7 @@ describe('Derived Values Testing', () => {
     const firstName = state('John', { name: 'firstName' });
     const lastName = state('Doe', { name: 'lastName' });
     
-    const fullName = derived(() => \`\${firstName()} \${lastName()}\`, {
+    const fullName = derived(() => `${firstName()} ${lastName()}`, {
       name: 'fullName',
     });
     
@@ -72,7 +72,7 @@ describe('Derived Values Testing', () => {
       
       // Simulate async operation
       await new Promise(resolve => setTimeout(resolve, 10));
-      return { id, name: \`User \${id}\` };
+      return { id, name: `User ${id}` };
     }, { name: 'userData' });
     
     userId(1);

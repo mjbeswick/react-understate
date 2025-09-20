@@ -2,7 +2,7 @@
 // ❌ Inefficient: Recomputes everything when any user property changes
 const inefficientUserDisplay = derived(() => {
   const user = fullUserObject(); // Large object with many properties
-  return \`\${user.firstName} \${user.lastName} (\${user.email})\`;
+  return `${user.firstName} ${user.lastName} (${user.email})`;
 }, { name: 'inefficientUserDisplay' });
 
 // ✅ Efficient: Only depends on specific properties
@@ -10,7 +10,7 @@ const efficientUserDisplay = derived(() => {
   const first = firstName();
   const last = lastName();
   const email = userEmail();
-  return \`\${first} \${last} (\${email})\`;
+  return `${first} ${last} (${email})`;
 }, { name: 'efficientUserDisplay' });
 
 // 2. Use intermediate derived values for complex chains

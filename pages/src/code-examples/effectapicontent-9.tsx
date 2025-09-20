@@ -13,11 +13,11 @@ const documentTitle = derived(() => {
   let title = page;
   
   if (unread > 0) {
-    title = \`(\${unread}) \${title}\`;
+    title = `(${unread}) ${title}`;
   }
   
   if (user) {
-    title += \` - \${user}\`;
+    title += ` - ${user}`;
   }
   
   return title;
@@ -26,7 +26,7 @@ const documentTitle = derived(() => {
 // Effect to update document title
 effect(() => {
   document.title = documentTitle.value;
-  console.log(\`Document title updated: \${documentTitle.value}\`);
+  console.log(`Document title updated: ${documentTitle.value}`);
 }, 'updateDocumentTitle');
 
 // Usage

@@ -4,7 +4,7 @@ const firstName = state('John');
 const lastName = state('Doe');
 
 // Derived value that combines other states
-const fullName = derived(() => \`\${firstName.value} \${lastName.value}\`);
+const fullName = derived(() => `${firstName.value} ${lastName.value}`);
 
 function UserDisplay() {
   const { firstName: first, lastName: last, fullName: name } = useUnderstate({

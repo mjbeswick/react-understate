@@ -15,6 +15,7 @@ import Testing from './pages/guides/Testing';
 
 // API Reference
 import StateAPI from './pages/api/StateAPI';
+import ArrayStateAPI from './pages/api/ArrayStateAPI';
 import DerivedAPI from './pages/api/DerivedAPI';
 import ActionAPI from './pages/api/ActionAPI';
 import EffectAPI from './pages/api/EffectAPI';
@@ -61,6 +62,7 @@ function App() {
 
         {/* API Reference */}
         <Route path="/api/state" element={<StateAPI />} />
+        <Route path="/api/array-state" element={<ArrayStateAPI />} />
         <Route path="/api/derived" element={<DerivedAPI />} />
         <Route path="/api/action" element={<ActionAPI />} />
         <Route path="/api/effect" element={<EffectAPI />} />

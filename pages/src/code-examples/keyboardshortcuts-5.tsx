@@ -1,34 +1,49 @@
-const setupFocusAwareShortcuts = effect(() => {
-  const handleKeyDown = (event: KeyboardEvent) => {
-    const target = event.target as HTMLElement;
-    
-    // Don't handle shortcuts if user is typing in an input
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
-      return;
-    }
-    
-    // Only handle shortcuts when the main app area is focused
-    if (!target.closest('.app-main')) {
-      return;
-    }
-    
-    // Now handle the shortcuts
-    switch (event.key) {
-      case 'j':
-        selectNext();
-        event.preventDefault();
-        break;
-      case 'k':
-        selectPrevious();
-        event.preventDefault();
-        break;
-      case 'Enter':
-        openSelected();
-        event.preventDefault();
-        break;
-    }
-  };
+// Calculator.tsx
+import React, { useEffect } from 'react';
+import { useUnderstate } from 'react-understate';
+import { calculatorStore } from './calculatorStore';
 
-  document.addEventListener('keydown', handleKeyDown);
-  return () => document.removeEventListener('keydown', handleKeyDown);
-}, 'focusAwareShortcuts');
+function Calculator() {
+  const { displayValue, operation, handleKeyDown, clear } = useUnderstate(calculatorStore);
+
+  // Set up keyboard shortcuts
+  useEffect(() => {
+    const handleKey = (event: KeyboardEvent) => {
+      handleKeyDown(event);
+    };
+
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [handleKeyDown]);
+
+  return (
+    <div 
+      className="calculator"
+      tabIndex={0} // Make it focusable
+      onKeyDown={(e) => handleKeyDown(e.nativeEvent)}
+    >
+      <div className="display">
+        {displayValue}
+        {operation && <span className="operation">{operation}</span>}
+      </div>
+      
+      <div className="keypad">
+        <button onClick={clear}>Clear (Esc)</button>
+        {/* Other buttons... */}
+      </div>
+      
+      <div className="shortcuts-help">
+        <h4>Keyboard Shortcuts:</h4>
+        <ul>
+          <li><kbd>0-9</kbd> - Input digits</li>
+          <li><kbd>+ - * /</kbd> - Operations</li>
+          <li><kbd>Enter</kbd> or <kbd>=</kbd> - Calculate</li>
+          <li><kbd>Esc</kbd> - Clear</li>
+          <li><kbd>.</kbd> - Decimal point</li>
+          <li><kbd>%</kbd> - Percentage</li>
+          <li><kbd>P</kbd> - Plus/minus toggle</li>
+        </ul>
+      </div>
+    </div>
+  );
+}

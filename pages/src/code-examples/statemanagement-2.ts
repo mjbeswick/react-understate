@@ -1,41 +1,61 @@
-// Direct access (outside React components)
-const currentCount = count();
-const currentUser = user();
+import { configureDebug } from 'react-understate';
 
-// In React components - single state
-function Counter() {
-  const countValue = useUnderstate(count);
-  return <div>Count: {countValue}</div>;
-}
-
-// In React components - multiple states
-function UserProfile() {
-  const { user: userData, count: countValue } = useUnderstate({
-    user,
-    count,
+// Enable debug logging in development
+if (process.env.NODE_ENV === 'development') {
+  configureDebug({
+    enabled: true,
+    logStateChanges: true,
+    logActionCalls: true,
+    logDerivedUpdates: true,
+    filter: (name) => {
+      // Only log specific states/actions
+      return name.includes('user') || name.includes('todo');
+    },
   });
-  
-  return (
-    <div>
-      <h1>{userData.name}</h1>
-      <p>Count: {countValue}</p>
-    </div>
-  );
 }
 
-// Selective subscription (performance optimization)
-function UserName() {
-  // Only re-renders when user.name changes
-  const userName = useUnderstate(derived(() => user().name));
-  return <h1>{userName}</h1>;
-}
+// Custom debug logging for specific states
+export const debuggedUser = state({ name: '', email: '' }, {
+  name: 'debuggedUser',
+  debug: {
+    logChanges: true,
+    beforeChange: (oldValue, newValue) => {
+      console.log('User changing from:', oldValue, 'to:', newValue);
+    },
+    afterChange: (newValue) => {
+      console.log('User changed to:', newValue);
+    },
+  },
+});
 
-// Conditional subscription
-function ConditionalDisplay() {
-  const { isVisible: visible, message: msg } = useUnderstate({
-    isVisible,
-    message: isVisible() ? message : state(''), // Only subscribe when visible
-  });
+// Debug utilities
+export const stateSnapshot = () => {
+  return {
+    user: user(),
+    todos: todos(),
+    ui: uiSettings(),
+    timestamp: new Date().toISOString(),
+  };
+};
+
+export const logStateSnapshot = action(() => {
+  console.log('action: logging state snapshot');
+  console.table(stateSnapshot());
+}, { name: 'logStateSnapshot' });
+
+// Performance monitoring
+export const performanceMonitor = effect(() => {
+  const startTime = performance.now();
   
-  return visible ? <p>{msg}</p> : null;
-}
+  // Track expensive derived value
+  const result = expensiveComputation();
+  
+  const endTime = performance.now();
+  const duration = endTime - startTime;
+  
+  if (duration > 16) { // Longer than one frame
+    console.warn(`Expensive computation took ${duration.toFixed(2)}ms`);
+  }
+  
+  return result;
+}, { name: 'performanceMonitor' });

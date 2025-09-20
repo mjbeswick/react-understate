@@ -1,5 +1,5 @@
 // ✅ Use derived for computed state
-const fullName = derived(() => \`\${firstName.value} \${lastName.value}\`);
+const fullName = derived(() => `${firstName.value} ${lastName.value}`);
 
 // ✅ Use effects for side effects
 effect(() => {
@@ -8,7 +8,7 @@ effect(() => {
 
 // ❌ Don't use effects for computations
 effect(() => {
-  fullName.value = \`\${firstName.value} \${lastName.value}\`; // Wrong!
+  fullName.value = `${firstName.value} ${lastName.value}`; // Wrong!
 });
 
 // ❌ Don't use derived for side effects

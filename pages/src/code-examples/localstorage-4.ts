@@ -39,7 +39,7 @@ export const createMigratedState = <T>(
       for (const [oldKey, migrate] of Object.entries(migrations)) {
         const oldData = localStorage.getItem(oldKey);
         if (oldData) {
-          console.log(\`Migrating data from \${oldKey} to \${currentKey}\`);
+          console.log(`Migrating data from ${oldKey} to ${currentKey}`);
           initialValue = migrate(JSON.parse(oldData));
           
           // Clean up old key

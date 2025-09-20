@@ -93,7 +93,7 @@ export function createResourceManager<T>(
       // Retry logic
       if (retryCount < retryAttempts) {
         retryCount++;
-        console.log(\`Retrying request (attempt \${retryCount}/\${retryAttempts})\`);
+        console.log(`Retrying request (attempt ${retryCount}/${retryAttempts})`);
         
         setTimeout(() => {
           if (!signal.aborted) {
@@ -158,7 +158,7 @@ export const userResource = createResourceManager<User[]>(
   async (signal) => {
     const response = await fetch('/api/users', { signal });
     if (!response.ok) {
-      throw new Error(\`HTTP \${response.status}: \${response.statusText}\`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     return response.json();
   },

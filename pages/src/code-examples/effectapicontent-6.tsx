@@ -22,10 +22,10 @@ effect(() => {
   // Log the processing (this would normally cause a loop)
   processingLog.value = [
     ...currentLog,
-    \`Processed \${processed.length} items at \${new Date().toISOString()}\`
+    `Processed ${processed.length} items at ${new Date().toISOString()}`
   ];
   
-  console.log(\`Processing complete: \${processed.length} items\`);
+  console.log(`Processing complete: ${processed.length} items`);
 }, 'dataProcessingPipeline', { preventLoops: false });
 
 // This will trigger multiple processing cycles

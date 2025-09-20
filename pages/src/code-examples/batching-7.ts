@@ -103,6 +103,6 @@ const monitoredBatching = action(() => {
   
   const duration = performance.now() - start;
   if (duration > 16) {
-    console.warn(\`Slow batch: \${duration.toFixed(2)}ms\`);
+    console.warn(`Slow batch: ${duration.toFixed(2)}ms`);
   }
 }, { name: 'monitoredBatching' });

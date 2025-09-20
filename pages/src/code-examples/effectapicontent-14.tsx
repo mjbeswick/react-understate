@@ -16,10 +16,10 @@ effect(async ({ signal }) => {
   error.value = null;
   
   try {
-    const response = await fetch(\`/api/data/\${dataId.value}\`, { signal });
+    const response = await fetch(`/api/data/${dataId.value}`, { signal });
     
     if (!response.ok) {
-      throw new Error(\`HTTP \${response.status}: \${response.statusText}\`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
     const result = await response.json();
@@ -35,7 +35,7 @@ effect(async ({ signal }) => {
     error.value = errorMessage;
     data.value = null;
     
-    console.error(\`Failed to load data for ID \${dataId.value}:\`, err);
+    console.error(`Failed to load data for ID ${dataId.value}:`, err);
     
   } finally {
     isLoading.value = false;

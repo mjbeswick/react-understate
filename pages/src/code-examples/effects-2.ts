@@ -42,7 +42,7 @@ export const conditionalEffect = effect(() => {
 const firstName = state('John', { name: 'firstName' });
 const lastName = state('Doe', { name: 'lastName' });
 
-const fullName = derived(() => \`\${firstName()} \${lastName()}\`, {
+const fullName = derived(() => `${firstName()} ${lastName()}`, {
   name: 'fullName',
 });
 

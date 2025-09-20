@@ -1,7 +1,7 @@
 // ❌ Inefficient - accesses entire user object
 const userDisplay = derived(() => {
   const user = fullUserObject(); // Large object with many properties
-  return \`\${user.firstName} \${user.lastName} (\${user.email})\`;
+  return `${user.firstName} ${user.lastName} (${user.email})`;
 });
 
 // ✅ Efficient - only depends on specific properties
@@ -10,5 +10,5 @@ const lastName = state('Doe');
 const email = state('john@example.com');
 
 const userDisplay = derived(() => {
-  return \`\${firstName.value} \${lastName.value} (\${email.value})\`;
+  return `${firstName.value} ${lastName.value} (${email.value})`;
 });

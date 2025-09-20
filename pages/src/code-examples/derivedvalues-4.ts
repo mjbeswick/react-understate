@@ -18,7 +18,7 @@ const badDerived = derived(() => {
 // ✅ DO: Use descriptive names
 const userDisplayName = derived(() => {
   const user = currentUser();
-  return user.preferredName || \`\${user.firstName} \${user.lastName}\`;
+  return user.preferredName || `${user.firstName} ${user.lastName}`;
 }, { name: 'userDisplayName' });
 
 // ✅ DO: Split complex computations into smaller pieces

@@ -7,7 +7,7 @@ const age = state(30, { name: 'age' });
 
 // Simple derived values
 export const fullName = derived(() => {
-  return \`\${firstName()} \${lastName()}\`;
+  return `${firstName()} ${lastName()}`;
 }, { name: 'fullName' });
 
 export const isAdult = derived(() => {
@@ -17,7 +17,7 @@ export const isAdult = derived(() => {
 export const greeting = derived(() => {
   const name = fullName();
   const adult = isAdult();
-  return \`Hello, \${name}! You are \${adult ? 'an adult' : 'a minor'}.\`;
+  return `Hello, ${name}! You are ${adult ? 'an adult' : 'a minor'}.`;
 }, { name: 'greeting' });
 
 // Derived values automatically update when dependencies change

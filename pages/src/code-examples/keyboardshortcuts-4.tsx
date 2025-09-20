@@ -1,74 +1,34 @@
-const handleShortcutsWithModifiers = action((event: KeyboardEvent) => {
-  const { key, ctrlKey, metaKey, shiftKey, altKey } = event;
-  const cmdOrCtrl = ctrlKey || metaKey; // Cmd on Mac, Ctrl on Windows/Linux
+const setupFocusAwareShortcuts = effect(() => {
+  const handleKeyDown = (event: KeyboardEvent) => {
+    const target = event.target as HTMLElement;
+    
+    // Don't handle shortcuts if user is typing in an input
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      return;
+    }
+    
+    // Only handle shortcuts when the main app area is focused
+    if (!target.closest('.app-main')) {
+      return;
+    }
+    
+    // Now handle the shortcuts
+    switch (event.key) {
+      case 'j':
+        selectNext();
+        event.preventDefault();
+        break;
+      case 'k':
+        selectPrevious();
+        event.preventDefault();
+        break;
+      case 'Enter':
+        openSelected();
+        event.preventDefault();
+        break;
+    }
+  };
 
-  // Text editing shortcuts
-  if (cmdOrCtrl) {
-    switch (key) {
-      case 'a':
-        selectAll();
-        event.preventDefault();
-        break;
-      case 'c':
-        copySelection();
-        event.preventDefault();
-        break;
-      case 'v':
-        pasteFromClipboard();
-        event.preventDefault();
-        break;
-      case 'x':
-        cutSelection();
-        event.preventDefault();
-        break;
-      case 'z':
-        if (shiftKey) {
-          redo();
-        } else {
-          undo();
-        }
-        event.preventDefault();
-        break;
-      case 'f':
-        openFindDialog();
-        event.preventDefault();
-        break;
-      case 'n':
-        if (shiftKey) {
-          createNewFolder();
-        } else {
-          createNewFile();
-        }
-        event.preventDefault();
-        break;
-    }
-  }
-  
-  // Alt/Option shortcuts
-  if (altKey) {
-    switch (key) {
-      case 'ArrowUp':
-        moveSelectionUp();
-        event.preventDefault();
-        break;
-      case 'ArrowDown':
-        moveSelectionDown();
-        event.preventDefault();
-        break;
-    }
-  }
-  
-  // Shift shortcuts (usually for selection)
-  if (shiftKey && !cmdOrCtrl) {
-    switch (key) {
-      case 'ArrowUp':
-        extendSelectionUp();
-        event.preventDefault();
-        break;
-      case 'ArrowDown':
-        extendSelectionDown();
-        event.preventDefault();
-        break;
-    }
-  }
-}, 'handleShortcutsWithModifiers');
+  document.addEventListener('keydown', handleKeyDown);
+  return () => document.removeEventListener('keydown', handleKeyDown);
+}, 'focusAwareShortcuts');

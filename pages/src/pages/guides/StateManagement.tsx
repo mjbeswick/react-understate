@@ -63,6 +63,38 @@ const StateManagement: React.FC = () => {
         language="ts"
       />
 
+      <h2>Array State</h2>
+      <p>
+        For arrays, React Understate provides <code>arrayState()</code> which
+        wraps arrays with convenient reactive methods. This makes array
+        operations more intuitive while maintaining immutability and reactivity.
+      </p>
+
+      <CodeExample filename="state-management-array-state.ts" language="ts" />
+
+      <h3>Array State Benefits</h3>
+      <ul>
+        <li>
+          <strong>Convenient methods:</strong> Direct access to array methods
+          like <code>push()</code>, <code>pop()</code>, <code>splice()</code>
+        </li>
+        <li>
+          <strong>Automatic reactivity:</strong> All mutating methods trigger
+          subscriptions automatically
+        </li>
+        <li>
+          <strong>Type safety:</strong> Full TypeScript support for all array
+          operations
+        </li>
+        <li>
+          <strong>Performance:</strong> Optimized for common array use cases
+        </li>
+        <li>
+          <strong>Immutability:</strong> All operations maintain immutability
+          internally
+        </li>
+      </ul>
+
       <h2>Reading State</h2>
       <p>
         React Understate provides multiple ways to read state values depending

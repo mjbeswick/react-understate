@@ -1,33 +1,23 @@
-import { state } from 'react-understate';
+// ❌ Avoid: Direct state updates
+const count = state(0, { name: 'count' });
 
-// Simple primitive state
-export const count = state(0, { name: 'count' });
-export const message = state('Hello World', { name: 'message' });
-export const isVisible = state(true, { name: 'isVisible' });
+// Direct assignment
+count.value = 42;
 
-// Object state
-export const user = state({
-  id: null as number | null,
-  name: '',
-  email: '',
-  isLoggedIn: false,
-}, { name: 'user' });
+// Direct function call
+count(prev => prev + 1);
 
-// Array state
-export const items = state<string[]>([], { name: 'items' });
+// ✅ Good: Use actions for state updates
+const count = state(0, { name: 'count' });
 
-// Complex nested state
-export const appState = state({
-  ui: {
-    theme: 'light' as 'light' | 'dark',
-    sidebar: {
-      open: false,
-      width: 250,
-    },
-  },
-  data: {
-    users: [] as User[],
-    loading: false,
-    error: null as string | null,
-  },
-}, { name: 'appState' });
+const setCount = action((value: number) => {
+  count.value = value;
+}, 'setCount');
+
+const incrementCount = action(() => {
+  count.value = count.value + 1;
+}, 'incrementCount');
+
+// Use actions instead
+setCount(42);
+incrementCount();

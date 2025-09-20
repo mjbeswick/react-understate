@@ -65,15 +65,15 @@ function ShoppingCart() {
       
       {breakdown.map((item, index) => (
         <div key={index}>
-          {item.name}: {item.quantity} × \${item.price} = \${item.lineTotal.toFixed(2)}
+          {item.name}: {item.quantity} × ${item.price} = ${item.lineTotal.toFixed(2)}
         </div>
       ))}
       
       <hr />
-      <p>Subtotal: \${sub.toFixed(2)}</p>
-      <p>Discount: -\${discount.toFixed(2)}</p>
-      <p>Tax: \${tax.toFixed(2)}</p>
-      <strong>Total: \${finalTotal.toFixed(2)}</strong>
+      <p>Subtotal: ${sub.toFixed(2)}</p>
+      <p>Discount: -${discount.toFixed(2)}</p>
+      <p>Tax: ${tax.toFixed(2)}</p>
+      <strong>Total: ${finalTotal.toFixed(2)}</strong>
       
       <div>
         <label>

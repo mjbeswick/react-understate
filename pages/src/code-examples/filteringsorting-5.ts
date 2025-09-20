@@ -52,7 +52,7 @@ export const createVirtualList = <T>(
   containerHeight: number,
   name: string
 ) => {
-  const scrollTop = state(0, { name: \`\${name}ScrollTop\` });
+  const scrollTop = state(0, { name: `${name}ScrollTop` });
   
   const visibleItems = derived(() => {
     const allItems = items();
@@ -68,10 +68,10 @@ export const createVirtualList = <T>(
       item,
       index: startIndex + index,
     }));
-  }, { name: \`\${name}VisibleItems\` });
+  }, { name: `${name}VisibleItems` });
   
   const totalHeight = derived(() => items().length * itemHeight, {
-    name: \`\${name}TotalHeight\`
+    name: `${name}TotalHeight`
   });
   
   return {
@@ -80,7 +80,7 @@ export const createVirtualList = <T>(
     totalHeight,
     setScrollTop: action((top: number) => {
       scrollTop(Math.max(0, top));
-    }, { name: \`set\${name}ScrollTop\` }),
+    }, { name: `set${name}ScrollTop` }),
   };
 };
 
@@ -100,7 +100,7 @@ export const createDebouncedFilter = <T>(
   delay: number,
   name: string
 ) => {
-  const debouncedQuery = state('', { name: \`\${name}DebouncedQuery\` });
+  const debouncedQuery = state('', { name: `${name}DebouncedQuery` });
   let timeoutId: number | null = null;
   
   // Debounce search query
@@ -113,7 +113,7 @@ export const createDebouncedFilter = <T>(
       debouncedQuery(query);
       timeoutId = null;
     }, delay);
-  }, { name: \`debounce\${name}Search\` });
+  }, { name: `debounce${name}Search` });
   
   // Filtered items
   const filteredItems = derived(() => {
@@ -123,7 +123,7 @@ export const createDebouncedFilter = <T>(
     if (!query) return allItems;
     
     return allItems.filter(item => filterFn(item, query));
-  }, { name: \`\${name}FilteredItems\` });
+  }, { name: `${name}FilteredItems` });
   
   return {
     debouncedQuery,

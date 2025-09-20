@@ -19,11 +19,15 @@ const Introduction: React.FC = () => {
       </p>
 
       <p>
-        Don't disregard it because it's simple—it has power! Lots of time was
-        spent to deal with common pitfalls, like unnecessary re-renders, stale
-        closures, and performance bottlenecks. It may be the one state manager
-        in the React space that gets all of these right.
+        Don’t let the simplicity fool you—there’s real muscle under the hood!
+        React Understate is designed to sidestep common pitfalls, reduce code
+        complexity, and deliver top-notch performance. The focus? Speed,
+        scalability, and a blissful lack of boilerplate. The API is
+        intentionally straightforward and intuitive, so you can be productive in
+        minutes!
       </p>
+
+      <p>I hope that React Understate brings you joy and productivity!</p>
 
       <h2>Installation</h2>
 

@@ -72,9 +72,9 @@ export const createSelectivePersistence = <T, K extends keyof T>(
     try {
       localStorage.setItem(storageKey, JSON.stringify(persistentData));
     } catch (error) {
-      console.error(\`Failed to persist \${storageKey}\`, error);
+      console.error(`Failed to persist ${storageKey}`, error);
     }
-  }, { name: \`save-\${storageKey}\` });
+  }, { name: `save-${storageKey}` });
   
   // Load action
   const loadAction = action(() => {
@@ -85,9 +85,9 @@ export const createSelectivePersistence = <T, K extends keyof T>(
         stateInstance((prev: T) => ({ ...prev, ...persistentData }));
       }
     } catch (error) {
-      console.error(\`Failed to load \${storageKey}\`, error);
+      console.error(`Failed to load ${storageKey}`, error);
     }
-  }, { name: \`load-\${storageKey}\` });
+  }, { name: `load-${storageKey}` });
   
   return { saveEffect, loadAction };
 };

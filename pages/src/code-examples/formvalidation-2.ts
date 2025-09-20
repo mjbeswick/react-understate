@@ -15,7 +15,7 @@ export const validateEmailAsync = action(async (email: string) => {
   }));
   
   try {
-    const response = await fetch(\`/api/validate-email?email=\${encodeURIComponent(email)}\`);
+    const response = await fetch(`/api/validate-email?email=${encodeURIComponent(email)}`);
     const result = await response.json();
     
     if (!result.available) {

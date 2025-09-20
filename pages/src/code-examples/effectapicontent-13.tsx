@@ -21,7 +21,7 @@ effect(() => {
   // Debounce the search by 300ms
   searchTimeout = setTimeout(async () => {
     try {
-      const response = await fetch(\`/api/search?q=\${encodeURIComponent(term)}\`);
+      const response = await fetch(`/api/search?q=${encodeURIComponent(term)}`);
       const results = await response.json();
       searchResults.value = results;
     } catch (error) {

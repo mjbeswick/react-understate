@@ -28,7 +28,7 @@ const appStore = {
   
   userDisplayName: derived(() => {
     const user = appStore.user.value;
-    return user ? \`\${user.name} (\${user.email})\` : 'Guest';
+    return user ? `${user.name} (${user.email})` : 'Guest';
   }, 'userDisplayName'),
   
   // Type-safe actions
