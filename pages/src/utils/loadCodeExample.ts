@@ -5,8 +5,8 @@ export const loadCodeExample = async (filename: string): Promise<string> => {
   try {
     // Try to load the actual file
     const base = (import.meta as any).env?.BASE_URL ?? '/';
-    // Use Vite raw import query to get untransformed source
-    const response = await fetch(`${base}src/code-examples/${filename}?raw`);
+    // Load from public so it's available in the built site
+    const response = await fetch(`${base}code-examples/${filename}`);
     if (response.ok) {
       return await response.text();
     }
