@@ -1,0 +1,722 @@
+[
+  {
+    "originalFile": "Installation.tsx",
+    "extractedFile": "installation.ts",
+    "language": "html"
+  },
+  {
+    "originalFile": "api/ArrayStateAPI.tsx",
+    "extractedFile": "arraystateapi.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "api/ArrayStateAPI.tsx",
+    "extractedFile": "arraystateapi-2.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "api/ArrayStateAPI.tsx",
+    "extractedFile": "arraystateapi-3.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "api/ArrayStateAPI.tsx",
+    "extractedFile": "arraystateapi-4.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "api/BatchAPI.tsx",
+    "extractedFile": "batchapi.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/BatchAPI.tsx",
+    "extractedFile": "batchapi-2.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/BatchAPI.tsx",
+    "extractedFile": "batchapi-3.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/BatchAPI.tsx",
+    "extractedFile": "batchapi-4.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/BatchAPI.tsx",
+    "extractedFile": "batchapi-5.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/BatchAPI.tsx",
+    "extractedFile": "batchapi-6.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/BatchAPI.tsx",
+    "extractedFile": "batchapi-7.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/BatchAPI.tsx",
+    "extractedFile": "batchapi-8.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/BatchAPI.tsx",
+    "extractedFile": "batchapi-9.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/BatchAPI.tsx",
+    "extractedFile": "batchapi-10.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/DerivedAPIContent.tsx",
+    "extractedFile": "derivedapicontent.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/DerivedAPIContent.tsx",
+    "extractedFile": "derivedapicontent-2.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/DerivedAPIContent.tsx",
+    "extractedFile": "derivedapicontent-3.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/DerivedAPIContent.tsx",
+    "extractedFile": "derivedapicontent-4.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/DerivedAPIContent.tsx",
+    "extractedFile": "derivedapicontent-5.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/DerivedAPIContent.tsx",
+    "extractedFile": "derivedapicontent-6.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/DerivedAPIContent.tsx",
+    "extractedFile": "derivedapicontent-7.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/DerivedAPIContent.tsx",
+    "extractedFile": "derivedapicontent-8.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/DerivedAPIContent.tsx",
+    "extractedFile": "derivedapicontent-9.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-2.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-3.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-4.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-5.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-6.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-7.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-8.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-9.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-10.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-11.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-12.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-13.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-14.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-15.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-16.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/EffectAPIContent.tsx",
+    "extractedFile": "effectapicontent-17.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/StateAPIContent.tsx",
+    "extractedFile": "stateapicontent.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/StateAPIContent.tsx",
+    "extractedFile": "stateapicontent-2.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/StateAPIContent.tsx",
+    "extractedFile": "stateapicontent-3.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/StateAPIContent.tsx",
+    "extractedFile": "stateapicontent-4.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/StateAPIContent.tsx",
+    "extractedFile": "stateapicontent-5.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/StateAPIContent.tsx",
+    "extractedFile": "stateapicontent-6.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/UseUnderstateAPIContent.tsx",
+    "extractedFile": "useunderstateapicontent.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/UseUnderstateAPIContent.tsx",
+    "extractedFile": "useunderstateapicontent-2.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/UseUnderstateAPIContent.tsx",
+    "extractedFile": "useunderstateapicontent-3.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/UseUnderstateAPIContent.tsx",
+    "extractedFile": "useunderstateapicontent-4.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/UseUnderstateAPIContent.tsx",
+    "extractedFile": "useunderstateapicontent-5.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/UseUnderstateAPIContent.tsx",
+    "extractedFile": "useunderstateapicontent-6.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/UseUnderstateAPIContent.tsx",
+    "extractedFile": "useunderstateapicontent-7.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/UseUnderstateAPIContent.tsx",
+    "extractedFile": "useunderstateapicontent-8.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/UseUnderstateAPIContent.tsx",
+    "extractedFile": "useunderstateapicontent-9.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/UseUnderstateAPIContent.tsx",
+    "extractedFile": "useunderstateapicontent-10.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/UseUnderstateAPIContent.tsx",
+    "extractedFile": "useunderstateapicontent-11.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "api/UseUnderstateAPIContent.tsx",
+    "extractedFile": "useunderstateapicontent-12.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "guides/Batching.tsx",
+    "extractedFile": "batching.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Batching.tsx",
+    "extractedFile": "batching-2.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Batching.tsx",
+    "extractedFile": "batching-3.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Batching.tsx",
+    "extractedFile": "batching-4.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Batching.tsx",
+    "extractedFile": "batching-5.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Batching.tsx",
+    "extractedFile": "batching-6.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Batching.tsx",
+    "extractedFile": "batching-7.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Batching.tsx",
+    "extractedFile": "batching-8.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/DerivedValues.tsx",
+    "extractedFile": "derivedvalues.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/DerivedValues.tsx",
+    "extractedFile": "derivedvalues-2.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/DerivedValues.tsx",
+    "extractedFile": "derivedvalues-3.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/DerivedValues.tsx",
+    "extractedFile": "derivedvalues-4.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/ESLint.tsx",
+    "extractedFile": "eslint.js",
+    "language": "javascript"
+  },
+  {
+    "originalFile": "guides/ESLint.tsx",
+    "extractedFile": "eslint-2.ts",
+    "language": "json"
+  },
+  {
+    "originalFile": "guides/ESLint.tsx",
+    "extractedFile": "eslint-3.js",
+    "language": "javascript"
+  },
+  {
+    "originalFile": "guides/ESLint.tsx",
+    "extractedFile": "eslint-4.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "guides/Effects.tsx",
+    "extractedFile": "effects.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Effects.tsx",
+    "extractedFile": "effects-2.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Effects.tsx",
+    "extractedFile": "effects-3.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Effects.tsx",
+    "extractedFile": "effects-4.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Effects.tsx",
+    "extractedFile": "effects-5.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Effects.tsx",
+    "extractedFile": "effects-6.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/StateManagement.tsx",
+    "extractedFile": "statemanagement.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/StateManagement.tsx",
+    "extractedFile": "statemanagement-2.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/StateManagement.tsx",
+    "extractedFile": "statemanagement-3.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/StateManagement.tsx",
+    "extractedFile": "statemanagement-4.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Testing.tsx",
+    "extractedFile": "testing.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Testing.tsx",
+    "extractedFile": "testing-2.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Testing.tsx",
+    "extractedFile": "testing-3.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Testing.tsx",
+    "extractedFile": "testing-4.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Testing.tsx",
+    "extractedFile": "testing-5.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Testing.tsx",
+    "extractedFile": "testing-6.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Testing.tsx",
+    "extractedFile": "testing-7.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "guides/Testing.tsx",
+    "extractedFile": "testing-8.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/AsyncDataLoading.tsx",
+    "extractedFile": "asyncdataloading.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/AsyncDataLoading.tsx",
+    "extractedFile": "asyncdataloading-2.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/AsyncDataLoading.tsx",
+    "extractedFile": "asyncdataloading-3.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/AsyncDataLoading.tsx",
+    "extractedFile": "asyncdataloading-4.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/AsyncDataLoading.tsx",
+    "extractedFile": "asyncdataloading-5.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/AsyncDataLoading.tsx",
+    "extractedFile": "asyncdataloading-6.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/FilteringSorting.tsx",
+    "extractedFile": "filteringsorting.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/FilteringSorting.tsx",
+    "extractedFile": "filteringsorting-2.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/FilteringSorting.tsx",
+    "extractedFile": "filteringsorting-3.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/FilteringSorting.tsx",
+    "extractedFile": "filteringsorting-4.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/FilteringSorting.tsx",
+    "extractedFile": "filteringsorting-5.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/FilteringSorting.tsx",
+    "extractedFile": "filteringsorting-6.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/FormValidation.tsx",
+    "extractedFile": "formvalidation.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/FormValidation.tsx",
+    "extractedFile": "formvalidation-2.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/FormValidation.tsx",
+    "extractedFile": "formvalidation-3.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/FormValidation.tsx",
+    "extractedFile": "formvalidation-4.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/FormValidation.tsx",
+    "extractedFile": "formvalidation-5.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/KeyboardShortcuts.tsx",
+    "extractedFile": "keyboardshortcuts.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/KeyboardShortcuts.tsx",
+    "extractedFile": "keyboardshortcuts-2.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/KeyboardShortcuts.tsx",
+    "extractedFile": "keyboardshortcuts-3.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/KeyboardShortcuts.tsx",
+    "extractedFile": "keyboardshortcuts-4.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/KeyboardShortcuts.tsx",
+    "extractedFile": "keyboardshortcuts-5.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/KeyboardShortcuts.tsx",
+    "extractedFile": "keyboardshortcuts-6.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/LocalStorage.tsx",
+    "extractedFile": "localstorage.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/LocalStorage.tsx",
+    "extractedFile": "localstorage-2.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/LocalStorage.tsx",
+    "extractedFile": "localstorage-3.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/LocalStorage.tsx",
+    "extractedFile": "localstorage-4.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/LocalStorage.tsx",
+    "extractedFile": "localstorage-5.ts",
+    "language": "typescript"
+  },
+  {
+    "originalFile": "patterns/LocalStorage.tsx",
+    "extractedFile": "localstorage-6.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-2.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-3.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-4.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-5.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-6.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-7.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-8.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-9.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-10.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/PerformanceOptimization.tsx",
+    "extractedFile": "performanceoptimization-11.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StateComposition.tsx",
+    "extractedFile": "statecomposition.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StateComposition.tsx",
+    "extractedFile": "statecomposition-2.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StateComposition.tsx",
+    "extractedFile": "statecomposition-3.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StateComposition.tsx",
+    "extractedFile": "statecomposition-4.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StorePattern.tsx",
+    "extractedFile": "storepattern.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StorePattern.tsx",
+    "extractedFile": "storepattern-2.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StorePattern.tsx",
+    "extractedFile": "storepattern-3.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StorePattern.tsx",
+    "extractedFile": "storepattern-4.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StorePattern.tsx",
+    "extractedFile": "storepattern-5.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StorePattern.tsx",
+    "extractedFile": "storepattern-6.tsx",
+    "language": "tsx"
+  },
+  {
+    "originalFile": "patterns/StorePattern.tsx",
+    "extractedFile": "storepattern-7.tsx",
+    "language": "tsx"
+  }
+]

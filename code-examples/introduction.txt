@@ -1,0 +1,13 @@
+# Install React Understate
+
+npm i react-understate
+
+# or with pnpm
+pnpm add react-understate
+
+# or with yarn
+yarn add react-understate
+
+# NPM
+npm install react-understate
+# Or, use any package manager of your choice.
