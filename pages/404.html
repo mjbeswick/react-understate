@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0; url=/react-understate/" />
+    <script>
+      // Single Page Apps for GitHub Pages
+      // https://github.com/rafgraph/spa-github-pages
+      (function () {
+        const segmentCount = '/react-understate/'.split('/').filter(Boolean).length;
+        const l = window.location;
+        if (l.pathname === '/react-understate/' || l.pathname === '/react-understate') return;
+        const redirect = l.pathname
+          .split('/')
+          .slice(0, segmentCount + 1)
+          .join('/') + '/#' + l.pathname.slice(segmentCount + 1) + l.search;
+        window.location.replace(redirect);
+      })();
+    </script>
+  </head>
+  <body>
+    Redirecting...
+  </body>
+</html>
+
+

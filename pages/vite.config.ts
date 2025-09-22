@@ -6,6 +6,9 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   base: '/react-understate/',
+  server: {
+    historyApiFallback: true,
+  },
   resolve: {
     alias: {
       'react-understate': path.resolve(
