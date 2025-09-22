@@ -10,6 +10,18 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Handle redirect from 404.html (rafgraph pattern)
+      (function() {
+        var loc = window.location;
+        var q = loc.search;
+        if (q.startsWith('?/')) {
+          var decoded = q.slice(2).split('&').join('?');
+          var newUrl = loc.protocol + '//' + loc.host + loc.pathname.replace(/index.html$/, '') + decoded + loc.hash;
+          window.history.replaceState(null, '', newUrl);
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
