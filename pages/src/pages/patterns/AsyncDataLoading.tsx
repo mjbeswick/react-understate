@@ -61,7 +61,7 @@ const AsyncDataLoading: React.FC = () => {
 
       <CodeBlock
         language="typescript"
-        code={`import { state, derived, action, effect } from 'react-understate';
+        code={`// External file: /code-examples/async-basic-store.ts\nimport { state, derived, action, effect } from 'react-understate';
 
 // Data types
 type User = {
@@ -157,7 +157,7 @@ export const clearError = action(() => {
 
       <CodeBlock
         language="typescript"
-        code={`// Enhanced store with cancellation support
+        code={`// External file: /code-examples/async-cancellation.ts\n// Enhanced store with cancellation support
 let currentController: AbortController | null = null;
 
 export const fetchUsersWithCancellation = action(async () => {
@@ -199,7 +199,7 @@ export const cancelCurrentRequest = action(() => {
 
       <CodeBlock
         language="typescript"
-        code={`import { effect } from 'react-understate';
+        code={`// External file: /code-examples/async-effects.ts\nimport { effect } from 'react-understate';
 
 // Auto-fetch when component mounts or when refresh is needed
 export const autoFetchEffect = effect(() => {
@@ -254,7 +254,7 @@ export const autoRetryEffect = effect(() => {
 
       <CodeBlock
         language="typescript"
-        code={`type ResourceState<T> = {
+        code={`// External file: /code-examples/async-resource-manager.ts\ntype ResourceState<T> = {
   data: T | null;
   loading: boolean;
   error: string | null;
@@ -431,7 +431,7 @@ export const userResource = createResourceManager<User[]>(
 
       <CodeBlock
         language="tsx"
-        code={`import React, { useEffect } from 'react';
+        code={`// External file: /code-examples/async-react-usage.tsx\nimport React, { useEffect } from 'react';
 import { useUnderstate } from 'react-understate';
 import {
   users,
@@ -559,7 +559,7 @@ export { UserList, UserListWithResource };`}
 
       <CodeBlock
         language="typescript"
-        code={`export const addUserOptimistic = action(async (newUser: Omit<User, 'id'>) => {
+        code={`// External file: /code-examples/async-optimistic.ts\nexport const addUserOptimistic = action(async (newUser: Omit<User, 'id'>) => {
   console.log('action: adding user optimistically');
   
   // Generate optimistic ID
