@@ -17,7 +17,7 @@ import {
   snapshotEffectReads,
   setEffectOptions,
   registerDebugItem,
-  takeEffectTriggeredExternally,
+
 } from './core';
 import { logDebug } from './debug-utils';
 
@@ -278,12 +278,6 @@ export function effect(
 
     // Set current effect for loop prevention
     setCurrentEffect(runEffect);
-    
-    // Clear modified values only if this effect was triggered externally
-    if (takeEffectTriggeredExternally(runEffect)) {
-      clearEffectModifiedValues(runEffect);
-    }
-    
     clearReadValues();
 
     // Set active effect options for dependency tracking
@@ -366,6 +360,11 @@ export function effect(
           .finally(() => {
             isExecuting = false;
             hasRunOnce = true;
+            
+            // Clear modified values after a short delay for async effects
+            setTimeout(() => {
+              clearEffectModifiedValues(runEffect);
+            }, 10);
 
             // Process queued executions for named effects or a single rerun request
             if (validatedName) {
@@ -398,6 +397,12 @@ export function effect(
         setCurrentEffect(null);
         isExecuting = false;
         hasRunOnce = true;
+        
+        // Clear modified values after a short delay to allow external changes
+        // This ensures loop prevention works during execution but allows external updates after
+        setTimeout(() => {
+          clearEffectModifiedValues(runEffect);
+        }, 10);
 
         // If overlap was prevented and a rerun was requested while executing,
         // schedule one rerun now

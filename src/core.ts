@@ -48,6 +48,8 @@ let activeEffect: (() => void) | null = null;
 let isBatching = false;
 const pendingUpdates = new Set<() => void>();
 
+
+
 // Global state for tracking running actions and their queues
 const runningActions = new Map<string, Promise<any>>();
 const actionQueues = new Map<string, Array<() => void>>();
@@ -728,8 +730,6 @@ export function state<T>(
         return;
       }
       
-      // Mark this effect as triggered externally so it can clear its modified values
-      markEffectTriggeredExternally(dep as any);
       dep();
     });
   };
