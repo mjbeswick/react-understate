@@ -2,8 +2,27 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from '../shared.module.css';
 import CodeBlock from '../../components/CodeBlock';
+import {
+  asyncdataloading,
+  asyncdataloading2,
+  asyncdataloading3,
+  asyncdataloading4,
+  asyncdataloading5,
+  asyncdataloading6,
+} from '../../utils/codeExamples';
+
+// Ensure imports are marked as used until all inline blocks are replaced
+const codeExamplesUsed = {
+  asyncdataloading,
+  asyncdataloading2,
+  asyncdataloading3,
+  asyncdataloading4,
+  asyncdataloading5,
+  asyncdataloading6,
+};
 
 const AsyncDataLoading: React.FC = () => {
+  void codeExamplesUsed;
   return (
     <div className={styles.content}>
       <div className={styles.header}>
@@ -192,59 +211,55 @@ export const cancelCurrentRequest = action(() => {
 }, { name: 'cancelCurrentRequest' });`}
       />
 
+      <h2>Action Concurrency</h2>
+      <p>
+        For named async actions that shouldn't overlap, you can choose how new
+        calls behave when one is already running:
+      </p>
+      <ul>
+        <li>
+          <strong>queue (default)</strong>: new calls wait until the current one
+          finishes
+        </li>
+        <li>
+          <strong>drop</strong>: new calls immediately reject with
+          ConcurrentActionError
+        </li>
+      </ul>
+      <CodeBlock
+        language="typescript"
+        code={`import { state, action, ConcurrentActionError } from 'react-understate';
+
+const saving = state(false);
+
+// Drop overlapping saves
+const saveProfile = action(async (payload: any) => {
+  saving.value = true;
+  try {
+    await fetch('/api/save', { method: 'POST', body: JSON.stringify(payload) });
+  } finally {
+    saving.value = false;
+  }
+}, 'saveProfile', { concurrency: 'drop' });
+
+try {
+  saveProfile({ name: 'A' });
+  await saveProfile({ name: 'B' }); // throws ConcurrentActionError if first is in-flight
+} catch (e) {
+  if (e instanceof ConcurrentActionError) {
+    // Ignore or notify user that a save is already running
+  } else {
+    throw e;
+  }
+}`}
+      />
+
       <h2>Effect-Based Auto-Fetching</h2>
       <p>
         Use effects to automatically fetch data when certain conditions are met:
       </p>
 
-      <CodeBlock
-        language="typescript"
-        code={`// External file: /code-examples/async-effects.ts\nimport { effect } from 'react-understate';
-
-// Auto-fetch when component mounts or when refresh is needed
-export const autoFetchEffect = effect(() => {
-  console.log('effect: checking if auto-fetch needed');
-  
-  const needsRefresh = shouldRefresh();
-  const currentlyLoading = isLoading();
-  
-  if (needsRefresh && !currentlyLoading) {
-    console.log('effect: triggering auto-fetch');
-    fetchUsersWithCancellation();
-  }
-}, { name: 'autoFetchEffect' });
-
-// Auto-retry failed requests after a delay
-let retryTimeoutId: number | null = null;
-
-export const autoRetryEffect = effect(() => {
-  const hasErr = hasError();
-  const loading = isLoading();
-  
-  // Clear existing timeout
-  if (retryTimeoutId) {
-    clearTimeout(retryTimeoutId);
-    retryTimeoutId = null;
-  }
-  
-  // Set up retry if there's an error and not currently loading
-  if (hasErr && !loading) {
-    console.log('effect: scheduling retry in 5 seconds');
-    retryTimeoutId = window.setTimeout(() => {
-      console.log('effect: retrying failed request');
-      fetchUsersWithCancellation();
-    }, 5000);
-  }
-  
-  // Cleanup function
-  return () => {
-    if (retryTimeoutId) {
-      clearTimeout(retryTimeoutId);
-      retryTimeoutId = null;
-    }
-  };
-}, { name: 'autoRetryEffect' });`}
-      />
+      <CodeBlock language="typescript" code={asyncdataloading3} />
 
       <h2>Advanced Pattern: Resource Manager</h2>
       <p>

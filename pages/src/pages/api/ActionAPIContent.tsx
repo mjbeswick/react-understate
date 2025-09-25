@@ -16,8 +16,11 @@ const ActionAPIContent: React.FC = () => {
       <div className={styles.apiSection}>
         <h2>Function Signature</h2>
         <div className={styles.apiSignature}>
-          action&lt;T extends (...args: any[]) =&gt; any&gt;(fn: T, debugName?:
-          string): T
+          {`action<T extends (...args: any[]) => any>(
+  fn: T,
+  debugName?: string,
+  options?: { concurrency?: 'queue' | 'drop' }
+): T`}
         </div>
 
         <div className={styles.parameterList}>
@@ -38,6 +41,18 @@ const ActionAPIContent: React.FC = () => {
               A name for debugging purposes. Shows up in dev tools and debug
               logs when debugging is enabled. If not provided, the function name
               will be used.
+            </div>
+          </div>
+          <div className={styles.parameter}>
+            <span className={styles.parameterName}>options</span>
+            <span
+              className={styles.parameterType}
+            >{`{ concurrency?: 'queue' | 'drop' }`}</span>
+            <div className={styles.parameterDescription}>
+              Controls overlapping async calls for named actions.{' '}
+              <code>'queue'</code> (default) queues subsequent calls.{' '}
+              <code>'drop'</code> immediately rejects overlapping calls with{' '}
+              <code>ConcurrentActionError</code>.
             </div>
           </div>
         </div>
@@ -99,6 +114,19 @@ const ActionAPIContent: React.FC = () => {
       </p>
 
       <CodeExample filename="action-async" language="tsx" />
+
+      <h3>Concurrency Options</h3>
+      <p>Named async actions support concurrency control:</p>
+      <ul>
+        <li>
+          <strong>'queue' (default)</strong>: Subsequent calls wait until the
+          current one completes.
+        </li>
+        <li>
+          <strong>'drop'</strong>: If a call is in-flight, new calls immediately
+          reject with <code>ConcurrentActionError</code>.
+        </li>
+      </ul>
 
       <h2>Action Composition</h2>
       <p>

@@ -5,7 +5,19 @@
  */
 
 import { effect } from './effects';
-import { state, configureDebug } from './core';
+
+// Helper to wait until a condition becomes true, polling via microtasks
+async function waitUntil(
+  condition: () => boolean,
+  timeoutMs = 1000,
+): Promise<void> {
+  const start = Date.now();
+  while (!condition()) {
+    await new Promise(resolve => setTimeout(resolve, 0));
+    if (Date.now() - start > timeoutMs) return;
+  }
+}
+import { state, action, configureDebug } from './core';
 import { derived } from './derived';
 
 describe('Effects', () => {
@@ -159,6 +171,46 @@ describe('Effects', () => {
   });
 
   describe('Complex Scenarios', () => {
+    it('should not re-run effect when action called inside effect updates its dependencies', async () => {
+      const count = state(0, 'count');
+      const increment = action(() => {
+        count.value = count.value + 1;
+      }, 'increment');
+
+      let effectRuns = 0;
+      let resolveSecondRun: (() => void) | null = null;
+      const secondRunPromise = new Promise<void>(resolve => {
+        resolveSecondRun = resolve;
+      });
+
+      const dispose = effect(() => {
+        effectRuns++;
+        const current = count.value; // Read dependency
+        if (current === 0) {
+          increment(); // Call action that modifies count
+        }
+        if (effectRuns === 2 && resolveSecondRun) {
+          resolveSecondRun();
+          resolveSecondRun = null;
+        }
+      }, 'effectCallsAction');
+
+      // Initial run happened
+      expect(effectRuns).toBe(1);
+
+      // Count should have been incremented by the action
+      expect(count.value).toBe(1);
+
+      // Effect should NOT re-run due to loop prevention when dependency was modified by its own action
+      expect(effectRuns).toBe(1);
+
+      // External update should trigger re-run
+      count.value = 2;
+      await secondRunPromise;
+      expect(effectRuns).toBe(2);
+
+      dispose();
+    });
     it('should handle nested effects', () => {
       const count = state(0);
       let outerRuns = 0;

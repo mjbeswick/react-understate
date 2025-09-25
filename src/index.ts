@@ -14,12 +14,17 @@
  */
 
 // Core exports
-export { state, action, configureDebug } from './core';
-export type { State } from './core';
+export {
+  state,
+  action,
+  configureDebug,
+  ConcurrentActionError,
+  initializeWindowUnderstate,
+} from './core';
+export type { State, ActionOptions, ActionConcurrency } from './core';
 
 // Array state exports
-export { arrayState } from './array-state';
-export type { ArrayState } from './array-state';
+// arrayState removed; use state<T>(initial, { observeMutations: true })
 
 // Debug utilities
 export * from './debug-utils';
@@ -32,7 +37,7 @@ export { effect } from './state';
 export { batch } from './core';
 
 // React integration exports
-export { useUnderstate, setReact } from './react';
+export { useUnderstate } from './react';
 
 // Persistence exports
 export {

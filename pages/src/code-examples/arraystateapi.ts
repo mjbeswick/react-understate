@@ -1,4 +1,5 @@
-const items = arrayState<string>(['a', 'b', 'c']);
+import { state } from 'react-understate';
+const items = state<string[]>(['a', 'b', 'c'], { observeMutations: true });
 
 // for...of loop
 for (const item of items) {

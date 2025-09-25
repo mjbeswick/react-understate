@@ -2,17 +2,18 @@
 // This loads the actual extracted code files
 
 export const loadCodeExample = async (filename: string): Promise<string> => {
+  // Try src path (dev) first using ?raw
   try {
-    // Try to load the actual file
+    const dev = await fetch(`/src/code-examples/${filename}?raw`);
+    if (dev.ok) return await dev.text();
+  } catch {}
+
+  // Then try built public path (prod)
+  try {
     const base = (import.meta as any).env?.BASE_URL ?? '/';
-    // Load from public so it's available in the built site
-    const response = await fetch(`${base}code-examples/${filename}`);
-    if (response.ok) {
-      return await response.text();
-    }
-  } catch (error) {
-    console.warn(`Failed to load code example: ${filename}`, error);
-  }
+    const resp = await fetch(`${base}code-examples/${filename}`);
+    if (resp.ok) return await resp.text();
+  } catch {}
 
   return '';
 };

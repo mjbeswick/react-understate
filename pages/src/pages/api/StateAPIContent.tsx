@@ -16,7 +16,7 @@ const StateAPIContent: React.FC = () => {
       <div className={styles.apiSection}>
         <h2>Function Signature</h2>
         <div className={styles.apiSignature}>
-          state&lt;T&gt;(initialValue: T, debugName?: string): State&lt;T&gt;
+          state&lt;T&gt;(initialValue: T, options?: { name?: string; observeMutations?: boolean }): State&lt;T&gt;
         </div>
 
         <div className={styles.parameterList}>
@@ -29,11 +29,10 @@ const StateAPIContent: React.FC = () => {
             </div>
           </div>
           <div className={styles.parameter}>
-            <span className={styles.parameterName}>debugName</span>
-            <span className={styles.parameterType}>string (optional)</span>
+            <span className={styles.parameterName}>options</span>
+            <span className={styles.parameterType}>{'{ name?: string; observeMutations?: boolean }'} (optional)</span>
             <div className={styles.parameterDescription}>
-              A name for debugging purposes. Shows up in dev tools and debug
-              logs when debugging is enabled.
+              <strong>name</strong>: debug name for tools and logs. <strong>observeMutations</strong>: when true, arrays and plain objects returned from <code>.value</code> are proxied so in-place mutations (e.g., array <code>push</code>, object property set/delete) commit immutably and notify subscribers.
             </div>
           </div>
         </div>
@@ -120,33 +119,26 @@ const user = state({
     theme: 'dark',
     notifications: true
   }
-});
+}, { observeMutations: true });
 
-// Array state  
+// Array state with shallow mutation observation
 const todos = state([
   { id: 1, text: 'Learn React Understate', completed: false },
   { id: 2, text: 'Build awesome app', completed: false }
-]);
+], { observeMutations: true });
 
 function UserProfile() {
   const [currentUser] = useUnderstate(user);
   const [currentTodos] = useUnderstate(todos);
   
   const updateTheme = () => {
-    user.value = {
-      ...user.value,
-      preferences: {
-        ...user.value.preferences,
-        theme: user.value.preferences.theme === 'dark' ? 'light' : 'dark'
-      }
-    };
+    // In-place object mutation via proxy triggers update
+    user.value.preferences.theme = user.value.preferences.theme === 'dark' ? 'light' : 'dark';
   };
   
   const addTodo = (text: string) => {
-    todos.value = [
-      ...todos.value,
-      { id: Date.now(), text, completed: false }
-    ];
+    // In-place array mutation via proxy triggers update
+    todos.value.push({ id: Date.now(), text, completed: false });
   };
   
   return (
@@ -225,6 +217,25 @@ settings.value = { ...settings.value, theme: 'dark' };
 
 // Or completely replace
 settings.value = { theme: 'auto', lang: 'fr' };`}
+      />
+
+      <h2>Array Mutation Convenience</h2>
+      <p>
+        Prefer <code>state&lt;T[]&gt;(initial, {'{ observeMutations: true }'})</code> to mutate arrays in-place via a proxy.
+      </p>
+      <CodeBlock
+        language="tsx"
+        code={`import { state } from 'react-understate';
+
+type Item = { id: number; name: string };
+const items = state<Item[]>([], { observeMutations: true });
+
+items.value.push({ id: 1, name: 'A' }); // notifies subscribers
+items.value.splice(0, 1); // notifies subscribers
+
+// Read-only helpers
+const exists = items.value.includes(items.value.at(0)!);
+const first = items.value.slice(0, 1);`}
       />
 
       <h2>Subscription API</h2>

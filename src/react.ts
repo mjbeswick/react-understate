@@ -8,6 +8,23 @@
 import type { State } from './core';
 import { useSyncExternalStore } from 'use-sync-external-store/shim';
 
+const scheduleMicrotask = (fn: () => void): void => {
+  if (typeof queueMicrotask === 'function') {
+    queueMicrotask(fn);
+    return;
+  }
+  Promise.resolve().then(fn);
+};
+
+function isStateLike(value: unknown): value is State<unknown> {
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    'value' in (value as Record<string, unknown>) &&
+    'subscribe' in (value as Record<string, unknown>)
+  );
+}
+
 /**
  * Type utility to extract values from State objects in a store
  */
@@ -43,24 +60,20 @@ function extractStatesFromStore(
 function createStoreWithValues<T extends Record<string, unknown>>(
   store: T,
 ): ExtractStateValues<T> {
-  const result = {} as ExtractStateValues<T>;
+  const result: Record<string, unknown> = {};
 
-  for (const [key, value] of Object.entries(store)) {
-    // If it's a State object, return its current value
-    if (
-      value &&
-      typeof value === 'object' &&
-      'value' in value &&
-      'subscribe' in value
-    ) {
-      (result as any)[key] = (value as unknown as State<unknown>).value;
+  (Object.keys(store) as Array<keyof T>).forEach(key => {
+    const value = store[key];
+    const unknownValue = value as unknown;
+
+    if (isStateLike(unknownValue)) {
+      result[key as string] = unknownValue.value;
     } else {
-      // Otherwise return the original value (functions, etc.)
-      (result as any)[key] = value;
+      result[key as string] = value;
     }
-  }
+  });
 
-  return result;
+  return result as ExtractStateValues<T>;
 }
 
 /**
@@ -140,7 +153,7 @@ export function useUnderstate<T extends Record<string, unknown>>(
         // Subscribe to all states in the store
         const unsubscribes = states.map(state =>
           state.subscribe(() => {
-            callback(); // Trigger re-render when any state changes
+            scheduleMicrotask(callback);
           }),
         );
 
@@ -166,7 +179,7 @@ export function useUnderstate<T extends Record<string, unknown>>(
         // Subscribe to all signals
         const unsubscribes = signals.map(signal =>
           signal.subscribe(() => {
-            callback(); // Trigger re-render when any signal changes
+            scheduleMicrotask(callback);
           }),
         );
 
@@ -182,16 +195,8 @@ export function useUnderstate<T extends Record<string, unknown>>(
     );
 
     // Return array of current values
-    return signals.map(signal => signal.value) as any;
+    return signals.map(signal => signal.value) as unknown as {
+      [K in keyof T]: T[K] extends State<infer U> ? U : never;
+    };
   }
-}
-
-/**
- * @deprecated This function is no longer needed as React is automatically detected via use-sync-external-store/shim.
- * The library now works out of the box without any manual setup.
- */
-
-export function setReact(_reactModule: unknown): void {
-  // setReact() is deprecated and no longer needed
-  // react-understate now uses use-sync-external-store/shim for automatic React compatibility
 }

@@ -8,5 +8,3 @@
 export { state, batch } from './core';
 export type { State } from './core';
 export { derived, effect } from './state';
-export { arrayState } from './array-state';
-export type { ArrayState } from './array-state';

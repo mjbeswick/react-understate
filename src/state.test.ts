@@ -689,87 +689,81 @@ describe('States', () => {
   });
 
   describe('Duplicate Name Validation', () => {
-    it('should throw error when creating two states with the same name', () => {
+    it('should warn when creating two states with the same name and auto-rename', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
       const state1 = state('first', 'duplicateName');
       expect(state1.value).toBe('first');
 
-      expect(() => {
-        state('second', 'duplicateName');
-      }).toThrow(
-        "State with name 'duplicateName' already exists. State names must be unique.",
-      );
+      // No throw; auto-rename and warn
+      const state2 = state('second', 'duplicateName');
+      expect(state2.value).toBe('second');
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
     });
 
-    it('should throw error when creating state with same name as derived', () => {
+    it('should warn when creating state with same name as derived and auto-rename', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
       const source = state(1);
-      const derivedValue = derived(() => source.value * 2, 'duplicateName');
-      expect(derivedValue.value).toBe(2);
-
-      expect(() => {
-        state('test', 'duplicateName');
-      }).toThrow(
-        "State with name 'duplicateName' already exists. State names must be unique.",
-      );
+      const d = derived(() => source.value * 2, 'duplicateName');
+      expect(d.value).toBe(2);
+      const s = state('test', 'duplicateName');
+      expect(s.value).toBe('test');
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
     });
 
-    it('should throw error when creating derived with same name as state', () => {
-      const state1 = state(1, 'duplicateName');
-      expect(state1.value).toBe(1);
-
-      expect(() => {
-        const source = state(2);
-        derived(() => source.value * 2, 'duplicateName');
-      }).toThrow(
-        "Derived value with name 'duplicateName' already exists. State names must be unique.",
-      );
+    it('should warn when creating derived with same name as state and auto-rename', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const s1 = state(1, 'duplicateName');
+      expect(s1.value).toBe(1);
+      const src = state(2);
+      const d = derived(() => src.value * 2, 'duplicateName');
+      expect(d.value).toBe(4);
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
     });
 
-    it('should throw error when creating two derived values with the same name', () => {
-      const source1 = state(1);
-      const derived1 = derived(() => source1.value * 2, 'duplicateName');
-      expect(derived1.value).toBe(2);
-
-      expect(() => {
-        const source2 = state(3);
-        derived(() => source2.value * 3, 'duplicateName');
-      }).toThrow(
-        "Derived value with name 'duplicateName' already exists. State names must be unique.",
-      );
+    it('should warn when creating two derived values with the same name and auto-rename', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const s1 = state(1);
+      const d1 = derived(() => s1.value * 2, 'duplicateName');
+      expect(d1.value).toBe(2);
+      const s2 = state(3);
+      const d2 = derived(() => s2.value * 3, 'duplicateName');
+      expect(d2.value).toBe(9);
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
     });
 
-    it('should throw error when creating asyncDerived with same name as state', () => {
-      const state1 = state(1, 'duplicateName');
-      expect(state1.value).toBe(1);
-
-      expect(() => {
-        const source = state(2);
-        asyncDerived(async () => source.value * 2, 'duplicateName');
-      }).toThrow(
-        "Async derived value with name 'duplicateName' already exists. State names must be unique.",
-      );
+    it('should warn when creating asyncDerived with same name as state and auto-rename', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const s1 = state(1, 'duplicateName');
+      expect(s1.value).toBe(1);
+      const src = state(2);
+      const d = asyncDerived(async () => src.value * 2, 'duplicateName');
+      expect(d.value).toBeDefined();
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
     });
 
-    it('should throw error when creating effect with same name as state', () => {
-      const state1 = state(1, 'duplicateName');
-      expect(state1.value).toBe(1);
-
-      expect(() => {
-        effect(() => {}, 'duplicateName');
-      }).toThrow(
-        "Effect with name 'duplicateName' already exists. State names must be unique.",
-      );
-    });
-
-    it('should throw error when creating state with same name as effect', () => {
+    it('should warn when creating effect with same name as state and auto-rename', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const s1 = state(1, 'duplicateName');
+      expect(s1.value).toBe(1);
       const dispose = effect(() => {}, 'duplicateName');
-
-      expect(() => {
-        state('test', 'duplicateName');
-      }).toThrow(
-        "State with name 'duplicateName' already exists. State names must be unique.",
-      );
-
       dispose();
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
+
+    it('should warn when creating state with same name as effect and auto-rename', () => {
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const dispose = effect(() => {}, 'duplicateName');
+      const s = state('test', 'duplicateName');
+      expect(s.value).toBe('test');
+      dispose();
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
     });
 
     it('should allow creating states with different names', () => {

@@ -1,4 +1,4 @@
-import { state, action } from './core';
+import { state, action, ConcurrentActionError } from './core';
 import { effect } from './effects';
 
 describe('Async Queuing', () => {
@@ -102,6 +102,30 @@ describe('Async Queuing', () => {
       expect(count.value).toBe(3); // Final value should be 3
 
       mixedAction(4, false);
+    });
+
+    it('should abort previous call when concurrency is set to drop', async () => {
+      const count = state(0);
+      const calls: number[] = [];
+
+      const asyncAction = action(
+        async (value: number) => {
+          calls.push(value);
+          await new Promise(resolve => setTimeout(resolve, 50));
+          count.value = value;
+          return value;
+        },
+        'asyncDropAction',
+        { concurrency: 'drop' },
+      );
+
+      const first = asyncAction(1);
+      const second = asyncAction(2);
+
+      await Promise.allSettled([first, second]);
+      // First should be aborted before completion; second should proceed
+      expect(calls).toEqual([1, 2]);
+      expect(count.value).toBe(2);
     });
   });
 });

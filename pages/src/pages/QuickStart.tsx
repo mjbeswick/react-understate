@@ -52,8 +52,9 @@ const QuickStart: React.FC = () => {
       <h2>Working with Arrays</h2>
 
       <p>
-        Use <code>arrayState</code> for convenient array operations with
-        automatic reactivity:
+        Use <code>state&lt;T[]&gt;</code> with{' '}
+        <code>{'{ observeMutations: true }'}</code> for convenient array
+        operations with automatic reactivity:
       </p>
 
       <CodeExample filename="quickstart-arrays.tsx" language="tsx" />

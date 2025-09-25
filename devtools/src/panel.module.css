@@ -1,0 +1,75 @@
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1f1f1f;
+    --fg: #e8e8e8;
+    --muted: #9aa0a6;
+    --border: #2a2a2a;
+    --accent: #8ab4f8;
+    --row: #202124;
+  }
+}
+
+:root {
+  --bg: #fff;
+  --fg: #202124;
+  --muted: #5f6368;
+  --border: #e0e0e0;
+  --accent: #1a73e8;
+  --row: #fff;
+}
+
+.container {
+  font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 6px 8px;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.tab {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  background: var(--row);
+  cursor: pointer;
+}
+
+.tabActive {
+  border-bottom: 2px solid var(--accent);
+  color: var(--accent);
+}
+
+.content {
+  flex: 1;
+  overflow: auto;
+}
+
+.list {
+  padding: 8px;
+}
+
+.item {
+  border-bottom: 1px solid var(--border);
+  padding: 6px 8px;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+

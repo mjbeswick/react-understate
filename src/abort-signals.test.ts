@@ -63,7 +63,10 @@ describe('Abort Signals', () => {
           });
           data.value = await response.json();
         },
-        'fetchData',
+        {
+          name: 'fetchData',
+          concurrency: 'drop',
+        },
       );
 
       // Start first request

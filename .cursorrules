@@ -1,0 +1,60 @@
+# Cursor Rules for react-understate
+
+## Code style
+
+- Use single quotes in all code.
+- Prefer TypeScript types over interfaces.
+- Preserve existing indentation style; never convert tabs/spaces.
+- Keep code highly readable with explicit variable names and early returns.
+- Do not add comments just to narrate actions; explain "why" when non-obvious.
+
+## Logging conventions
+
+- Prefix console messages with the function type, e.g., `state:`, `derived:`, `effect:`, `action:`.
+- Understate actions should log when called (project convention).
+- Avoid the word `executing` in log messages.
+
+## Async & concurrency
+
+- Actions can be named; named async actions default to `concurrency: 'queue'`.
+- Optionally use `{ concurrency: 'drop' }` on actions to reject overlapping calls with `ConcurrentActionError`.
+- Pass and respect `AbortSignal` for cancellable I/O.
+
+## Testing conventions
+
+- Prefer running route matchers through the root matcher and `checkCurrentRoute` to simulate real scenarios.
+
+## Build & artifacts
+
+- Build artifacts must not include the word `tacit` in their names.
+
+## Docs & writing
+
+- Be concise; avoid repeating yourself.
+- Use code fences for examples; use inline code for identifiers; avoid bare URLs.
+- When mentioning files or functions, wrap names in backticks.
+
+## Linting & safety
+
+- Do not introduce linter/type errors; run lint checks after edits.
+- Avoid unsafe casts (e.g., `any`) unless absolutely necessary and documented.
+
+## Edits policy
+
+- Refer to changes as "edits".
+- Only modify what is necessary; do not reformat unrelated code.
+
+## API conventions
+
+- Do not use `arrayState`; it has been removed.
+- Prefer `state<T>(initial, { observeMutations: true })` for arrays and plain objects when in-place mutations should notify subscribers.
+- Use `value` for full replacements (e.g., `todos.value = [...]`).
+- When mutating via proxies, perform updates inside actions for logging and batching.
+
+## Mutation observation
+
+- `observeMutations: true` is shallow:
+  - Arrays: mutators (`push`, `pop`, `shift`, `unshift`, `splice`, `sort`, `reverse`, `fill`, `copyWithin`) clone, apply, then set.
+  - Objects: property set/delete clones the object and sets it.
+  - Nested arrays on observed objects are proxied for array mutators.
+- Do not rely on deep observation of nested objects unless explicitly implemented.

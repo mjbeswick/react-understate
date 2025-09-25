@@ -65,11 +65,22 @@ const StateManagement: React.FC = () => {
 
       <h2>Array State</h2>
       <p>
-        For arrays, React Understate provides <code>arrayState()</code> which
-        wraps arrays with convenient reactive methods. This makes array
-        operations more intuitive while maintaining immutability and reactivity.
+        Use <code>state&lt;T[]&gt;</code> with{' '}
+        <code>{'{ observeMutations: true }'}</code>. It returns a proxy so
+        in-place array mutations notify subscribers.
       </p>
 
+      <CodeBlock
+        language="ts"
+        code={`import { state, action } from 'react-understate';
+
+const items = state<string[]>(['a', 'b'], { observeMutations: true });
+
+const add = action((v: string) => items.value.push(v), 'add');
+const removeFirst = action(() => items.value.shift(), 'removeFirst');`}
+      />
+
+      <p>For a full example with actions and derived values, see below:</p>
       <CodeExample filename="state-management-array-state.ts" language="ts" />
 
       <h3>Array State Benefits</h3>

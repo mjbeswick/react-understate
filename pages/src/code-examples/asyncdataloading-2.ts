@@ -1,33 +1,19 @@
-// Enhanced store with cancellation support
-let currentController: AbortController | null = null;
+// Auto-cancellation is handled by Understate via AbortSignals.
+// Multiple calls to the same async action will abort previous requests.
 
-export const fetchUsersWithCancellation = action(async () => {
-  console.log('action: fetching users with cancellation');
-  
-  // Cancel previous request if still pending
-  if (currentController) {
-    currentController.abort();
-  }
-  
-  // Create new controller for this request
-  currentController = new AbortController();
-  const signal = currentController.signal;
-  
-  try {
-    await fetchUsers(signal);
-  } finally {
-    // Clear controller when done
-    if (currentController?.signal === signal) {
-      currentController = null;
-    }
-  }
-}, { name: 'fetchUsersWithCancellation' });
+export const fetchUsersWithCancellation = action(
+  async () => {
+    console.log('action: fetching users with cancellation');
+    await fetchUsers();
+  },
+  { name: 'fetchUsersWithCancellation' },
+);
 
-export const cancelCurrentRequest = action(() => {
-  console.log('action: cancelling current request');
-  
-  if (currentController) {
-    currentController.abort();
-    currentController = null;
-  }
-}, { name: 'cancelCurrentRequest' });
+// Kept for API parity with examples; note that explicit cancel isn't necessary
+// because unmounts and subsequent calls auto-abort in-progress requests.
+export const cancelCurrentRequest = action(
+  () => {
+    console.log('action: cancel not required; previous requests auto-abort');
+  },
+  { name: 'cancelCurrentRequest' },
+);

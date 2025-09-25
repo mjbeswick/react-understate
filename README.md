@@ -167,6 +167,30 @@ userState.requiredValue; // Throws: "Required value 'userState' is null"
 userState.requiredValue = null; // Throws: "Cannot set required value 'userState' to null"
 ```
 
+### Array State
+
+`arrayState<T>()` provides a reactive array with familiar array methods. Mutating methods trigger subscriptions automatically; non-mutating ones do not.
+
+```tsx
+import { arrayState } from 'react-understate';
+
+type Item = { id: number; name: string };
+const items = arrayState<Item>([], 'items');
+
+items.push({ id: 1, name: 'A' }); // notifies subscribers
+items.splice(0, 1); // notifies subscribers
+
+// Read-only helpers
+const exists = items.includes(items.at(0)!);
+const first = items.slice(0, 1);
+```
+
+Key API (mutating = notifies subscribers):
+
+- push, pop, shift, unshift, splice, sort, reverse, fill
+- concat, slice, join, at, indexOf, lastIndexOf, includes, find, findIndex, filter, map, reduce, reduceRight, forEach, some, every, flat, flatMap
+- value getter/setter, length, iterator, clear, set, batch
+
 ### Derived Values
 
 Derived values automatically update when their dependencies change:
@@ -534,16 +558,16 @@ addTodo('Learn React');
 toggleTodo(1);
 ```
 
-### Async Queuing
+### Async Concurrency Modes
 
-Named actions automatically queue async calls to prevent race conditions and ensure proper execution order:
+Named actions support configurable concurrency to control how overlapping async calls are handled:
 
 ```tsx
 import { action, state } from 'react-understate';
 
 const data = state(null, 'data');
 
-// Named async action - calls are queued
+// Named async action - default: calls are queued
 const fetchData = action(async (id: string) => {
   console.log(`Fetching data for ID: ${id}`);
   const response = await fetch(`/api/data/${id}`);
@@ -561,14 +585,35 @@ fetchData('3'); // Queued until second call completes
 const unqueuedAction = action(async (id: string) => {
   console.log('This may overlap with other calls');
 });
+
+// Concurrency: 'drop' — reject if already running
+const save = action(
+  async (payload: any) => {
+    await fetch('/api/save', { method: 'POST', body: JSON.stringify(payload) });
+  },
+  'save',
+  { concurrency: 'drop' },
+);
+
+try {
+  save({ a: 1 }); // starts
+  await save({ a: 2 }); // throws ConcurrentActionError immediately
+} catch (err) {
+  if (err && (err as Error).name === 'ConcurrentActionError') {
+    // handle fast-fail (e.g., ignore, show toast, etc.)
+  }
+}
 ```
 
-**Key Benefits:**
+**Concurrency Modes:**
 
-- **Prevents Race Conditions**: Ensures async operations complete in the correct order
-- **Automatic Batching**: Multiple state updates within queued operations are batched together
-- **Better Performance**: Avoids unnecessary concurrent operations that could conflict
-- **Named Only**: Queuing only applies to named actions for better control
+- **'queue' (default)**: Subsequent calls wait until the current one finishes (ordered execution)
+- **'drop'**: If a call is in-flight, new calls immediately reject with `ConcurrentActionError`
+
+**Notes:**
+
+- Concurrency applies to named actions only.
+- All modes still batch internal state updates.
 
 ### Abort Signals
 

@@ -89,14 +89,16 @@ export function logDebug(
             `${message} ${createFileLocation(location.file, location.line, location.col)}`,
             getFileLocationStyle(),
           );
-          return;
         } else {
           debugConfig.logger(`${message} at ${userLine.trim()}`);
-          return;
         }
+      } else {
+        debugConfig.logger(message);
       }
+    } else {
+      debugConfig.logger(message);
     }
+  } else {
+    debugConfig.logger(message);
   }
-
-  debugConfig.logger(message);
 }

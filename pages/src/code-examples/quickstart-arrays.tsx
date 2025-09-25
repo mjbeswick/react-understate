@@ -1,9 +1,10 @@
 import React from 'react';
-import { arrayState, useUnderstate } from 'react-understate';
+import { state, useUnderstate } from 'react-understate';
 
 // Create array state for a todo list
-const todos = arrayState<string>(['Learn React', 'Build app'], {
+const todos = state<string[]>(['Learn React', 'Build app'], {
   name: 'todos',
+  observeMutations: true,
 });
 
 // Derived value for todo count
@@ -63,4 +64,3 @@ function TodoList() {
 }
 
 export { TodoList, addTodo, removeTodo, clearTodos };
-

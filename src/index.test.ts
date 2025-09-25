@@ -34,7 +34,6 @@ describe('ReactiveDOM exports', () => {
         'effect',
         'batch',
         'useUnderstate',
-        'setReact',
       ];
 
       expectedProperties.forEach(prop => {

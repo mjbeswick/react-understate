@@ -16,6 +16,8 @@ import {
   clearEffectModifiedValues,
   snapshotEffectReads,
   setEffectOptions,
+  registerDebugItem,
+  takeEffectTriggeredExternally,
 } from './core';
 import { logDebug } from './debug-utils';
 
@@ -175,6 +177,11 @@ export function effect(
     ...options,
   };
 
+  // Register named effects for debugging
+  if (validatedName && typeof window !== 'undefined') {
+    registerDebugItem('effect', validatedName, true);
+  }
+
   const runEffect = (isManualCall = false) => {
     if (disposed) return;
 
@@ -238,6 +245,8 @@ export function effect(
             );
           }
 
+
+
           // Disable the effect to prevent further infinite loops
           disposed = true;
           return;
@@ -267,9 +276,14 @@ export function effect(
     // Clear read values from previous execution
     clearReadValues();
 
-    // Set current effect for loop prevention and reset its modified set
+    // Set current effect for loop prevention
     setCurrentEffect(runEffect);
-    clearEffectModifiedValues(runEffect);
+    
+    // Clear modified values only if this effect was triggered externally
+    if (takeEffectTriggeredExternally(runEffect)) {
+      clearEffectModifiedValues(runEffect);
+    }
+    
     clearReadValues();
 
     // Set active effect options for dependency tracking
@@ -414,45 +428,8 @@ export function effect(
 
   // Register named effects for debugging
   if (validatedName && typeof window !== 'undefined') {
-    // Initialize window.reactUnderstate if not already done
-    if (!(window as unknown as { reactUnderstate?: unknown }).reactUnderstate) {
-      (
-        window as unknown as {
-          reactUnderstate: {
-            configureDebug: () => Record<string, unknown>;
-            states: Record<string, unknown>;
-            actions: Record<string, unknown>;
-          };
-        }
-      ).reactUnderstate = {
-        configureDebug: () => ({}),
-        states: {},
-        actions: {},
-      };
-    }
-    const windowUnderstate = (
-      window as unknown as {
-        reactUnderstate: {
-          states: Record<string, unknown>;
-          actions: Record<string, unknown>;
-        };
-      }
-    ).reactUnderstate;
-    if (windowUnderstate.states[validatedName]) {
-      throw new Error(
-        `Effect with name '${validatedName}' already exists. State names must be unique.`,
-      );
-    }
-    windowUnderstate.states[validatedName] = {
-      value: 'effect',
-      dispose: () => {
-        disposed = true;
-        if (cleanup) {
-          cleanup();
-          cleanup = undefined;
-        }
-      },
-    };
+    // Ensure effects map exists and register the effect name for debugging/devtools
+    registerDebugItem('effect', validatedName, true);
   }
 
   // Return disposal function

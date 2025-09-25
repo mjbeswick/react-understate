@@ -10,6 +10,7 @@ import {
   configureDebug,
   type State,
   validateStateName,
+  registerDebugItem,
 } from './core';
 import { logDebug } from './debug-utils';
 
@@ -192,21 +193,8 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
   } as State<T>;
 
   // Register named derived values for debugging
-  if (validatedName && typeof window !== 'undefined') {
-    // Initialize window.reactUnderstate if not already done
-    if (!(window as any).reactUnderstate) {
-      (window as any).reactUnderstate = {
-        configureDebug: () => ({}),
-        states: {},
-        actions: {},
-      };
-    }
-    if ((window as any).reactUnderstate.states[validatedName]) {
-      throw new Error(
-        `Derived value with name '${validatedName}' already exists. State names must be unique.`,
-      );
-    }
-    (window as any).reactUnderstate.states[validatedName] = derivedObj;
+  if (typeof window !== 'undefined') {
+    registerDebugItem('derived', validatedName, derivedObj);
   }
 
   return derivedObj;
@@ -417,21 +405,8 @@ export function asyncDerived<T>(
   };
 
   // Register named async derived values for debugging
-  if (validatedName && typeof window !== 'undefined') {
-    // Initialize window.reactUnderstate if not already done
-    if (!(window as any).reactUnderstate) {
-      (window as any).reactUnderstate = {
-        configureDebug: () => ({}),
-        states: {},
-        actions: {},
-      };
-    }
-    if ((window as any).reactUnderstate.states[validatedName]) {
-      throw new Error(
-        `Async derived value with name '${validatedName}' already exists. State names must be unique.`,
-      );
-    }
-    (window as any).reactUnderstate.states[validatedName] = asyncDerivedObj;
+  if (typeof window !== 'undefined') {
+    registerDebugItem('derived', validatedName, asyncDerivedObj);
   }
 
   return asyncDerivedObj;

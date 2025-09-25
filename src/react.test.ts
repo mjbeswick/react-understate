@@ -5,7 +5,7 @@
  * for the react.ts file which currently has 45.45% coverage.
  */
 
-import { setReact, useUnderstate } from './react';
+import { useUnderstate } from './react';
 import { state } from './core';
 
 // Mock use-sync-external-store/shim
@@ -31,13 +31,7 @@ describe('React Integration', () => {
     });
   });
 
-  describe('setReact', () => {
-    it('should be a no-op function (deprecated)', () => {
-      // setReact is now a no-op function since React is auto-detected
-      const result = setReact({} as unknown);
-      expect(result).toBeUndefined();
-    });
-  });
+  // setReact removed; React is auto-detected
 
   describe('useUnderstate', () => {
     it('should call useSyncExternalStore with correct parameters for single state', () => {
