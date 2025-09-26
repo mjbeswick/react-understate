@@ -48,7 +48,8 @@ let activeEffect: (() => void) | null = null;
 let isBatching = false;
 const pendingUpdates = new Set<() => void>();
 
-
+// Track effect execution depth to distinguish internal vs external changes
+let effectExecutionDepth = 0;
 
 // Global state for tracking running actions and their queues
 const runningActions = new Map<string, Promise<any>>();
@@ -66,7 +67,10 @@ let activeEffectOptions: {
 // Track which reactive values were read by the current effect
 const readValues = new Set<{ value: any }>();
 let currentEffect: (() => void) | null = null;
-const effectModifiedValues = new WeakMap<() => void, Set<{ value: any }>>();
+const effectModifiedValues = new WeakMap<
+  () => void,
+  Map<{ value: any }, { depth: number; timestamp: number }>
+>();
 const effectReadValues = new WeakMap<() => void, Set<{ value: any }>>();
 const effectOptions = new WeakMap<
   () => void,
@@ -427,7 +431,7 @@ export function action<T extends (...args: any[]) => any>(
 
   const normalizedOptions: ActionOptions =
     typeof nameOrOptions === 'object' && nameOrOptions
-      ? { concurrency: nameOrOptions.concurrency }
+      ? { concurrency: nameOrOptions.concurrency ?? 'queue' }
       : (options ?? {});
 
   const resolvedOptions: Required<ActionOptions> = {
@@ -545,14 +549,14 @@ export function action<T extends (...args: any[]) => any>(
       if (validatedName) {
         runningActionControllers.set(validatedName, abortController);
       }
-      
+
       // Preserve current effect context when action is called from within an effect
       const preservedCurrentEffect = currentEffect;
-      
+
       batch(() => {
         // Restore current effect context inside the batch
         setCurrentEffect(preservedCurrentEffect);
-        
+
         // Pass system object with signal to async functions
         if (fn.length > 0) {
           // Check if the function expects a system parameter
@@ -729,7 +733,7 @@ export function state<T>(
       ) {
         return;
       }
-      
+
       dep();
     });
   };
@@ -1116,30 +1120,47 @@ export function getIsEffectModifyingValues(): boolean {
 }
 
 export function registerEffectModification(value: { value: any }): void {
+  const timestamp = Date.now();
+
   // Register modification for the current effect (if any)
   if (currentEffect) {
-    let set = effectModifiedValues.get(currentEffect);
-    if (!set) {
-      set = new Set();
-      effectModifiedValues.set(currentEffect, set);
+    let map = effectModifiedValues.get(currentEffect);
+    if (!map) {
+      map = new Map();
+      effectModifiedValues.set(currentEffect, map);
     }
-    set.add(value);
+    map.set(value, { depth: effectExecutionDepth, timestamp });
   }
-  
+
   // Also register modification for the active effect (if different from current effect)
   // This handles the case where an action is called from within an effect
   if (activeEffect && activeEffect !== currentEffect) {
-    let set = effectModifiedValues.get(activeEffect);
-    if (!set) {
-      set = new Set();
-      effectModifiedValues.set(activeEffect, set);
+    let map = effectModifiedValues.get(activeEffect);
+    if (!map) {
+      map = new Map();
+      effectModifiedValues.set(activeEffect, map);
     }
-    set.add(value);
+    map.set(value, { depth: effectExecutionDepth, timestamp });
   }
 }
 
 export function clearEffectModifiedValues(effect: () => void): void {
-  effectModifiedValues.set(effect, new Set());
+  effectModifiedValues.set(effect, new Map());
+}
+
+export function enterEffectExecution(): void {
+  effectExecutionDepth++;
+}
+
+export function exitEffectExecution(): void {
+  effectExecutionDepth--;
+  if (effectExecutionDepth < 0) {
+    effectExecutionDepth = 0;
+  }
+}
+
+export function isInEffectExecution(): boolean {
+  return effectExecutionDepth > 0;
 }
 
 // Track whether the next run of a given effect was triggered by an external update
@@ -1157,8 +1178,25 @@ export function wasValueModifiedByEffect(
   effect: () => void,
   value: { value: any },
 ): boolean {
-  const set = effectModifiedValues.get(effect);
-  return !!set && set.has(value);
+  const map = effectModifiedValues.get(effect);
+  if (!map?.has(value)) {
+    return false;
+  }
+
+  const modificationInfo = map.get(value);
+  if (!modificationInfo) {
+    return false;
+  }
+
+  // If we're currently in an effect execution, always prevent loops
+  if (effectExecutionDepth > 0) {
+    return modificationInfo.depth > 0;
+  }
+
+  // If we're not in an effect execution, only prevent loops for a short time (50ms)
+  // This allows external changes to eventually trigger effects
+  const timeSinceModification = Date.now() - modificationInfo.timestamp;
+  return timeSinceModification < 50;
 }
 
 export function setEffectOptions(

@@ -41,9 +41,11 @@ export default [
       ],
       '@typescript-eslint/consistent-type-exports': 'error',
       '@typescript-eslint/no-import-type-side-effects': 'error',
+      '@typescript-eslint/no-redeclare': 'error',
 
       // Disable conflicting base rules
       'no-unused-vars': 'off',
+      'no-redeclare': 'off', // Disabled in favor of @typescript-eslint/no-redeclare
 
       // Code quality rules
       'no-console': 'error',

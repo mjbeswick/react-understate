@@ -125,11 +125,11 @@ function createStoreWithValues<T extends Record<string, unknown>>(
 export function useUnderstate<T extends readonly State<unknown>[]>(
   ...signals: T
 ): { [K in keyof T]: T[K] extends State<infer U> ? U : never };
-// eslint-disable-next-line no-redeclare
+
 export function useUnderstate<T extends Record<string, unknown>>(
   store: T,
 ): ExtractStateValues<T>;
-// eslint-disable-next-line no-redeclare
+
 export function useUnderstate<T extends Record<string, unknown>>(
   storeOrSignals: T | State<unknown>,
   ...additionalSignals: State<unknown>[]

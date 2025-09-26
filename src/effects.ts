@@ -13,11 +13,11 @@ import {
   configureDebug,
   validateStateName,
   batch,
-  clearEffectModifiedValues,
   snapshotEffectReads,
   setEffectOptions,
   registerDebugItem,
-
+  enterEffectExecution,
+  exitEffectExecution,
 } from './core';
 import { logDebug } from './debug-utils';
 
@@ -245,8 +245,6 @@ export function effect(
             );
           }
 
-
-
           // Disable the effect to prevent further infinite loops
           disposed = true;
           return;
@@ -276,8 +274,9 @@ export function effect(
     // Clear read values from previous execution
     clearReadValues();
 
-    // Set current effect for loop prevention
+    // Set current effect for loop prevention and enter execution context
     setCurrentEffect(runEffect);
+    enterEffectExecution();
     clearReadValues();
 
     // Set active effect options for dependency tracking
@@ -358,13 +357,9 @@ export function effect(
             console.error('Effect async function failed:', error);
           })
           .finally(() => {
+            exitEffectExecution();
             isExecuting = false;
             hasRunOnce = true;
-            
-            // Clear modified values after a short delay for async effects
-            setTimeout(() => {
-              clearEffectModifiedValues(runEffect);
-            }, 10);
 
             // Process queued executions for named effects or a single rerun request
             if (validatedName) {
@@ -395,14 +390,9 @@ export function effect(
         setActiveEffect(prevEffect);
         setActiveEffectOptions(prevOptions);
         setCurrentEffect(null);
+        exitEffectExecution();
         isExecuting = false;
         hasRunOnce = true;
-        
-        // Clear modified values after a short delay to allow external changes
-        // This ensures loop prevention works during execution but allows external updates after
-        setTimeout(() => {
-          clearEffectModifiedValues(runEffect);
-        }, 10);
 
         // If overlap was prevented and a rerun was requested while executing,
         // schedule one rerun now
@@ -420,6 +410,7 @@ export function effect(
       setActiveEffect(prevEffect);
       setActiveEffectOptions(prevOptions);
       setCurrentEffect(null);
+      exitEffectExecution();
       isExecuting = false;
       hasRunOnce = true;
     }
