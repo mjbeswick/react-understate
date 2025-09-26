@@ -120,7 +120,7 @@ export const shouldRefresh = derived(() => {
 }, { name: 'shouldRefresh' });
 
 // Actions
-export const fetchUsers = action(async (signal?: AbortSignal) => {
+export const fetchUsers = action(async ({ signal }: { signal: AbortSignal }) => {
   console.log('action: fetching users');
   
   loadingState('loading');
@@ -136,7 +136,7 @@ export const fetchUsers = action(async (signal?: AbortSignal) => {
     const userData: User[] = await response.json();
     
     // Only update if not aborted
-    if (!signal?.aborted) {
+    if (!signal.aborted) {
       users(userData);
       loadingState('success');
       lastFetch(new Date());
@@ -192,7 +192,7 @@ export const fetchUsersWithCancellation = action(async () => {
   const signal = currentController.signal;
   
   try {
-    await fetchUsers(signal);
+    await fetchUsers();
   } finally {
     // Clear controller when done
     if (currentController?.signal === signal) {
@@ -222,8 +222,9 @@ export const cancelCurrentRequest = action(() => {
           finishes
         </li>
         <li>
-          <strong>drop</strong>: new calls immediately reject with
-          ConcurrentActionError
+          <strong>drop (switch-latest)</strong>: starting a new call aborts the
+          previous call. The previous call's Promise rejects with
+          ConcurrentActionError and the latest call runs.
         </li>
       </ul>
       <CodeBlock
@@ -244,7 +245,7 @@ const saveProfile = action(async (payload: any) => {
 
 try {
   saveProfile({ name: 'A' });
-  await saveProfile({ name: 'B' }); // throws ConcurrentActionError if first is in-flight
+  await saveProfile({ name: 'B' }); // aborts previous call if first is in-flight
 } catch (e) {
   if (e instanceof ConcurrentActionError) {
     // Ignore or notify user that a save is already running

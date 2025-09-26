@@ -269,6 +269,7 @@ export function asyncDerived<T>(
         if (validatedName) {
           const debugConfig = configureDebug();
           logDebug(
+            // eslint-disable-next-line no-magic-numbers
             `asyncDerived: '${validatedName}' async resolved: ${JSON.stringify(result, null, 2)}`,
             debugConfig,
           );

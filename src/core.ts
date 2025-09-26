@@ -24,7 +24,7 @@ export type StateName = string & { readonly __brand: 'StateName' };
 export function validateStateName(name: string): StateName {
   if (typeof name !== 'string') {
     throw new Error(
-      `Invalid state name: expected a string, received ${Object.prototype.toString.call(name)}`,
+      `Invalid state name: expected a string, received ${Object.prototype.toString.call(name)}. Value: ${JSON.stringify(name)}`,
     );
   }
   if (name.includes('.')) {
@@ -52,10 +52,71 @@ const pendingUpdates = new Set<() => void>();
 let effectExecutionDepth = 0;
 
 // Global state for tracking running actions and their queues
-const runningActions = new Map<string, Promise<any>>();
+const runningActions = new Map<string, Promise<unknown>>();
 const actionQueues = new Map<string, Array<() => void>>();
 const runningActionControllers = new Map<string, AbortController>();
+const actionExecutionIds = new Map<string, number>();
 let isInAction = false;
+
+// Track per-execution scheduled timers to help cancel typical async sleeps
+type TimerHandle = ReturnType<typeof setTimeout>;
+const executionTimers = new Map<number, Set<TimerHandle>>();
+const execIdStack: number[] = [];
+const originalSetTimeout = globalThis.setTimeout.bind(globalThis);
+const originalClearTimeout = globalThis.clearTimeout.bind(globalThis);
+let isSetTimeoutWrapped = false;
+
+function ensureSetTimeoutWrapped(): void {
+  if (isSetTimeoutWrapped) return;
+  const wrapped = (
+    handler: TimerHandler,
+    timeout?: number | undefined,
+    ...args: unknown[]
+  ): TimerHandle => {
+    const id = originalSetTimeout(
+      handler as any,
+      timeout as any,
+      ...(args as any[]),
+    );
+    const currentExecId = execIdStack.length
+      ? execIdStack[execIdStack.length - 1]
+      : undefined;
+    if (currentExecId !== undefined) {
+      let set = executionTimers.get(currentExecId);
+      if (!set) {
+        set = new Set<TimerHandle>();
+        executionTimers.set(currentExecId, set);
+      }
+      set.add(id);
+    }
+    return id;
+  };
+  // Override globally but remain transparent
+  (globalThis as any).setTimeout = wrapped as unknown as typeof setTimeout;
+  isSetTimeoutWrapped = true;
+}
+
+function clearExecutionTimers(execId: number): void {
+  const set = executionTimers.get(execId);
+  if (!set) return;
+  for (const t of set) {
+    try {
+      originalClearTimeout(t as any);
+    } catch {
+      // ignore
+    }
+  }
+  executionTimers.delete(execId);
+}
+
+function runWithExecContext<T>(execId: number, fn: () => T): T {
+  execIdStack.push(execId);
+  try {
+    return fn();
+  } finally {
+    execIdStack.pop();
+  }
+}
 
 // Global state for tracking effect dependency filtering
 let activeEffectOptions: {
@@ -65,13 +126,13 @@ let activeEffectOptions: {
 } | null = null;
 
 // Track which reactive values were read by the current effect
-const readValues = new Set<{ value: any }>();
+const readValues = new Set<{ value: unknown }>();
 let currentEffect: (() => void) | null = null;
 const effectModifiedValues = new WeakMap<
   () => void,
-  Map<{ value: any }, { depth: number; timestamp: number }>
+  Map<{ value: unknown }, { depth: number; timestamp: number }>
 >();
-const effectReadValues = new WeakMap<() => void, Set<{ value: any }>>();
+const effectReadValues = new WeakMap<() => void, Set<{ value: unknown }>>();
 const effectOptions = new WeakMap<
   () => void,
   { once?: boolean; preventOverlap?: boolean; preventLoops?: boolean }
@@ -80,18 +141,18 @@ const effectOptions = new WeakMap<
 // Debug configuration
 type DebugOptions = {
   enabled?: boolean;
-  logger?: (message: string, ...args: any[]) => void;
+  logger?: (message: string, ...args: unknown[]) => void;
   showFile?: boolean;
 };
 
 let debugConfig: DebugOptions = {
   enabled: false,
   // eslint-disable-next-line no-console
-  logger: (...args: any[]) => console.log(...args),
+  logger: (...args: unknown[]) => console.log(...args),
 };
 
 // --- DevTools bridge helpers ---
-type DevtoolsBridge = { publish: (event: any) => void } | undefined;
+type DevtoolsBridge = { publish: (event: unknown) => void } | undefined;
 function getDevtoolsBridge(): DevtoolsBridge {
   try {
     // Accessing window may throw in some environments
@@ -104,7 +165,7 @@ function getDevtoolsBridge(): DevtoolsBridge {
   return undefined;
 }
 
-function publishDevtoolsEvent(type: string, payload: any): void {
+function publishDevtoolsEvent(type: string, payload: unknown): void {
   const bridge = getDevtoolsBridge();
   if (!bridge || typeof bridge.publish !== 'function') return;
   try {
@@ -341,9 +402,18 @@ export function configureDebug(options?: DebugOptions): Readonly<DebugOptions> {
  * Actions are useful for grouping related state updates and provide better debugging
  * when debug logging is enabled.
  *
+ * Notes:
+ * - Named actions can control async overlap via `concurrency`: 'queue' (default) or 'drop'.
+ *   - 'queue': subsequent calls wait until the current one finishes (ordered execution).
+ *   - 'drop' (switch-latest): starting a new call aborts the previous in-flight call; the previous
+ *     call's Promise rejects with `ConcurrentActionError` and the latest call runs.
+ * - Async actions may optionally accept a trailing system parameter of shape `{ signal: AbortSignal }`.
+ *   Callers never pass this; the library injects it for cancellation with `fetch` and similar APIs.
+ *
  * @param fn - The action function to execute
- * @param name - Optional name for debugging purposes
- * @returns The action function
+ * @param nameOrOptions - Optional name (string) or options object with name and behavior settings
+ * @param legacyOptions - Optional legacy options parameter (for backward compatibility)
+ * @returns The action function with the same public parameters (system arg is not exposed)
  *
  * @example
  * ```tsx
@@ -352,20 +422,29 @@ export function configureDebug(options?: DebugOptions): Readonly<DebugOptions> {
  * const todos = state<Todo[]>([], 'todos');
  * const filter = state<'all' | 'active' | 'completed'>('all', 'filter');
  *
+ * // Action with string name
  * const addTodo = action((text: string) => {
  *   todos.value = [...todos.value, { id: Date.now(), text, completed: false }];
  *   filter.value = 'all';
  * }, 'addTodo');
  *
- * const toggleTodo = action((id: number) => {
- *   todos.value = todos.value.map(todo =>
- *     todo.id === id ? { ...todo, completed: !todo.completed } : todo
- *   );
- * }, 'toggleTodo');
+ * // Action with options object
+ * const saveTodos = action(async () => {
+ *   await fetch('/api/todos', { method: 'POST', body: JSON.stringify(todos.value) });
+ * }, { name: 'saveTodos', concurrency: 'drop' });
+ *
+ * // Action that uses the injected AbortSignal (callers do not pass it)
+ * const fetchItem = action(async (id: number, { signal }: { signal: AbortSignal }) => {
+ *   const res = await fetch(`/api/items/${id}`, { signal });
+ *   const item = await res.json();
+ *   todos.value = [...todos.value, item];
+ * }, 'fetchItem');
  *
  * // Usage
  * addTodo('Learn React');
  * toggleTodo(1);
+ * saveTodos(); // Won't run if already saving (drop)
+ * await fetchItem(123); // `signal` injected automatically
  * ```
  */
 export type ActionConcurrency = 'queue' | 'drop';
@@ -393,22 +472,33 @@ export class ConcurrentActionError extends Error {
  *
  * @example
  * ```ts
- * const myAction = action(async () => { /* ... *\/ }, 'myAction', { concurrency: 'drop' });
- * try {
- *   myAction();
- *   myAction(); // Throws ConcurrentActionError
- * } catch (e) {
- *   if (e instanceof ConcurrentActionError) {
- *     // Handle dropped call
- *   }
- * }
+ * const run = action(async () => { /* ... *\/ }, 'run', { concurrency: 'drop' });
+ * const p1 = run();            // starts
+ * const p2 = run();            // aborts p1, continues with this call
+ * await p2;                    // latest call resolves
+ * await p1;                    // rejects with ConcurrentActionError
  * ```
  */
+// Internal system argument type injected by action/effect
+type SystemArg = { signal: AbortSignal };
+
+// Remove trailing system argument `{ signal: AbortSignal }` from function parameters
+type StripSystemFromParams<A extends any[]> = A extends [...infer P, infer L]
+  ? L extends SystemArg
+    ? P
+    : A
+  : A;
+
+// Public-facing action type: same return type, but without the internal system arg
+type PublicAction<T extends (...args: any[]) => any> = (
+  ...args: StripSystemFromParams<Parameters<T>>
+) => ReturnType<T>;
+
 export function action<T extends (...args: any[]) => any>(
   fn: T,
   nameOrOptions?: string | (ActionOptions & { name?: string }),
-  options?: ActionOptions,
-): T {
+  legacyOptions?: ActionOptions,
+): PublicAction<T> {
   // Normalize name and options (support passing options as second arg)
   const incomingName =
     typeof nameOrOptions === 'string' ? nameOrOptions : nameOrOptions?.name;
@@ -429,17 +519,25 @@ export function action<T extends (...args: any[]) => any>(
     windowUnderstate.actions[validatedName] = fn;
   }
 
-  const normalizedOptions: ActionOptions =
-    typeof nameOrOptions === 'object' && nameOrOptions
+  const normalizedOptions: ActionOptions = {
+    ...(typeof nameOrOptions === 'object' && nameOrOptions
       ? { concurrency: nameOrOptions.concurrency ?? 'queue' }
-      : (options ?? {});
+      : {}),
+    ...(legacyOptions ?? {}),
+  };
 
   const resolvedOptions: Required<ActionOptions> = {
     concurrency: 'queue',
     ...(normalizedOptions ?? {}),
   } as Required<ActionOptions>;
 
-  return ((...args: Parameters<T>) => {
+  // Per-action call settlers to allow fast-fail on dropped executions
+  const callSettlers = new Map<
+    string,
+    { execId: number; resolve: (v: any) => void; reject: (e: any) => void }
+  >();
+
+  return ((...args: StripSystemFromParams<Parameters<T>>) => {
     // Debug logging
     if (validatedName) {
       logDebug(`action: '${validatedName}'`, debugConfig);
@@ -459,7 +557,7 @@ export function action<T extends (...args: any[]) => any>(
 
       if (isCurrentlyRunning) {
         if (resolvedOptions.concurrency === 'drop') {
-          // Abort current and allow new call to proceed
+          // Abort the previous execution and fast-fail its public promise
           const controller = runningActionControllers.get(validatedName);
           if (controller) {
             try {
@@ -468,6 +566,21 @@ export function action<T extends (...args: any[]) => any>(
               // ignore
             }
           }
+          const prevExecId = actionExecutionIds.get(validatedName);
+          if (prevExecId !== undefined) {
+            clearExecutionTimers(prevExecId);
+          }
+          const prevSettler = callSettlers.get(validatedName);
+          if (prevSettler) {
+            try {
+              prevSettler.reject(new ConcurrentActionError(validatedName));
+            } catch {
+              // ignore secondary errors
+            }
+            callSettlers.delete(validatedName);
+          }
+          runningActions.delete(validatedName);
+          runningActionControllers.delete(validatedName);
           // fall through and execute new call
         } else {
           // Default: queue
@@ -487,7 +600,7 @@ export function action<T extends (...args: any[]) => any>(
                 );
 
                 // Prepare args with system object
-                const preparedArgs = [...args];
+                const preparedArgs: any[] = [...(args as unknown as any[])];
                 if (fn.length > 0) {
                   const lastArg = preparedArgs[preparedArgs.length - 1];
                   if (
@@ -497,13 +610,13 @@ export function action<T extends (...args: any[]) => any>(
                   ) {
                     preparedArgs[preparedArgs.length - 1] = innerSystem;
                   } else {
-                    preparedArgs.push(innerSystem as any);
+                    preparedArgs.push(innerSystem as Parameters<T>[number]);
                   }
                 }
 
                 // Call the function directly instead of creating a new action
                 isInAction = true;
-                const result = fn(...preparedArgs);
+                const result = fn(...(preparedArgs as Parameters<T>));
                 if (result instanceof Promise) {
                   const promiseResult = result;
                   runningActions.set(validatedName, promiseResult);
@@ -521,7 +634,7 @@ export function action<T extends (...args: any[]) => any>(
                       }
                     });
                 } else {
-                  resolve(result);
+                  resolve(result as ReturnType<T>);
                   isInAction = false;
                   // Schedule next queued execution
                   const queue = actionQueues.get(validatedName);
@@ -542,8 +655,17 @@ export function action<T extends (...args: any[]) => any>(
       }
     }
 
+    // Generate unique execution ID for drop concurrency tracking
+    const executionId = validatedName ? Date.now() + Math.random() : 0;
+    if (validatedName) {
+      actionExecutionIds.set(validatedName, executionId);
+    }
+
+    // Ensure we can capture timers scheduled during this action call
+    ensureSetTimeoutWrapped();
+
     // Automatically batch the action
-    let result: ReturnType<T> = undefined as any;
+    let result!: ReturnType<T>;
     isInAction = true;
     try {
       if (validatedName) {
@@ -560,50 +682,90 @@ export function action<T extends (...args: any[]) => any>(
         // Pass system object with signal to async functions
         if (fn.length > 0) {
           // Check if the function expects a system parameter
-          const lastArg = args[args.length - 1];
+          const lastArg = (args as unknown as any[])[
+            (args as unknown as any[]).length - 1
+          ];
           if (
             typeof lastArg === 'object' &&
             lastArg !== null &&
             'signal' in lastArg
           ) {
             // Replace the existing system object
-            args[args.length - 1] = system;
+            (args as unknown as any[])[(args as unknown as any[]).length - 1] =
+              system;
           } else {
             // Add system object as last parameter
-            args.push(system as any);
+            (args as unknown as any[]).push(system as Parameters<T>[number]);
           }
         }
-        result = fn(...args);
+        result = runWithExecContext(executionId, () =>
+          fn(...(args as unknown as any[] as Parameters<T>)),
+        ) as ReturnType<T>;
       });
     } finally {
       isInAction = false;
     }
 
     // Handle async result for named actions
-    if (
-      validatedName &&
-      result &&
-      typeof result === 'object' &&
-      'then' in result
-    ) {
-      const promiseResult = result as Promise<any>;
-      runningActions.set(validatedName, promiseResult);
-
-      promiseResult.finally(() => {
-        publishDevtoolsEvent('action:settled', { name: validatedName });
-        runningActions.delete(validatedName);
-        runningActionControllers.delete(validatedName);
-        const queue = actionQueues.get(validatedName);
-        if (queue && queue.length > 0) {
-          const nextExecution = queue.shift()!;
-          // Process next execution asynchronously to avoid stack overflow
-          setTimeout(() => nextExecution(), 0);
-        }
+    if (result && typeof result === 'object' && 'then' in result) {
+      // Create a public promise that can be fast-failed when dropped
+      let resolveOuter!: (v: ReturnType<T>) => void;
+      let rejectOuter!: (e: any) => void;
+      const outerPromise = new Promise<ReturnType<T>>((resolve, reject) => {
+        resolveOuter = resolve;
+        rejectOuter = reject;
       });
+      if (validatedName) {
+        callSettlers.set(validatedName, {
+          execId: executionId,
+          resolve: resolveOuter as (v: any) => void,
+          reject: rejectOuter,
+        });
+        runningActions.set(validatedName, outerPromise);
+      }
+      const promiseResult = result as unknown as Promise<ReturnType<T>>;
+      promiseResult
+        .then(value => {
+          if (
+            !validatedName ||
+            actionExecutionIds.get(validatedName) === executionId
+          ) {
+            resolveOuter(value);
+          }
+        })
+        .catch(error => {
+          if (
+            !validatedName ||
+            actionExecutionIds.get(validatedName) === executionId
+          ) {
+            rejectOuter(error);
+          }
+        })
+        .finally(() => {
+          if (validatedName) {
+            publishDevtoolsEvent('action:settled', { name: validatedName });
+            runningActions.delete(validatedName);
+            runningActionControllers.delete(validatedName);
+            // Only clean up execution ID if this is still the current execution
+            if (actionExecutionIds.get(validatedName) === executionId) {
+              actionExecutionIds.delete(validatedName);
+              callSettlers.delete(validatedName);
+            }
+            const queue = actionQueues.get(validatedName);
+            if (queue && queue.length > 0) {
+              const nextExecution = queue.shift()!;
+              // Process next execution asynchronously to avoid stack overflow
+              setTimeout(() => nextExecution(), 0);
+            }
+          }
+        });
+
+      return outerPromise;
     }
 
+    // Synchronous result: return directly to preserve public signature
     return result!;
-  }) as T;
+  }) as PublicAction<T>;
 }
 
 /**
@@ -620,18 +782,18 @@ export function action<T extends (...args: any[]) => any>(
  * - Don't assign states to variables for storage
  *
  * @param initialValue - The initial value for the state
- * @param name - Optional name for debugging purposes
+ * @param nameOrOptions - Optional name (string) or options object with name and behavior settings
  * @returns A reactive state that can be read and written using the .value property
  *
  * @example
  * ```tsx
  * import { state, effect } from './core';
  *
- * // Create states for different types
- * const count = state(0);
- * const name = state('John');
- * const isActive = state(false);
- * const user = state({ id: 1, name: 'John', email: 'john@example.com' });
+ * // Create states with different parameter styles
+ * const count = state(0); // No name
+ * const name = state('John', 'userName'); // String name
+ * const isActive = state(false, { name: 'activeFlag' }); // Options object
+ * const user = state({ id: 1, name: 'John' }, { name: 'user', observeMutations: true }); // Options with mutation tracking
  *
  * // ✅ CORRECT: Use .value to read and write
  * console.log(count.value); // 0
@@ -647,8 +809,8 @@ export function action<T extends (...args: any[]) => any>(
  * // ✅ CORRECT: Update object properties
  * user.value = { ...user.value, name: 'Jane' };
  *
- * // ✅ CORRECT: Use in computed values
- * const doubleCount = computed(() => count.value * 2);
+ * // ✅ CORRECT: Mutation tracking (when observeMutations: true)
+ * user.value.name = 'Bob'; // This will trigger updates automatically
  *
  * // ❌ INCORRECT: Don't assign states to variables
  * // const badCount = count; // This breaks reactivity!
@@ -690,7 +852,7 @@ export function state<T>(
 export function state<T>(
   initialValue: T,
   optionsOrName?: StateOptions | string,
-): State<any> {
+): State<T> {
   // Support both name string and options object
   const options: StateOptions | undefined =
     typeof optionsOrName === 'string' ? { name: optionsOrName } : optionsOrName;
@@ -698,13 +860,13 @@ export function state<T>(
     ? validateStateName(options.name)
     : undefined;
   // Store the initial value directly - TypeScript handles immutability
-  let value = initialValue as any as T;
+  let value = initialValue;
   const subscribers = new Set<() => void>();
   const dependencies = new Set<() => void>();
 
   // Cache for proxied access when observeMutations is enabled
-  let arrayProxy: any | null = null;
-  let objectProxy: any | null = null;
+  let arrayProxy: unknown | null = null;
+  let objectProxy: unknown | null = null;
 
   const notify = () => {
     // Notify all subscribers
@@ -726,10 +888,10 @@ export function state<T>(
       }
       // Skip notifying effects that modified this value in their last run
       // Only skip if loop prevention is enabled for this specific effect
-      const depOptions = getEffectOptions(dep as any);
+      const depOptions = getEffectOptions(dep as () => void);
       if (
         depOptions?.preventLoops !== false &&
-        wasValueModifiedByEffect(dep as any, stateObj)
+        wasValueModifiedByEffect(dep as () => void, stateObj)
       ) {
         return;
       }
@@ -865,7 +1027,7 @@ export function state<T>(
       if (options?.observeMutations) {
         // Arrays
         if (Array.isArray(value)) {
-          if (arrayProxy) return arrayProxy;
+          if (arrayProxy) return arrayProxy as T;
           const mutatingMethods = new Set([
             'push',
             'pop',
@@ -889,12 +1051,12 @@ export function state<T>(
                 };
               }
               // Non-mutating reads forward to current value
-              const current = value as any;
-              const out = Reflect.get(current, prop, receiver);
+              const current = value;
+              const out = Reflect.get(current as object, prop, receiver);
               return typeof out === 'function' ? out.bind(current) : out;
             },
           });
-          return arrayProxy as unknown as T;
+          return arrayProxy as T;
         }
         // Plain objects (shallow)
         if (
@@ -902,22 +1064,22 @@ export function state<T>(
           typeof value === 'object' &&
           Object.getPrototypeOf(value) === Object.prototype
         ) {
-          if (objectProxy) return objectProxy;
+          if (objectProxy) return objectProxy as T;
           // Cache for nested array proxies on object properties
-          const nestedArrayProxyCache = new WeakMap<object, any>();
+          const nestedArrayProxyCache = new WeakMap<object, unknown>();
           objectProxy = new Proxy(value as Record<string, unknown>, {
             set(_target, prop: string | symbol, newVal) {
               const current = value as Record<string, unknown>;
               // Create shallow copy and apply mutation
               const next: Record<string, unknown> = { ...current };
-              next[prop as any] = newVal;
+              next[prop as string] = newVal;
               stateObj.value = next as unknown as T;
               return true;
             },
             deleteProperty(_target, prop: string | symbol) {
               const current = value as Record<string, unknown>;
               if (!(prop in current)) return true;
-              const { [prop as any]: _, ...rest } = current;
+              const { [prop as string]: _, ...rest } = current;
               void _; // Mark as used
               stateObj.value = rest as unknown as T;
               return true;
@@ -948,12 +1110,14 @@ export function state<T>(
                     ) {
                       return (...args: unknown[]) => {
                         const currentObj = value as Record<string, unknown>;
-                        const currentArr = currentObj[prop as any] as unknown[];
+                        const currentArr = currentObj[
+                          prop as string
+                        ] as unknown[];
                         const newArr = currentArr.slice();
                         const result = (newArr as any)[arrProp](...args);
                         const nextObj = {
                           ...currentObj,
-                          [prop as any]: newArr,
+                          [prop as string]: newArr,
                         };
                         stateObj.value = nextObj as unknown as T;
                         return result;
@@ -975,7 +1139,7 @@ export function state<T>(
               return out;
             },
           });
-          return objectProxy as unknown as T;
+          return objectProxy as T;
         }
       }
       return value;
@@ -1074,7 +1238,7 @@ export function getActiveEffectOptions(): typeof activeEffectOptions {
   return activeEffectOptions;
 }
 
-export function addReadValue(value: { value: any }): void {
+export function addReadValue(value: { value: unknown }): void {
   if (
     activeEffect &&
     activeEffectOptions?.preventLoops !== false &&
@@ -1088,7 +1252,7 @@ export function clearReadValues(): void {
   readValues.clear();
 }
 
-export function wasValueRead(value: { value: any }): boolean {
+export function wasValueRead(value: { value: unknown }): boolean {
   return readValues.has(value);
 }
 
@@ -1098,7 +1262,7 @@ export function snapshotEffectReads(effect: () => void): void {
 
 export function didEffectReadValue(
   effect: () => void,
-  value: { value: any },
+  value: { value: unknown },
 ): boolean {
   const set = effectReadValues.get(effect);
   return !!set && set.has(value);
@@ -1119,7 +1283,7 @@ export function getIsEffectModifyingValues(): boolean {
   return isEffectModifyingValues;
 }
 
-export function registerEffectModification(value: { value: any }): void {
+export function registerEffectModification(value: { value: unknown }): void {
   const timestamp = Date.now();
 
   // Register modification for the current effect (if any)
@@ -1176,7 +1340,7 @@ export function takeEffectTriggeredExternally(effect: () => void): boolean {
 
 export function wasValueModifiedByEffect(
   effect: () => void,
-  value: { value: any },
+  value: { value: unknown },
 ): boolean {
   const map = effectModifiedValues.get(effect);
   if (!map?.has(value)) {
@@ -1356,10 +1520,13 @@ export function registerDebugItem(
   const u = windowU ?? memoryU;
   const mapKey = kind === 'effect' ? 'effects' : 'states';
   // Ensure maps exist
-  if (!(mapKey in u) || typeof (u as any)[mapKey] !== 'object') {
-    (u as any)[mapKey] = Object.create(null);
+  if (
+    !(mapKey in u) ||
+    typeof (u as Record<string, unknown>)[mapKey] !== 'object'
+  ) {
+    (u as Record<string, unknown>)[mapKey] = Object.create(null);
   }
-  const map = (u as any)[mapKey] as Record<string, unknown>;
+  const map = (u as Record<string, unknown>)[mapKey] as Record<string, unknown>;
   let finalName: StateName;
 
   if (proposedName) {

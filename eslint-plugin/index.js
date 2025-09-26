@@ -8,7 +8,6 @@ import noStateCreationInComponents from './rules/no-state-creation-in-components
 import preferEffectForSideEffects from './rules/prefer-effect-for-side-effects.cjs';
 import noUnusedStates from './rules/no-unused-states.cjs';
 import requireErrorHandlingInAsyncUpdates from './rules/require-error-handling-in-async-updates.cjs';
-import preferObjectSpreadForUpdates from './rules/prefer-object-spread-for-updates.cjs';
 import noNestedEffects from './rules/no-nested-effects.cjs';
 import noNestedDerived from './rules/no-nested-derived.cjs';
 import noLibraryFunctionsInActions from './rules/no-library-functions-in-actions.cjs';
@@ -39,7 +38,6 @@ export default {
     'no-unused-states': noUnusedStates,
     'require-error-handling-in-async-updates':
       requireErrorHandlingInAsyncUpdates,
-    'prefer-object-spread-for-updates': preferObjectSpreadForUpdates,
     'no-nested-effects': noNestedEffects,
     'no-nested-derived': noNestedDerived,
     'no-library-functions-in-actions': noLibraryFunctionsInActions,
@@ -88,7 +86,6 @@ export default {
         'react-understate/prefer-effect-for-side-effects': 'warn',
         'react-understate/no-unused-states': 'warn',
         'react-understate/require-error-handling-in-async-updates': 'warn',
-        'react-understate/prefer-object-spread-for-updates': 'warn',
         'react-understate/prefer-batch-for-multiple-updates': 'warn',
       },
     },

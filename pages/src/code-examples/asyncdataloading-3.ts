@@ -10,7 +10,7 @@ export const autoFetchEffect = effect(
 
     if (needsRefresh && !currentlyLoading) {
       console.log('effect: triggering auto-fetch');
-      await fetchUsers(undefined as any, { signal });
+      await fetchUsers();
     }
   },
   { name: 'autoFetchEffect' },
@@ -35,8 +35,8 @@ export const autoRetryEffect = effect(
       console.log('effect: scheduling retry in 5 seconds');
       retryTimeoutId = window.setTimeout(() => {
         console.log('effect: retrying failed request');
-        // Understate auto-aborts previous fetches; pass signal for cancellation
-        fetchUsers(undefined as any, { signal });
+        // Understate auto-aborts previous fetches; action receives its own signal
+        fetchUsers();
       }, 5000);
     }
 

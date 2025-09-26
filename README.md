@@ -6,6 +6,40 @@ The state management library that's so lightweight, it makes Redux feel like you
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
 
+## Table of Contents
+
+- [📚 Documentation](#-documentation)
+- [Features](#features)
+- [Installation](#installation)
+  - [ESLint Integration (Optional)](#eslint-integration-optional)
+- [Quick Start](#quick-start)
+- [Core Concepts](#core-concepts)
+  - [States](#states)
+  - [Array State](#array-state)
+  - [Derived Values](#derived-values)
+  - [Effects](#effects)
+  - [Effect Options Deep Dive](#effect-options-deep-dive)
+  - [Async Updates](#async-updates)
+  - [Actions](#actions)
+  - [Async Concurrency Modes](#async-concurrency-modes)
+  - [Abort Signals](#abort-signals)
+  - [Debugging](#debugging)
+  - [Batching Updates](#batching-updates)
+- [React Integration](#react-integration)
+  - [useUnderstate Hook](#useunderstate-hook)
+  - [Store Object Pattern](#store-object-pattern)
+- [State Persistence](#state-persistence)
+  - [Basic Persistence](#basic-persistence)
+  - [Persisting Multiple States](#persisting-multiple-states)
+- [Architecture & Best Practices](#architecture--best-practices)
+  - [Separation of Concerns](#separation-of-concerns)
+  - [Testing Business Logic](#testing-business-logic)
+  - [Key Principles](#key-principles)
+  - [No Nested Understate Functions](#no-nested-understate-functions)
+  - [TypeScript Support](#typescript-support)
+- [Recommended Pattern: Functional Store Architecture](#recommended-pattern-functional-store-architecture)
+  - [Pattern Overview](#pattern-overview)
+
 ## 📚 Documentation
 
 **📖 [Complete Documentation Site](https://mjbeswick.github.io/react-understate/)** - Comprehensive guides, API reference, and examples
@@ -586,7 +620,7 @@ const unqueuedAction = action(async (id: string) => {
   console.log('This may overlap with other calls');
 });
 
-// Concurrency: 'drop' — reject if already running
+// Concurrency: 'drop' — switch-latest (abort previous, run latest)
 const save = action(
   async (payload: any) => {
     await fetch('/api/save', { method: 'POST', body: JSON.stringify(payload) });
@@ -595,25 +629,30 @@ const save = action(
   { concurrency: 'drop' },
 );
 
-try {
-  save({ a: 1 }); // starts
-  await save({ a: 2 }); // throws ConcurrentActionError immediately
-} catch (err) {
+const first = save({ a: 1 }); // starts
+const second = save({ a: 2 }); // aborts previous, continues with this one
+
+// The previous call rejects immediately with ConcurrentActionError
+first.catch(err => {
   if (err && (err as Error).name === 'ConcurrentActionError') {
     // handle fast-fail (e.g., ignore, show toast, etc.)
   }
-}
+});
+
+// The latest call proceeds normally
+await second;
 ```
 
 **Concurrency Modes:**
 
 - **'queue' (default)**: Subsequent calls wait until the current one finishes (ordered execution)
-- **'drop'**: If a call is in-flight, new calls immediately reject with `ConcurrentActionError`
+- **'drop' (switch-latest)**: Starting a new call aborts the previous in-flight call. The previous call's Promise rejects immediately with `ConcurrentActionError`, and the latest call runs.
 
 **Notes:**
 
 - Concurrency applies to named actions only.
 - All modes still batch internal state updates.
+- Cancellation is cooperative: your action can optionally accept a final `{ signal }` param and pass it to abortable APIs (like `fetch`). The library also aborts the previous call's `AbortSignal` and clears common timer-based waits started during the call, so typical `await new Promise(r => setTimeout(...))` sleeps are cancelled when dropped.
 
 ### Abort Signals
 
@@ -625,7 +664,7 @@ import { action, effect, state } from 'react-understate';
 const data1 = state(null, 'data1');
 const data2 = state(null, 'data2');
 
-// Actions receive abort signal as second parameter
+// Actions receive abort signal as second parameter (injected; callers do not pass it)
 const fetchData = action(
   async (id: number, { signal }: { signal: AbortSignal }) => {
     const response = await fetch(`https://api.example.com/data/${id}`, {

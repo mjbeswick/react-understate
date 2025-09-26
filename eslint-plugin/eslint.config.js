@@ -82,7 +82,7 @@ export default [
       'no-magic-numbers': [
         'warn',
         {
-          ignore: [0, 1, -1],
+          ignore: [0, 1, 2, -1],
           ignoreArrayIndexes: true,
           ignoreDefaultValues: true,
         },
@@ -141,7 +141,7 @@ export default [
       'no-magic-numbers': [
         'warn',
         {
-          ignore: [0, 1, -1],
+          ignore: [0, 1, 2, -1],
           ignoreArrayIndexes: true,
           ignoreDefaultValues: true,
         },

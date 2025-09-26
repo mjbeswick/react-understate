@@ -22,7 +22,10 @@ import {
 import { logDebug } from './debug-utils';
 
 // Global state for tracking running effects and their queues
-const runningEffects = new Map<string, Promise<void>>();
+const runningEffects = new Map<
+  string,
+  { promise: Promise<void>; abort: () => void }
+>();
 const effectQueues = new Map<string, Array<() => void>>();
 
 /**
@@ -75,31 +78,47 @@ export type EffectOptions = {
  * logging) that need to happen when signals change. They automatically track
  * which signals they depend on and re-run whenever those signals change.
  *
- * Effects can return a cleanup function that will be called before the effect
- * runs again or when the effect is disposed.
+ * Notes:
+ * - Async effects receive an injected `{ signal: AbortSignal }` parameter for
+ *   cancellation. Callers never pass this; the library injects it.
+ * - Effects can return a cleanup function that runs before the effect re-runs
+ *   or when the effect is disposed.
  *
  * @param fn - A function that performs the side effect and optionally returns a cleanup function
+ * @param nameOrOptions - Optional name (string) or options object with name and behavior settings
+ * @param legacyOptions - Optional legacy options parameter (for backward compatibility)
  * @returns A function to dispose of the effect and stop it from running
  *
  * @example
  * ```tsx
- * import { signal } from './core';
+ * import { state } from './core';
  * import { effect } from './effects';
  *
- * const count = signal(0);
- * const name = signal('John');
+ * const count = state(0);
+ * const name = state('John');
  *
- * // Simple effect that logs changes
- * const dispose = effect(() => {
+ * // Simple effect with no name
+ * const dispose1 = effect(() => {
  *   console.log(`Count is now: ${count.value}`);
- *   console.log(`Name is now: ${name.value}`);
  * });
+ *
+ * // Effect with string name
+ * const dispose2 = effect(() => {
+ *   console.log(`Name is now: ${name.value}`);
+ * }, 'nameLogger');
+ *
+ * // Effect with options object
+ * const dispose3 = effect(() => {
+ *   console.log('One-time setup');
+ * }, { name: 'setup', once: true });
+ *
+ * // Effect with options object and additional settings
+ * const dispose4 = effect(() => {
+ *   console.log('No overlap effect');
+ * }, { name: 'noOverlap', preventOverlap: true, preventLoops: false });
  *
  * count.value = 5; // Logs: "Count is now: 5"
  * name.value = 'Jane'; // Logs: "Name is now: Jane"
- *
- * // Clean up the effect
- * dispose();
  * ```
  *
  * @example
@@ -129,22 +148,23 @@ export type EffectOptions = {
  *
  * @example
  * ```tsx
- * // Effect for API calls
+ * // Effect for API calls with AbortSignal
  * const userId = signal(1);
  * const userData = signal(null);
  *
- * effect(async () => {
+ * effect(async ({ signal }) => {
  *   const id = userId.value;
- *   if (id) {
- *     try {
- *       const response = await fetch(`/api/users/${id}`);
- *       const data = await response.json();
- *       userData.value = data;
- *     } catch (error) {
- *       console.error('Failed to fetch user:', error);
- *     }
+ *   if (!id) return;
+ *   try {
+ *     const response = await fetch(`/api/users/${id}`,
+ *       { signal });
+ *     const data = await response.json();
+ *     userData.value = data;
+ *   } catch (error) {
+ *     if (error instanceof DOMException && error.name === 'AbortError') return;
+ *     console.error('Failed to fetch user:', error);
  *   }
- * });
+ * }, 'fetchUser');
  *
  * // Effect automatically re-runs when userId changes
  * userId.value = 2; // Fetches user with ID 2
@@ -152,11 +172,22 @@ export type EffectOptions = {
  */
 export function effect(
   fn: () => void | (() => void) | Promise<void> | Promise<() => void>,
-  name?: string,
-  options?: EffectOptions,
+  nameOrOptions?: string | (EffectOptions & { name?: string }),
+  legacyOptions?: EffectOptions,
 ): () => void {
-  // Validate name if provided
-  const validatedName = name ? validateStateName(name) : undefined;
+  // Normalize name and options (support passing options as second arg)
+  const incomingName =
+    typeof nameOrOptions === 'string' ? nameOrOptions : nameOrOptions?.name;
+  const validatedName = incomingName
+    ? validateStateName(incomingName)
+    : undefined;
+
+  const normalizedOptions: EffectOptions = {
+    ...(typeof nameOrOptions === 'object' && nameOrOptions
+      ? nameOrOptions
+      : {}),
+    ...(legacyOptions ?? {}),
+  };
   let cleanup: (() => void) | void;
   let disposed = false;
   let hasRunOnce = false;
@@ -174,7 +205,7 @@ export function effect(
   const effectOptionsObj: EffectOptions = {
     preventLoops: true, // Default to preventing loops
     preventOverlap: true, // Default to avoiding overlapping executions
-    ...options,
+    ...normalizedOptions,
   };
 
   // Register named effects for debugging
@@ -195,12 +226,8 @@ export function effect(
       if (isCurrentlyRunning) {
         // Abort the previous effect
         const previousEffect = runningEffects.get(validatedName);
-        if (
-          previousEffect &&
-          typeof previousEffect === 'object' &&
-          'abort' in previousEffect
-        ) {
-          (previousEffect as any).abort();
+        if (previousEffect) {
+          previousEffect.abort();
         }
 
         // Queue this execution if effect is already running
@@ -287,12 +314,8 @@ export function effect(
       // Abort previous effect if it's running
       if (validatedName) {
         const previousEffect = runningEffects.get(validatedName);
-        if (
-          previousEffect &&
-          typeof previousEffect === 'object' &&
-          'abort' in previousEffect
-        ) {
-          (previousEffect as any).abort();
+        if (previousEffect) {
+          previousEffect.abort();
         }
       }
 
@@ -322,7 +345,7 @@ export function effect(
             promise: result as Promise<void>,
             abort: () => abortController.abort(),
           };
-          runningEffects.set(validatedName, effectInfo as any);
+          runningEffects.set(validatedName, effectInfo);
         }
 
         // Release active effect context immediately for async effects so external

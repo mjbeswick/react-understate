@@ -69,7 +69,6 @@ If you prefer to configure rules individually:
     "react-understate/prefer-derived-for-computed": "warn",
     "react-understate/prefer-effect-for-side-effects": "warn",
     "react-understate/prefer-batch-for-multiple-updates": "warn",
-    "react-understate/prefer-object-spread-for-updates": "warn",
     "react-understate/require-error-handling-in-async-updates": "warn",
     "react-understate/require-state-subscription-cleanup": "warn",
     "react-understate/no-unused-states": "warn"
@@ -409,22 +408,6 @@ await userData.update(async () => {
     return userData.value; // Return current value on error
   }
 });
-```
-
-### `prefer-object-spread-for-updates`
-
-Encourages immutable updates for object states.
-
-#### ❌ Incorrect
-
-```tsx
-user.value.name = 'John'; // Mutates the object
-```
-
-#### ✅ Correct
-
-```tsx
-user.value = { ...user.value, name: 'John' };
 ```
 
 ### State Name Validation Rules
@@ -860,7 +843,6 @@ const currentCount = count;
 - `prefer-derived-for-computed` - Suggests derived for computed values
 - `prefer-effect-for-side-effects` - Suggests effects for side effects
 - `prefer-batch-for-multiple-updates` - Suggests batching for multiple updates
-- `prefer-object-spread-for-updates` - Suggests immutable object updates
 - `require-error-handling-in-async-updates` - Suggests error handling in async updates
 - `require-state-subscription-cleanup` - Suggests proper subscription cleanup
 - `require-full-reactive-access` - Ensures proper reactive subscriptions in derived functions

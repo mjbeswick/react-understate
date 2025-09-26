@@ -127,5 +127,64 @@ describe('Async Queuing', () => {
       expect(calls).toEqual([1, 2]);
       expect(count.value).toBe(2);
     });
+
+    it('should handle drop concurrency with multiple rapid calls', async () => {
+      const count = state(0);
+      const startedCalls: number[] = [];
+      const completedCalls: number[] = [];
+
+      const rapidDropAction = action(
+        async (value: number) => {
+          startedCalls.push(value);
+          await new Promise(resolve => setTimeout(resolve, 100));
+          completedCalls.push(value);
+          count.value = value;
+          return value;
+        },
+        'rapidDropAction',
+        { concurrency: 'drop' },
+      );
+
+      // Fire 5 rapid calls
+      const promises = [
+        rapidDropAction(1),
+        rapidDropAction(2),
+        rapidDropAction(3),
+        rapidDropAction(4),
+        rapidDropAction(5),
+      ];
+
+      await Promise.allSettled(promises);
+
+      // All calls should start
+      expect(startedCalls).toEqual([1, 2, 3, 4, 5]);
+
+      // Only the last call should complete
+      expect(completedCalls).toEqual([5]);
+      expect(count.value).toBe(5);
+    });
+
+    it('should work with drop concurrency using object syntax for options', async () => {
+      const count = state(0);
+      const calls: number[] = [];
+
+      const objectSyntaxAction = action(
+        async (value: number) => {
+          calls.push(value);
+          await new Promise(resolve => setTimeout(resolve, 50));
+          count.value = value;
+          return value;
+        },
+        { name: 'objectSyntaxDropAction', concurrency: 'drop' },
+      );
+
+      const first = objectSyntaxAction(10);
+      const second = objectSyntaxAction(20);
+
+      await Promise.allSettled([first, second]);
+
+      expect(calls).toEqual([10, 20]);
+      expect(count.value).toBe(20);
+    });
   });
 });

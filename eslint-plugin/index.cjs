@@ -51,7 +51,6 @@ module.exports = {
         'react-understate/prefer-effect-for-side-effects': 'warn',
         'react-understate/no-unused-states': 'warn',
         'react-understate/require-error-handling-in-async-updates': 'warn',
-        'react-understate/prefer-object-spread-for-updates': 'warn',
         'react-understate/prefer-batch-for-multiple-updates': 'warn',
       },
     },
