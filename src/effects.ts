@@ -21,10 +21,20 @@ import {
 } from './core';
 import { logDebug } from './debug-utils';
 
+type EffectSystemContext = { signal: AbortSignal };
+
+type EffectCleanup = void | (() => void);
+
+type EffectReturn = EffectCleanup | Promise<EffectCleanup>;
+
+type EffectFn =
+  | (() => EffectReturn)
+  | ((context: EffectSystemContext) => EffectReturn);
+
 // Global state for tracking running effects and their queues
 const runningEffects = new Map<
   string,
-  { promise: Promise<void>; abort: () => void }
+  { promise: Promise<EffectCleanup>; abort: () => void }
 >();
 const effectQueues = new Map<string, Array<() => void>>();
 
@@ -171,7 +181,7 @@ export type EffectOptions = {
  * ```
  */
 export function effect(
-  fn: () => void | (() => void) | Promise<void> | Promise<() => void>,
+  fn: EffectFn,
   nameOrOptions?: string | (EffectOptions & { name?: string }),
   legacyOptions?: EffectOptions,
 ): () => void {
@@ -321,18 +331,16 @@ export function effect(
 
       // Create abort controller for async effects
       const abortController = new AbortController();
-      const system = { signal: abortController.signal };
+      const system: EffectSystemContext = { signal: abortController.signal };
 
       // Automatically batch state updates within effects to prevent infinite loops
-      let result:
-        | void
-        | (() => void)
-        | Promise<void>
-        | Promise<() => void>
-        | undefined;
+      let result: EffectReturn | undefined;
       batch(() => {
-        // Pass system object with signal to async effects
-        result = (fn as any)(system);
+        // Pass system object with signal to async effects when requested
+        result =
+          fn.length === 0
+            ? (fn as () => EffectReturn)()
+            : (fn as (context: EffectSystemContext) => EffectReturn)(system);
       });
       // Snapshot reads captured during execution for loop-prevention decisions
       snapshotEffectReads(runEffect);
@@ -342,7 +350,7 @@ export function effect(
         if (validatedName) {
           // Store both the promise and abort controller
           const effectInfo = {
-            promise: result as Promise<void>,
+            promise: result as Promise<EffectCleanup>,
             abort: () => abortController.abort(),
           };
           runningEffects.set(validatedName, effectInfo);
@@ -409,7 +417,7 @@ export function effect(
       } else {
         // Snapshot reads captured during execution for loop-prevention decisions
         snapshotEffectReads(runEffect);
-        cleanup = result as void | (() => void);
+        cleanup = result as EffectCleanup;
         setActiveEffect(prevEffect);
         setActiveEffectOptions(prevOptions);
         setCurrentEffect(null);
