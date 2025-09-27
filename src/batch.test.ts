@@ -211,30 +211,47 @@ describe('Batching', () => {
     });
   });
 
-  describe('Integration', () => {
-    it('should work with multiple independent states', () => {
-      const states = Array.from({ length: 10 }, (_, i) => state(i));
+  describe('Batch with Multiple States Unit Tests', () => {
+    it('should batch updates for multiple states', () => {
+      const state1 = state(1);
+      const state2 = state(2);
+      const state3 = state(3);
 
-      let totalNotifications = 0;
-      const unsubscribers = states.map(s =>
-        s.subscribe(() => totalNotifications++),
-      );
+      let notificationCount = 0;
+      const unsubscribe1 = state1.subscribe(() => notificationCount++);
+      const unsubscribe2 = state2.subscribe(() => notificationCount++);
+      const unsubscribe3 = state3.subscribe(() => notificationCount++);
 
       batch(() => {
-        states.forEach((s, i) => {
-          s.value = i + 100;
-        });
+        state1.value = 10;
+        state2.value = 20;
+        state3.value = 30;
       });
 
-      // Should get one notification per state
-      expect(totalNotifications).toBe(10);
+      // Each state should notify once
+      expect(notificationCount).toBe(3);
+      expect(state1.value).toBe(10);
+      expect(state2.value).toBe(20);
+      expect(state3.value).toBe(30);
 
-      // Verify all values were updated
-      states.forEach((s, i) => {
-        expect(s.value).toBe(i + 100);
+      unsubscribe1();
+      unsubscribe2();
+      unsubscribe3();
+    });
+
+    it('should handle batch with no state changes', () => {
+      const testState = state(5);
+      let notificationCount = 0;
+      const unsubscribe = testState.subscribe(() => notificationCount++);
+
+      batch(() => {
+        // No changes
       });
 
-      unsubscribers.forEach(unsub => unsub());
+      expect(notificationCount).toBe(0);
+      expect(testState.value).toBe(5);
+
+      unsubscribe();
     });
   });
 

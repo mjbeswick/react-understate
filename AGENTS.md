@@ -27,6 +27,8 @@ Treat each item as mandatory.
 - Prefer running route matchers through the root matcher and `checkCurrentRoute` to simulate real scenarios.
 - Run focused tests, lint, and type checks whenever edits might affect behavior or typings.
 - If tooling cannot run, state the reason in the final summary and flag unverified areas.
+- Run tests with coverage to ensure all code is covered.
+- All tests should be in the `src` directory and have the `.test.ts` extension.
 
 ## Build & Artifacts
 

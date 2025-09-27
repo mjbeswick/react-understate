@@ -13,7 +13,7 @@ jest.mock('use-sync-external-store/shim', () => ({
   useSyncExternalStore: jest.fn(),
 }));
 
-describe('React Integration', () => {
+describe('React Hook Unit Tests', () => {
   let mockUseSyncExternalStore: jest.Mock;
 
   beforeEach(() => {

@@ -99,52 +99,59 @@ describe('Core-Only Module', () => {
     });
   });
 
-  describe('Integration', () => {
-    it('should work with simple derived interactions', () => {
+  describe('Derived Value Unit Tests', () => {
+    it('should compute derived value from state', () => {
       const base = CoreOnly.state(10);
       const doubled = CoreOnly.derived(() => base.value * 2);
 
       expect(doubled.value).toBe(20);
+    });
+
+    it('should update derived value when state changes', () => {
+      const base = CoreOnly.state(10);
+      const doubled = CoreOnly.derived(() => base.value * 2);
 
       base.value = 15;
       expect(doubled.value).toBe(30);
     });
+  });
 
-    it('should handle multiple effects correctly', () => {
+  describe('Effect Unit Tests', () => {
+    it('should execute effect function on creation', () => {
       const source = CoreOnly.state(1);
-
-      const effect1Fn = jest.fn();
-      const effect2Fn = jest.fn();
+      const effectFn = jest.fn();
 
       CoreOnly.effect(() => {
-        effect1Fn(source.value * 2);
+        effectFn(source.value * 2);
       });
+
+      expect(effectFn).toHaveBeenCalledWith(2);
+    });
+
+    it('should re-execute effect when dependency changes', () => {
+      const source = CoreOnly.state(1);
+      const effectFn = jest.fn();
 
       CoreOnly.effect(() => {
-        effect2Fn(source.value * 3);
+        effectFn(source.value * 2);
       });
-
-      expect(effect1Fn).toHaveBeenCalledWith(2);
-      expect(effect2Fn).toHaveBeenCalledWith(3);
 
       source.value = 5;
 
-      expect(effect1Fn).toHaveBeenCalledWith(10);
-      expect(effect2Fn).toHaveBeenCalledWith(15);
+      expect(effectFn).toHaveBeenCalledWith(10);
+    });
+  });
+
+  describe('State Unit Tests', () => {
+    it('should create state with initial value', () => {
+      const state = CoreOnly.state(1);
+      expect(state.value).toBe(1);
     });
 
-    it('should handle simple state changes', () => {
-      const a = CoreOnly.state(1);
-      const b = CoreOnly.state(2);
-
-      expect(a.value).toBe(1);
-      expect(b.value).toBe(2);
-
-      a.value = 10;
-      b.value = 20;
-
-      expect(a.value).toBe(10);
-      expect(b.value).toBe(20);
+    it('should update state value', () => {
+      const state = CoreOnly.state(1);
+      state.value = 10;
+      expect(state.value).toBe(10);
     });
   });
 

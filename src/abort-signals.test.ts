@@ -224,7 +224,7 @@ describe('Abort Signals', () => {
     });
   });
 
-  describe('Signal Integration', () => {
+  describe('Action with Fetch API Unit Tests', () => {
     it('should work with fetch API abort signals', async () => {
       const data = state(null, 'data');
       let requestCount = 0;
