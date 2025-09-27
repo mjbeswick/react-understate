@@ -39,6 +39,9 @@ The state management library that's so lightweight, it makes Redux feel like you
   - [TypeScript Support](#typescript-support)
 - [Recommended Pattern: Functional Store Architecture](#recommended-pattern-functional-store-architecture)
   - [Pattern Overview](#pattern-overview)
+- [Breaking Changes](#breaking-changes)
+- [Coming Soon](#coming-soon)
+- [License](#license)
 
 ## 📚 Documentation
 
@@ -1303,6 +1306,10 @@ type PersistOptions = {
     { once: true, preventOverlap: true },
   );
   ```
+
+## Coming Soon
+
+- Chrome DevTools integration is in active development to provide first-class debugging for Understate stores.
 
 ## License
 
