@@ -54,7 +54,7 @@ module.exports = {
         /^[a-z][a-zA-Z]*Store$/,
         /^[a-z][a-zA-Z]*Value$/,
       ];
-      
+
       return statePatterns.some(pattern => pattern.test(name));
     }
 

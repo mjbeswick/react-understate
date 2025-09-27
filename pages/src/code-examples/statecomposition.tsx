@@ -3,13 +3,13 @@ import { state } from 'react-understate';
 // Create reusable state factories
 function createCounterState(initialValue = 0) {
   const count = state(initialValue);
-  
+
   return {
     count,
     increment: () => count.value++,
     decrement: () => count.value--,
-    reset: () => count.value = initialValue,
-    setValue: (value: number) => count.value = value,
+    reset: () => (count.value = initialValue),
+    setValue: (value: number) => (count.value = value),
   };
 }
 

@@ -46,12 +46,19 @@ module.exports = {
     function isInsideActionFunction(node) {
       let parent = node.parent;
       while (parent) {
-        if (parent.type === 'ArrowFunctionExpression' || parent.type === 'FunctionExpression') {
+        if (
+          parent.type === 'ArrowFunctionExpression' ||
+          parent.type === 'FunctionExpression'
+        ) {
           // Check if this function is the first argument of an action call
           let grandParent = parent.parent;
-          if (grandParent && grandParent.type === 'CallExpression' && 
-              grandParent.callee && grandParent.callee.type === 'Identifier' && 
-              grandParent.callee.name === 'action') {
+          if (
+            grandParent &&
+            grandParent.type === 'CallExpression' &&
+            grandParent.callee &&
+            grandParent.callee.type === 'Identifier' &&
+            grandParent.callee.name === 'action'
+          ) {
             return true;
           }
         }
@@ -99,7 +106,16 @@ module.exports = {
       }
 
       // If statements, loops, etc. are allowed
-      if (['IfStatement', 'ForStatement', 'WhileStatement', 'DoWhileStatement', 'ForInStatement', 'ForOfStatement'].includes(node.type)) {
+      if (
+        [
+          'IfStatement',
+          'ForStatement',
+          'WhileStatement',
+          'DoWhileStatement',
+          'ForInStatement',
+          'ForOfStatement',
+        ].includes(node.type)
+      ) {
         return true;
       }
 
@@ -235,7 +251,10 @@ module.exports = {
           // Try to get the action name from the variable it's assigned to
           if (node.parent && node.parent.type === 'VariableDeclarator') {
             actionName = node.parent.id?.name;
-          } else if (node.parent && node.parent.type === 'AssignmentExpression') {
+          } else if (
+            node.parent &&
+            node.parent.type === 'AssignmentExpression'
+          ) {
             actionName = node.parent.left?.name;
           } else {
             actionName = 'anonymous action';

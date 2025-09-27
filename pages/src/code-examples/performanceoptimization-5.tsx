@@ -6,7 +6,7 @@ const email = state('');
 const phone = state('');
 
 // Without batching - triggers 4 re-renders
-const updateUserUnbatched = (data) => {
+const updateUserUnbatched = data => {
   firstName.value = data.firstName;
   lastName.value = data.lastName;
   email.value = data.email;
@@ -14,7 +14,7 @@ const updateUserUnbatched = (data) => {
 };
 
 // With batching - triggers only 1 re-render
-const updateUserBatched = (data) => {
+const updateUserBatched = data => {
   batch(() => {
     firstName.value = data.firstName;
     lastName.value = data.lastName;

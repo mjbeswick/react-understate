@@ -1,6 +1,4 @@
-const completedTodos = derived(() => 
-  todos.filter(todo => todo.completed)
-);
+const completedTodos = derived(() => todos.filter(todo => todo.completed));
 
 const todoStats = derived(() => ({
   total: todos.length,

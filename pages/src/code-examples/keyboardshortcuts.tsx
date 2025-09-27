@@ -21,7 +21,7 @@ const setupKeyboardShortcuts = effect(() => {
   const handleKeyDown = (event: KeyboardEvent) => {
     // Prevent default for handled keys
     const handled = true;
-    
+
     switch (event.key) {
       case 'ArrowUp':
       case '+':
@@ -42,14 +42,14 @@ const setupKeyboardShortcuts = effect(() => {
       default:
         handled = false;
     }
-    
+
     if (handled) {
       event.preventDefault();
     }
   };
 
   document.addEventListener('keydown', handleKeyDown);
-  
+
   // Cleanup
   return () => {
     document.removeEventListener('keydown', handleKeyDown);

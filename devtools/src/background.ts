@@ -15,16 +15,20 @@ chrome.runtime.onConnect.addListener(port => {
   }
 });
 
-chrome.runtime.onMessage.addListener((msg) => {
+chrome.runtime.onMessage.addListener(msg => {
   if (msg && msg.source === 'understate') {
     if (msg.event) {
       const event = msg.event as { type: string; payload: unknown; ts: number };
       backlog.push(event);
       if (backlog.length > 200) backlog = backlog.slice(-200);
-      connections.forEach((_, port) => port.postMessage({ source: 'understate', event }));
+      connections.forEach((_, port) =>
+        port.postMessage({ source: 'understate', event }),
+      );
     }
     if (msg.snapshot) {
-      connections.forEach((_, port) => port.postMessage({ source: 'understate', snapshot: msg.snapshot }));
+      connections.forEach((_, port) =>
+        port.postMessage({ source: 'understate', snapshot: msg.snapshot }),
+      );
     }
   }
 });

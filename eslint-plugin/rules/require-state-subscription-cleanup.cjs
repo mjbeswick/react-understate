@@ -33,12 +33,19 @@ module.exports = {
     function isInsideEffectFunction(node) {
       let parent = node.parent;
       while (parent) {
-        if (parent.type === 'ArrowFunctionExpression' || parent.type === 'FunctionExpression') {
+        if (
+          parent.type === 'ArrowFunctionExpression' ||
+          parent.type === 'FunctionExpression'
+        ) {
           // Check if this function is the first argument of an effect call
           let grandParent = parent.parent;
-          if (grandParent && grandParent.type === 'CallExpression' && 
-              grandParent.callee && grandParent.callee.type === 'Identifier' && 
-              grandParent.callee.name === 'effect') {
+          if (
+            grandParent &&
+            grandParent.type === 'CallExpression' &&
+            grandParent.callee &&
+            grandParent.callee.type === 'Identifier' &&
+            grandParent.callee.name === 'effect'
+          ) {
             return true;
           }
         }
@@ -64,12 +71,19 @@ module.exports = {
       // Find the effect function and check if it has any return statement
       let parent = node.parent;
       while (parent) {
-        if (parent.type === 'ArrowFunctionExpression' || parent.type === 'FunctionExpression') {
+        if (
+          parent.type === 'ArrowFunctionExpression' ||
+          parent.type === 'FunctionExpression'
+        ) {
           // Check if this function is the first argument of an effect call
           let grandParent = parent.parent;
-          if (grandParent && grandParent.type === 'CallExpression' && 
-              grandParent.callee && grandParent.callee.type === 'Identifier' && 
-              grandParent.callee.name === 'effect') {
+          if (
+            grandParent &&
+            grandParent.type === 'CallExpression' &&
+            grandParent.callee &&
+            grandParent.callee.type === 'Identifier' &&
+            grandParent.callee.name === 'effect'
+          ) {
             // Check if this function has any return statement
             function hasReturn(n) {
               if (n.type === 'ReturnStatement') {
@@ -95,7 +109,11 @@ module.exports = {
     return {
       // Check for state subscriptions without cleanup
       CallExpression(node) {
-        if (isStateSubscription(node) && isInsideEffectFunction(node) && !hasCleanupReturn(node)) {
+        if (
+          isStateSubscription(node) &&
+          isInsideEffectFunction(node) &&
+          !hasCleanupReturn(node)
+        ) {
           context.report({
             node,
             messageId: 'requireStateSubscriptionCleanup',

@@ -32,7 +32,7 @@ function ContactForm() {
   return (
     <form onSubmit={handleSubmit} className="contact-form">
       <h2>Contact Form</h2>
-      
+
       {/* Name field */}
       <div className="form-field">
         <label htmlFor="name">Name *</label>
@@ -40,7 +40,7 @@ function ContactForm() {
           id="name"
           type="text"
           value={form.name}
-          onChange={(e) => handleFieldChange('name', e.target.value)}
+          onChange={e => handleFieldChange('name', e.target.value)}
           onBlur={() => setFieldTouched('name', true)}
           className={errors.name ? 'error' : ''}
         />
@@ -54,7 +54,7 @@ function ContactForm() {
           id="email"
           type="email"
           value={form.email}
-          onChange={(e) => handleFieldChange('email', e.target.value)}
+          onChange={e => handleFieldChange('email', e.target.value)}
           onBlur={() => setFieldTouched('email', true)}
           className={errors.email ? 'error' : ''}
         />
@@ -68,11 +68,13 @@ function ContactForm() {
           id="password"
           type="password"
           value={form.password}
-          onChange={(e) => handleFieldChange('password', e.target.value)}
+          onChange={e => handleFieldChange('password', e.target.value)}
           onBlur={() => setFieldTouched('password', true)}
           className={errors.password ? 'error' : ''}
         />
-        {errors.password && <span className="error-message">{errors.password}</span>}
+        {errors.password && (
+          <span className="error-message">{errors.password}</span>
+        )}
       </div>
 
       {/* Confirm Password field */}
@@ -82,11 +84,13 @@ function ContactForm() {
           id="confirmPassword"
           type="password"
           value={form.confirmPassword}
-          onChange={(e) => handleFieldChange('confirmPassword', e.target.value)}
+          onChange={e => handleFieldChange('confirmPassword', e.target.value)}
           onBlur={() => setFieldTouched('confirmPassword', true)}
           className={errors.confirmPassword ? 'error' : ''}
         />
-        {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
+        {errors.confirmPassword && (
+          <span className="error-message">{errors.confirmPassword}</span>
+        )}
       </div>
 
       {/* Age field */}
@@ -96,7 +100,7 @@ function ContactForm() {
           id="age"
           type="number"
           value={form.age}
-          onChange={(e) => handleFieldChange('age', e.target.value)}
+          onChange={e => handleFieldChange('age', e.target.value)}
           onBlur={() => setFieldTouched('age', true)}
           className={errors.age ? 'error' : ''}
         />
@@ -105,31 +109,20 @@ function ContactForm() {
 
       {/* Form status */}
       {submission.submitError && (
-        <div className="error-message form-error">
-          {submission.submitError}
-        </div>
+        <div className="error-message form-error">{submission.submitError}</div>
       )}
-      
+
       {submission.submitSuccess && (
-        <div className="success-message">
-          Form submitted successfully!
-        </div>
+        <div className="success-message">Form submitted successfully!</div>
       )}
 
       {/* Form actions */}
       <div className="form-actions">
-        <button
-          type="button"
-          onClick={resetForm}
-          disabled={!isDirty}
-        >
+        <button type="button" onClick={resetForm} disabled={!isDirty}>
           Reset
         </button>
-        
-        <button
-          type="submit"
-          disabled={!isValid || submission.isSubmitting}
-        >
+
+        <button type="submit" disabled={!isValid || submission.isSubmitting}>
           {submission.isSubmitting ? 'Submitting...' : 'Submit'}
         </button>
       </div>
@@ -144,11 +137,11 @@ function ContactForm() {
 }
 
 // Reusable form field component
-function FormField({ 
-  field, 
-  label, 
-  type = 'text', 
-  required = false 
+function FormField({
+  field,
+  label,
+  type = 'text',
+  required = false,
 }: {
   field: string;
   label: string;
@@ -168,13 +161,11 @@ function FormField({
         id={field}
         type={type}
         value={value}
-        onChange={(e) => setFieldValue(field, e.target.value)}
+        onChange={e => setFieldValue(field, e.target.value)}
         onBlur={() => setFieldTouched(field, true)}
         className={errors[field] ? 'error' : ''}
       />
-      {errors[field] && (
-        <span className="error-message">{errors[field]}</span>
-      )}
+      {errors[field] && <span className="error-message">{errors[field]}</span>}
     </div>
   );
 }

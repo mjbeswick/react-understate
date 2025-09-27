@@ -9,7 +9,8 @@ const FormValidation: React.FC = () => {
       <div className={styles.header}>
         <h1>Form Validation</h1>
         <p className={styles.subtitle}>
-          Build robust form validation with real-time feedback and error handling
+          Build robust form validation with real-time feedback and error
+          handling
         </p>
       </div>
 
@@ -52,9 +53,7 @@ const FormValidation: React.FC = () => {
       </div>
 
       <h2>Basic Form Validation</h2>
-      <p>
-        Start with a simple form validation pattern using derived values:
-      </p>
+      <p>Start with a simple form validation pattern using derived values:</p>
 
       <CodeBlock
         language="typescript"
@@ -222,9 +221,7 @@ export const resetForm = action(() => {
       />
 
       <h2>Advanced Validation Patterns</h2>
-      <p>
-        More sophisticated validation patterns for complex forms:
-      </p>
+      <p>More sophisticated validation patterns for complex forms:</p>
 
       <CodeBlock
         language="typescript"
@@ -329,9 +326,7 @@ export const conditionalValidation = derived(() => {
       />
 
       <h2>Form State Management</h2>
-      <p>
-        Comprehensive form state management with submission handling:
-      </p>
+      <p>Comprehensive form state management with submission handling:</p>
 
       <CodeBlock
         language="typescript"
@@ -449,9 +444,7 @@ export const autoSave = action(() => {
       />
 
       <h2>Validation Utilities</h2>
-      <p>
-        Reusable validation utilities and helpers:
-      </p>
+      <p>Reusable validation utilities and helpers:</p>
 
       <CodeBlock
         language="typescript"
@@ -606,9 +599,7 @@ const userForm = createFormValidation(
       />
 
       <h2>Using in React Components</h2>
-      <p>
-        Here's how to use form validation patterns in React components:
-      </p>
+      <p>Here's how to use form validation patterns in React components:</p>
 
       <CodeBlock
         language="tsx"
@@ -799,28 +790,35 @@ export { ContactForm, FormField };`}
       <h2>Best Practices</h2>
       <ul>
         <li>
-          <strong>Validate on blur:</strong> Don't show errors until user has interacted with field
+          <strong>Validate on blur:</strong> Don't show errors until user has
+          interacted with field
         </li>
         <li>
-          <strong>Provide clear error messages:</strong> Help users understand what went wrong
+          <strong>Provide clear error messages:</strong> Help users understand
+          what went wrong
         </li>
         <li>
-          <strong>Use debouncing for async validation:</strong> Prevent excessive API calls
+          <strong>Use debouncing for async validation:</strong> Prevent
+          excessive API calls
         </li>
         <li>
-          <strong>Show validation state visually:</strong> Use colors and icons to indicate field status
+          <strong>Show validation state visually:</strong> Use colors and icons
+          to indicate field status
         </li>
         <li>
           <strong>Handle edge cases:</strong> Empty forms, network errors, etc.
         </li>
         <li>
-          <strong>Use TypeScript:</strong> Ensure type safety for form data and validation
+          <strong>Use TypeScript:</strong> Ensure type safety for form data and
+          validation
         </li>
         <li>
-          <strong>Test thoroughly:</strong> Validation logic can be complex and error-prone
+          <strong>Test thoroughly:</strong> Validation logic can be complex and
+          error-prone
         </li>
         <li>
-          <strong>Consider accessibility:</strong> Ensure form is usable with screen readers
+          <strong>Consider accessibility:</strong> Ensure form is usable with
+          screen readers
         </li>
       </ul>
 

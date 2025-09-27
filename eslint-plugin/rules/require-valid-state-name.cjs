@@ -25,13 +25,13 @@ module.exports = {
       if (typeof name !== 'string' || name.length === 0) {
         return false;
       }
-      
+
       // First character must be letter, underscore, or dollar sign
       const firstChar = name[0];
       if (!/[a-zA-Z_$]/.test(firstChar)) {
         return false;
       }
-      
+
       // Remaining characters must be letters, numbers, underscores, or dollar signs
       for (let i = 1; i < name.length; i++) {
         const char = name[i];
@@ -39,7 +39,7 @@ module.exports = {
           return false;
         }
       }
-      
+
       return true;
     }
 
@@ -68,7 +68,7 @@ module.exports = {
       CallExpression(node) {
         if (isStateCreationCall(node)) {
           const stateName = getStateNameFromCall(node);
-          
+
           if (stateName && !isValidIdentifier(stateName)) {
             context.report({
               node: node.arguments[1],

@@ -6,7 +6,9 @@ declare module '../../dist/react-understate.esm.js' {
     subscribe(fn: () => void): () => void;
   };
   export function state<T>(initial: T, name?: string): State<T>;
-  export function action<T extends (...args: any[]) => any>(fn: T, name?: string): T;
+  export function action<T extends (...args: any[]) => any>(
+    fn: T,
+    name?: string,
+  ): T;
   export function batch(fn: () => void, name?: string): void;
 }
-

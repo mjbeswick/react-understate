@@ -19,14 +19,16 @@ module.exports = {
   meta: {
     type: 'suggestion',
     docs: {
-      description: 'Prevent any understate function calls inside other understate functions',
+      description:
+        'Prevent any understate function calls inside other understate functions',
       category: 'Best Practices',
       recommended: true,
     },
     fixable: null,
     schema: [],
     messages: {
-      noNestedUnderstate: 'Do not call understate functions inside other understate functions. Keep understate functions at the top level.',
+      noNestedUnderstate:
+        'Do not call understate functions inside other understate functions. Keep understate functions at the top level.',
     },
   },
 

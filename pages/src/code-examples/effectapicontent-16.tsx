@@ -11,12 +11,16 @@ effect(() => {
   console.log(`Counter effect: count is ${count.value}`);
 }, 'logCounter');
 
-effect(async ({ signal }) => {
-  if (user.value) {
-    console.log(`User effect: loading data for ${user.value.name}`);
-    // Async operations...
-  }
-}, 'loadUserData', { preventOverlap: true });
+effect(
+  async ({ signal }) => {
+    if (user.value) {
+      console.log(`User effect: loading data for ${user.value.name}`);
+      // Async operations...
+    }
+  },
+  'loadUserData',
+  { preventOverlap: true },
+);
 
 // Debug output will show:
 // [effect: logCounter] Effect running

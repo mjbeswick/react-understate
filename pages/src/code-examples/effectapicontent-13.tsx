@@ -10,14 +10,14 @@ effect(() => {
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }
-  
+
   const term = searchTerm.value;
-  
+
   if (!term.trim()) {
     searchResults.value = [];
     return;
   }
-  
+
   // Debounce the search by 300ms
   searchTimeout = setTimeout(async () => {
     try {
@@ -28,7 +28,7 @@ effect(() => {
       console.error('Search failed:', error);
     }
   }, 300);
-  
+
   // Cleanup timeout on effect disposal
   return () => {
     if (searchTimeout) {

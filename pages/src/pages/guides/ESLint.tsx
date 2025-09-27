@@ -24,18 +24,24 @@ const ESLintGuide: React.FC = () => {
 
       <h2>Why use the plugin?</h2>
       <p>
-        The <code>eslint-plugin-react-understate</code> package encodes project conventions
-        for React Understate. It helps prevent memory leaks, avoid nested reactive calls,
-        enforce subscriptions with <code>useUnderstate</code>, and encourage immutable updates and batching.
+        The <code>eslint-plugin-react-understate</code> package encodes project
+        conventions for React Understate. It helps prevent memory leaks, avoid
+        nested reactive calls, enforce subscriptions with{' '}
+        <code>useUnderstate</code>, and encourage immutable updates and
+        batching.
       </p>
 
       <h2>Installation</h2>
-      <CodeBlock language="bash" code={`npm install --save-dev eslint-plugin-react-understate`} />
+      <CodeBlock
+        language="bash"
+        code={`npm install --save-dev eslint-plugin-react-understate`}
+      />
 
       <h2>Configuration</h2>
       <p>
-        Use the recommended config for sensible defaults. Examples are shown for both Flat Config
-        (<code>eslint.config.js</code>) and legacy <code>.eslintrc</code> formats.
+        Use the recommended config for sensible defaults. Examples are shown for
+        both Flat Config (<code>eslint.config.js</code>) and legacy{' '}
+        <code>.eslintrc</code> formats.
       </p>
 
       <h3>Flat Config (eslint.config.js)</h3>
@@ -61,18 +67,21 @@ export default [
     },
   },
 ]
-`} />
+`}
+      />
 
       <h3>Legacy (.eslintrc.*)</h3>
       <CodeBlock
         language="json"
         code={`{
   "extends": ["plugin:react-understate/recommended"]
-}`} />
+}`}
+      />
 
       <h2>Manual rule selection</h2>
       <p>
-        Prefer the recommended preset, but you can enable specific rules as needed:
+        Prefer the recommended preset, but you can enable specific rules as
+        needed:
       </p>
       <CodeBlock
         language="javascript"
@@ -85,15 +94,31 @@ export default [{
     'react-understate/no-direct-state-mutation': 'error',
     'react-understate/prefer-batch-for-multiple-updates': ['warn', { minUpdates: 2 }],
   },
-}]`} />
+}]`}
+      />
 
       <h2>Common rules at a glance</h2>
       <ul>
-        <li><strong>Subscriptions</strong>: require <code>useUnderstate</code> for states and stores</li>
-        <li><strong>No nesting</strong>: prevent nested <code>effect</code>/<code>derived</code> and other understate calls</li>
-        <li><strong>Effects safety</strong>: disallow creating state/derived inside effects; encourage error handling</li>
-        <li><strong>Immutability</strong>: prefer object spread for updates; forbid direct mutation</li>
-        <li><strong>Performance</strong>: suggest <code>batch</code> for multiple updates</li>
+        <li>
+          <strong>Subscriptions</strong>: require <code>useUnderstate</code> for
+          states and stores
+        </li>
+        <li>
+          <strong>No nesting</strong>: prevent nested <code>effect</code>/
+          <code>derived</code> and other understate calls
+        </li>
+        <li>
+          <strong>Effects safety</strong>: disallow creating state/derived
+          inside effects; encourage error handling
+        </li>
+        <li>
+          <strong>Immutability</strong>: prefer object spread for updates;
+          forbid direct mutation
+        </li>
+        <li>
+          <strong>Performance</strong>: suggest <code>batch</code> for multiple
+          updates
+        </li>
       </ul>
 
       <h2>Example: fixing missing subscription</h2>
@@ -109,7 +134,8 @@ function Counter() {
 function Counter() {
   useUnderstate(count)
   return <div>{count.value}</div>
-}`} />
+}`}
+      />
 
       <h2>Where to learn more</h2>
       <ul>
@@ -132,5 +158,3 @@ function Counter() {
 };
 
 export default ESLintGuide;
-
-

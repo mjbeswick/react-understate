@@ -10,7 +10,7 @@ effect(async () => {
     userSettings.value = null;
     return;
   }
-  
+
   // Only fetch when user is logged in and online
   try {
     const response = await fetch(`/api/users/${user.value.id}/settings`);

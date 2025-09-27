@@ -23,7 +23,7 @@ function UserList() {
   useEffect(() => {
     // Fetch on mount
     fetchUsersWithCancellation();
-    
+
     // Cancel on unmount
     return () => {
       cancelCurrentRequest();
@@ -56,9 +56,7 @@ function UserList() {
   return (
     <div>
       <h2>Users</h2>
-      <button onClick={() => fetchUsersWithCancellation()}>
-        Refresh
-      </button>
+      <button onClick={() => fetchUsersWithCancellation()}>Refresh</button>
       <ul>
         {userList.map(user => (
           <li key={user.id}>
@@ -79,7 +77,7 @@ function UserListWithResource() {
 
   useEffect(() => {
     userResource.fetch();
-    
+
     return () => {
       userResource.cancel();
     };
@@ -88,9 +86,9 @@ function UserListWithResource() {
   return (
     <div>
       {isStale && <p>Data may be outdated</p>}
-      
+
       {loading && <p>Loading...</p>}
-      
+
       {error && (
         <div>
           <p>Error: {error}</p>
@@ -98,7 +96,7 @@ function UserListWithResource() {
           <button onClick={userResource.refresh}>Retry</button>
         </div>
       )}
-      
+
       {data && (
         <div>
           <button onClick={userResource.refresh}>

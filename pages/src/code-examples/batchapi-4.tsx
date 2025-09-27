@@ -8,13 +8,13 @@ const userPrefs = state({ theme: 'light', lang: 'en' });
 function loadUserProfile(userData: any) {
   batch(() => {
     user.value = { name: userData.name, age: userData.age };
-    userStats.value = { 
-      loginCount: userData.loginCount, 
-      lastLogin: userData.lastLogin 
+    userStats.value = {
+      loginCount: userData.loginCount,
+      lastLogin: userData.lastLogin,
     };
-    userPrefs.value = { 
+    userPrefs.value = {
       theme: userData.preferences.theme,
-      lang: userData.preferences.language
+      lang: userData.preferences.language,
     };
   });
 }
@@ -22,6 +22,12 @@ function loadUserProfile(userData: any) {
 // ❌ Less ideal - separate updates cause multiple renders
 function loadUserProfileUnbatched(userData: any) {
   user.value = { name: userData.name, age: userData.age };
-  userStats.value = { loginCount: userData.loginCount, lastLogin: userData.lastLogin };
-  userPrefs.value = { theme: userData.preferences.theme, lang: userData.preferences.language };
+  userStats.value = {
+    loginCount: userData.loginCount,
+    lastLogin: userData.lastLogin,
+  };
+  userPrefs.value = {
+    theme: userData.preferences.theme,
+    lang: userData.preferences.language,
+  };
 }

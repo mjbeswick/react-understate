@@ -7,11 +7,13 @@ const mockLocalStorage = {
     mockLocalStorage.data[key] = value;
   }),
   getItem: jest.fn((key: string) => mockLocalStorage.data[key] || null),
-  clear: jest.fn(() => { mockLocalStorage.data = {}; })
+  clear: jest.fn(() => {
+    mockLocalStorage.data = {};
+  }),
 };
 
 Object.defineProperty(window, 'localStorage', {
-  value: mockLocalStorage
+  value: mockLocalStorage,
 });
 
 describe('Preferences Effect', () => {
@@ -19,39 +21,39 @@ describe('Preferences Effect', () => {
     mockLocalStorage.clear();
     jest.clearAllMocks();
   });
-  
+
   it('should save preferences to localStorage', () => {
     const preferences = state({ theme: 'light' });
-    
+
     // Create the effect
     effect(() => {
       localStorage.setItem('prefs', JSON.stringify(preferences.value));
     });
-    
+
     // Verify initial save
     expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
-      'prefs', 
-      JSON.stringify({ theme: 'light' })
+      'prefs',
+      JSON.stringify({ theme: 'light' }),
     );
-    
+
     // Update preferences
     preferences.value = { theme: 'dark' };
-    
+
     // Verify update was saved
     expect(mockLocalStorage.setItem).toHaveBeenLastCalledWith(
       'prefs',
-      JSON.stringify({ theme: 'dark' })
+      JSON.stringify({ theme: 'dark' }),
     );
   });
-  
+
   it('should handle localStorage errors gracefully', () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
     mockLocalStorage.setItem.mockImplementation(() => {
       throw new Error('Storage quota exceeded');
     });
-    
+
     const preferences = state({ theme: 'light' });
-    
+
     effect(() => {
       try {
         localStorage.setItem('prefs', JSON.stringify(preferences.value));
@@ -59,12 +61,12 @@ describe('Preferences Effect', () => {
         console.error('Failed to save preferences:', error);
       }
     });
-    
+
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Failed to save preferences:', 
-      expect.any(Error)
+      'Failed to save preferences:',
+      expect.any(Error),
     );
-    
+
     consoleSpy.mockRestore();
   });
 });

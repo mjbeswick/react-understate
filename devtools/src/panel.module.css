@@ -19,7 +19,11 @@
 }
 
 .container {
-  font-family: -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family:
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    sans-serif;
   color: var(--fg);
   background: var(--bg);
   height: 100vh;
@@ -71,5 +75,3 @@
   color: var(--muted);
   font-size: 12px;
 }
-
-

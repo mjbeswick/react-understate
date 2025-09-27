@@ -15,11 +15,11 @@ count.value = 10; // Logs: "Count changed from 5 to 10"
 unsubscribe();
 
 // Multiple subscribers
-const unsubscribe1 = count.subscribe((value) => {
+const unsubscribe1 = count.subscribe(value => {
   localStorage.setItem('count', String(value));
 });
 
-const unsubscribe2 = count.subscribe((value) => {
+const unsubscribe2 = count.subscribe(value => {
   if (value > 100) {
     alert('Count is getting high!');
   }

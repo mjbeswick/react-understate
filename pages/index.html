@@ -6,18 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="turbolinks-cache-control" content="no-cache" />
     <title>React Understate - Simple React State Management</title>
-    <meta name="description" content="A simple, powerful state management library for React applications with minimal boilerplate and maximum performance." />
+    <meta
+      name="description"
+      content="A simple, powerful state management library for React applications with minimal boilerplate and maximum performance."
+    />
   </head>
   <body>
     <div id="root"></div>
     <script>
       // Handle redirect from 404.html (rafgraph pattern)
-      (function() {
+      (function () {
         var loc = window.location;
         var q = loc.search;
         if (q.startsWith('?/')) {
           var decoded = q.slice(2).split('&').join('?');
-          var newUrl = loc.protocol + '//' + loc.host + loc.pathname.replace(/index.html$/, '') + decoded + loc.hash;
+          var newUrl =
+            loc.protocol +
+            '//' +
+            loc.host +
+            loc.pathname.replace(/index.html$/, '') +
+            decoded +
+            loc.hash;
           window.history.replaceState(null, '', newUrl);
         }
       })();

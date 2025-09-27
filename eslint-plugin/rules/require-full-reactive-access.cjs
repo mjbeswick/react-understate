@@ -2,10 +2,10 @@
 
 /**
  * @fileoverview Require full reactive access in derived functions
- * 
+ *
  * This rule detects when reactive values are accessed with nested properties
  * inside derived functions, which doesn't create proper subscriptions.
- * 
+ *
  * The issue occurs when you do:
  * ```typescript
  * derived(() => {
@@ -15,7 +15,7 @@
  *   }));
  * });
  * ```
- * 
+ *
  * Instead, you should:
  * ```typescript
  * derived(() => {
@@ -31,14 +31,16 @@ module.exports = {
   meta: {
     type: 'problem',
     docs: {
-      description: 'Require full reactive access in derived functions to ensure proper subscriptions',
+      description:
+        'Require full reactive access in derived functions to ensure proper subscriptions',
       category: 'Best Practices',
       recommended: true,
     },
     fixable: 'code',
     schema: [],
     messages: {
-      requireFullReactiveAccess: 'Reactive value "{{reactiveName}}" is accessed with nested properties inside derived function. This doesn\'t create a subscription. Extract the full value first: `const {{varName}} = {{reactiveName}}.value;`',
+      requireFullReactiveAccess:
+        'Reactive value "{{reactiveName}}" is accessed with nested properties inside derived function. This doesn\'t create a subscription. Extract the full value first: `const {{varName}} = {{reactiveName}}.value;`',
     },
   },
 
@@ -82,14 +84,14 @@ module.exports = {
     function getSuggestedVarName(reactiveName) {
       // Convert camelCase to snake_case or use a simple mapping
       const commonMappings = {
-        'imageCache': 'cache',
-        'userData': 'user',
-        'productList': 'products',
-        'itemMap': 'items',
-        'configData': 'config',
-        'stateData': 'state',
+        imageCache: 'cache',
+        userData: 'user',
+        productList: 'products',
+        itemMap: 'items',
+        configData: 'config',
+        stateData: 'state',
       };
-      
+
       return commonMappings[reactiveName] || reactiveName.toLowerCase();
     }
 
@@ -115,10 +117,10 @@ module.exports = {
         // Check if this is a nested property access on a reactive value
         if (isNestedPropertyAccess(node)) {
           const reactiveName = getReactiveName(node.object);
-          
+
           if (reactiveName) {
             const suggestedVarName = getSuggestedVarName(reactiveName);
-            
+
             context.report({
               node,
               messageId: 'requireFullReactiveAccess',
@@ -128,9 +130,10 @@ module.exports = {
               },
               fix(fixer) {
                 // Find the derived function body
-                const derivedCall = derivedCallStack[derivedCallStack.length - 1];
+                const derivedCall =
+                  derivedCallStack[derivedCallStack.length - 1];
                 const derivedFunction = derivedCall.arguments[0];
-                
+
                 if (derivedFunction.type !== 'ArrowFunctionExpression') {
                   return null; // Can't fix non-arrow functions easily
                 }
@@ -138,33 +141,49 @@ module.exports = {
                 const functionBody = derivedFunction.body;
                 const sourceCode = context.getSourceCode();
                 const functionText = sourceCode.getText(functionBody);
-                
+
                 // Check if the variable is already declared
-                if (functionText.includes(`const ${suggestedVarName} = ${reactiveName}.value`)) {
+                if (
+                  functionText.includes(
+                    `const ${suggestedVarName} = ${reactiveName}.value`,
+                  )
+                ) {
                   // Variable already exists, just replace the usage
                   const fullReactiveAccess = `${reactiveName}.value`;
                   const replacement = suggestedVarName;
-                  
+
                   // Replace the nested access with the variable
                   return fixer.replaceText(node, replacement);
                 }
 
                 // Add the variable declaration and replace the usage
                 const newVarDeclaration = `const ${suggestedVarName} = ${reactiveName}.value;\n`;
-                
+
                 if (functionBody.type === 'BlockStatement') {
                   // Add at the beginning of the block
                   const firstStatement = functionBody.body[0];
                   if (firstStatement) {
                     // Add variable declaration
-                    const addVar = fixer.insertTextBefore(firstStatement, newVarDeclaration);
+                    const addVar = fixer.insertTextBefore(
+                      firstStatement,
+                      newVarDeclaration,
+                    );
                     // Replace the nested access with the variable
-                    const replaceUsage = fixer.replaceText(node, suggestedVarName);
+                    const replaceUsage = fixer.replaceText(
+                      node,
+                      suggestedVarName,
+                    );
                     return [addVar, replaceUsage];
                   } else {
                     // Empty block, add before the closing brace
-                    const addVar = fixer.insertTextBeforeRange([functionBody.range[1] - 1, functionBody.range[1] - 1], newVarDeclaration);
-                    const replaceUsage = fixer.replaceText(node, suggestedVarName);
+                    const addVar = fixer.insertTextBeforeRange(
+                      [functionBody.range[1] - 1, functionBody.range[1] - 1],
+                      newVarDeclaration,
+                    );
+                    const replaceUsage = fixer.replaceText(
+                      node,
+                      suggestedVarName,
+                    );
                     return [addVar, replaceUsage];
                   }
                 } else {

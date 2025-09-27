@@ -113,6 +113,11 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
             debugConfig,
           );
         }
+      } catch (error) {
+        // If there's an error during recomputation, keep the previous value
+        // and mark as dirty so it can be retried later
+        dirty = true;
+        throw error; // Re-throw the error so callers can handle it
       } finally {
         setActiveEffect(prevEffect);
         isComputing = false;
@@ -152,7 +157,9 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
 
   // Return a state-like object (read-only)
   const derivedObj = {
-    rawValue: cachedValue,
+    get rawValue() {
+      return computeValue();
+    },
     update: () => {
       throw new Error('Cannot update derived values directly');
     },

@@ -4,18 +4,18 @@ export const addTodoWithValidation = action((text: string) => {
     console.warn('Cannot add empty todo');
     return;
   }
-  
+
   if (text.length > 100) {
     console.warn('Todo text too long');
     return;
   }
-  
+
   // Check for duplicates
   if (todos.value.some(todo => todo.text === text.trim())) {
     console.warn('Todo already exists');
     return;
   }
-  
+
   // Add the todo
   todos.value = [
     ...todos.value,
@@ -25,7 +25,7 @@ export const addTodoWithValidation = action((text: string) => {
       completed: false,
     },
   ];
-  
+
   // Clear input
   newTodo.value = '';
 }, 'addTodoWithValidation');

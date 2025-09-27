@@ -19,7 +19,7 @@ const calculation = derived(() => {
   if (parsed.error) {
     return { result: null, error: parsed.error };
   }
-  
+
   try {
     const result = Math.sqrt(parsed.value);
     return { result, error: null };
@@ -29,26 +29,28 @@ const calculation = derived(() => {
 });
 
 function Calculator() {
-  const { 
-    inputValue: input, 
-    parsedNumber: parsed, 
-    calculation: calc 
+  const {
+    inputValue: input,
+    parsedNumber: parsed,
+    calculation: calc,
   } = useUnderstate({
     inputValue,
     parsedNumber,
-    calculation
+    calculation,
   });
-  
+
   return (
     <div>
       <input
         value={input}
-        onChange={(e) => inputValue.value = e.target.value}
+        onChange={e => (inputValue.value = e.target.value)}
         placeholder="Enter a number"
       />
-      
-      {parsed.error && <p style={{ color: 'red' }}>Input Error: {parsed.error}</p>}
-      
+
+      {parsed.error && (
+        <p style={{ color: 'red' }}>Input Error: {parsed.error}</p>
+      )}
+
       {calc.error ? (
         <p style={{ color: 'red' }}>Calculation Error: {calc.error}</p>
       ) : (

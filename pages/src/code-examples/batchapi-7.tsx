@@ -23,15 +23,15 @@ function updateAll() {
 function complexUpdate() {
   batch(() => {
     a.value = 10;
-    
+
     batch(() => {
       b.value = 20;
-      
+
       batch(() => {
         c.value = 30;
       });
     });
-    
+
     // More updates at outer level
     a.value = a.value + 1; // Now 11
   });

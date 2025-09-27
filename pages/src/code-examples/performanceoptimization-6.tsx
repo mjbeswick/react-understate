@@ -7,7 +7,7 @@ const formData = state({
   phone: '',
 });
 
-const updateForm = action((newData) => {
+const updateForm = action(newData => {
   batch(() => {
     formData.value = { ...formData.value, ...newData };
   });

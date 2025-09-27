@@ -43,7 +43,7 @@ const handleShortcutsWithModifiers = action((event: KeyboardEvent) => {
         break;
     }
   }
-  
+
   // Alt/Option shortcuts
   if (altKey) {
     switch (key) {
@@ -57,7 +57,7 @@ const handleShortcutsWithModifiers = action((event: KeyboardEvent) => {
         break;
     }
   }
-  
+
   // Shift shortcuts (usually for selection)
   if (shiftKey && !cmdOrCtrl) {
     switch (key) {

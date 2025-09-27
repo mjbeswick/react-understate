@@ -42,12 +42,19 @@ module.exports = {
     function isInsideDerivedFunction(node) {
       let parent = node.parent;
       while (parent) {
-        if (parent.type === 'ArrowFunctionExpression' || parent.type === 'FunctionExpression') {
+        if (
+          parent.type === 'ArrowFunctionExpression' ||
+          parent.type === 'FunctionExpression'
+        ) {
           // Check if this function is the first argument of a derived call
           let grandParent = parent.parent;
-          if (grandParent && grandParent.type === 'CallExpression' && 
-              grandParent.callee && grandParent.callee.type === 'Identifier' && 
-              grandParent.callee.name === 'derived') {
+          if (
+            grandParent &&
+            grandParent.type === 'CallExpression' &&
+            grandParent.callee &&
+            grandParent.callee.type === 'Identifier' &&
+            grandParent.callee.name === 'derived'
+          ) {
             return true;
           }
         }

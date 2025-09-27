@@ -15,14 +15,14 @@ function useAuth() {
   return useUnderstate({
     user: authStore.user,
     login: authStore.login,
-    logout: authStore.logout
+    logout: authStore.logout,
   });
 }
 
 // ✅ DO: Actions are stable - safe in dependency arrays
 function GoodEffect() {
   const { loadData } = useUnderstate({ loadData: dataStore.loadData });
-  
+
   useEffect(() => {
     loadData();
   }, [loadData]); // Safe - loadData reference is stable
@@ -31,7 +31,7 @@ function GoodEffect() {
 // ❌ DON'T: Mutate state values directly
 function BadMutation() {
   const { user } = useUnderstate({ user: userStore.user });
-  
+
   const handleUpdate = () => {
     user.name = 'New Name'; // ❌ Direct mutation
     userStore.user.value = user; // ❌ Won't trigger updates
@@ -42,9 +42,9 @@ function BadMutation() {
 function GoodMutation() {
   const { user, updateUser } = useUnderstate({
     user: userStore.user,
-    updateUser: userStore.updateUser
+    updateUser: userStore.updateUser,
   });
-  
+
   const handleUpdate = () => {
     updateUser({ ...user, name: 'New Name' }); // ✅ Proper update
   };

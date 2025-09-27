@@ -6,14 +6,14 @@ const allSelected = state(false);
 
 function toggleAllItems() {
   const shouldSelectAll = !allSelected.value;
-  
+
   batch(() => {
     // Update all items
     items.value = items.value.map(item => ({
       ...item,
-      selected: shouldSelectAll
+      selected: shouldSelectAll,
     }));
-    
+
     // Update derived states
     selectedCount.value = shouldSelectAll ? items.value.length : 0;
     allSelected.value = shouldSelectAll;
@@ -22,12 +22,12 @@ function toggleAllItems() {
 
 function toggleItem(id: number) {
   const newItems = items.value.map(item =>
-    item.id === id ? { ...item, selected: !item.selected } : item
+    item.id === id ? { ...item, selected: !item.selected } : item,
   );
-  
+
   const newSelectedCount = newItems.filter(item => item.selected).length;
   const newAllSelected = newSelectedCount === newItems.length;
-  
+
   batch(() => {
     items.value = newItems;
     selectedCount.value = newSelectedCount;
@@ -37,7 +37,7 @@ function toggleItem(id: number) {
 
 function deleteSelectedItems() {
   const remainingItems = items.value.filter(item => !item.selected);
-  
+
   batch(() => {
     items.value = remainingItems;
     selectedCount.value = 0;

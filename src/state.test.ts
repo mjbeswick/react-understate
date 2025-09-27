@@ -813,6 +813,110 @@ describe('States', () => {
     });
   });
 
+  describe('rawValue Property', () => {
+    it('should provide rawValue that matches current value', () => {
+      const testState = state('initial');
+      expect(testState.rawValue).toBe('initial');
+      expect(testState.value).toBe('initial');
+      expect(testState.rawValue).toBe(testState.value);
+    });
+
+    it('should update rawValue when state value changes', () => {
+      const testState = state(0);
+      expect(testState.rawValue).toBe(0);
+
+      testState.value = 42;
+      expect(testState.rawValue).toBe(42);
+      expect(testState.value).toBe(42);
+      expect(testState.rawValue).toBe(testState.value);
+    });
+
+    it('should update rawValue with async updates', async () => {
+      const testState = state(0);
+      expect(testState.rawValue).toBe(0);
+
+      testState.value = async prev => {
+        await new Promise(resolve => setTimeout(resolve, 10));
+        return prev + 10;
+      };
+
+      await new Promise(resolve => setTimeout(resolve, 20));
+      expect(testState.rawValue).toBe(10);
+      expect(testState.value).toBe(10);
+    });
+
+    it('should update rawValue with update method', async () => {
+      const testState = state(0);
+      expect(testState.rawValue).toBe(0);
+
+      await testState.update(prev => prev + 5);
+      expect(testState.rawValue).toBe(5);
+      expect(testState.value).toBe(5);
+    });
+
+    it('should handle object values in rawValue', () => {
+      const testState = state({ count: 0, name: 'test' });
+      expect(testState.rawValue).toEqual({ count: 0, name: 'test' });
+
+      testState.value = { count: 1, name: 'updated' };
+      expect(testState.rawValue).toEqual({ count: 1, name: 'updated' });
+    });
+
+    it('should handle array values in rawValue', () => {
+      const testState = state([1, 2, 3]);
+      expect(testState.rawValue).toEqual([1, 2, 3]);
+
+      testState.value = [4, 5, 6];
+      expect(testState.rawValue).toEqual([4, 5, 6]);
+    });
+
+    it('should handle null and undefined values in rawValue', () => {
+      const nullState = state(null);
+      expect(nullState.rawValue).toBe(null);
+
+      const undefinedState = state(undefined);
+      expect(undefinedState.rawValue).toBe(undefined);
+    });
+
+    it('should maintain rawValue consistency with batching', () => {
+      const testState = state(0);
+      expect(testState.rawValue).toBe(0);
+
+      batch(() => {
+        testState.value = 1;
+        expect(testState.rawValue).toBe(1);
+        testState.value = 2;
+        expect(testState.rawValue).toBe(2);
+      });
+
+      expect(testState.rawValue).toBe(2);
+      expect(testState.value).toBe(2);
+    });
+
+    it('should not establish dependencies when accessing rawValue', () => {
+      const testState = state(0);
+      let effectCount = 0;
+
+      effect(() => {
+        testState.rawValue; // Should not create dependency
+        effectCount++;
+      });
+
+      expect(effectCount).toBe(1);
+
+      testState.value = 1;
+      expect(effectCount).toBe(1); // Should not re-run effect
+    });
+
+    it('should work with mutation observation', () => {
+      const testState = state([1, 2, 3], { observeMutations: true });
+      expect(testState.rawValue).toEqual([1, 2, 3]);
+
+      testState.value.push(4);
+      expect(testState.rawValue).toEqual([1, 2, 3, 4]);
+    });
+  });
+
   describe('Name Validation', () => {
     it('should throw error for names containing dots', () => {
       expect(() => {

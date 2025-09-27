@@ -28,12 +28,12 @@ function TodoList() {
           type="text"
           placeholder="Search todos..."
           value={filterText}
-          onChange={(e) => setFilterText(e.target.value)}
+          onChange={e => setFilterText(e.target.value)}
         />
-        
+
         <select
           value={filterCompleted}
-          onChange={(e) => setFilterCompleted(e.target.value as any)}
+          onChange={e => setFilterCompleted(e.target.value as any)}
         >
           <option value="all">All</option>
           <option value="active">Active</option>
@@ -69,22 +69,17 @@ function TodoList() {
 
       {/* Pagination */}
       <div className="pagination">
-        <button 
-          onClick={prevPage} 
-          disabled={!pagination.hasPrevPage}
-        >
+        <button onClick={prevPage} disabled={!pagination.hasPrevPage}>
           Previous
         </button>
-        
+
         <span>
-          Page {pagination.currentPage} of {pagination.totalPages}
-          ({pagination.startIndex}-{pagination.endIndex} of {pagination.totalItems})
+          Page {pagination.currentPage} of {pagination.totalPages}(
+          {pagination.startIndex}-{pagination.endIndex} of{' '}
+          {pagination.totalItems})
         </span>
-        
-        <button 
-          onClick={nextPage} 
-          disabled={!pagination.hasNextPage}
-        >
+
+        <button onClick={nextPage} disabled={!pagination.hasNextPage}>
           Next
         </button>
       </div>
@@ -122,18 +117,22 @@ function AdvancedFilters() {
         <input
           type="date"
           value={dateRange.start?.toISOString().split('T')[0] || ''}
-          onChange={(e) => setDateRange(
-            e.target.value ? new Date(e.target.value) : null,
-            dateRange.end
-          )}
+          onChange={e =>
+            setDateRange(
+              e.target.value ? new Date(e.target.value) : null,
+              dateRange.end,
+            )
+          }
         />
         <input
           type="date"
           value={dateRange.end?.toISOString().split('T')[0] || ''}
-          onChange={(e) => setDateRange(
-            dateRange.start,
-            e.target.value ? new Date(e.target.value) : null
-          )}
+          onChange={e =>
+            setDateRange(
+              dateRange.start,
+              e.target.value ? new Date(e.target.value) : null,
+            )
+          }
         />
       </div>
 
@@ -145,20 +144,18 @@ function AdvancedFilters() {
           min="1"
           max="3"
           value={priorityRange.min}
-          onChange={(e) => setPriorityRange(
-            parseInt(e.target.value),
-            priorityRange.max
-          )}
+          onChange={e =>
+            setPriorityRange(parseInt(e.target.value), priorityRange.max)
+          }
         />
         <input
           type="range"
           min="1"
           max="3"
           value={priorityRange.max}
-          onChange={(e) => setPriorityRange(
-            priorityRange.min,
-            parseInt(e.target.value)
-          )}
+          onChange={e =>
+            setPriorityRange(priorityRange.min, parseInt(e.target.value))
+          }
         />
       </div>
     </div>

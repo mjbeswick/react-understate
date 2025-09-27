@@ -8,7 +8,7 @@ const dataEffect = effect(() => {
     // Update data periodically
     data.value = [...data.value, { id: Date.now(), value: Math.random() }];
   }, 1000);
-  
+
   // Return cleanup function
   return () => {
     clearInterval(interval);

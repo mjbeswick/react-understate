@@ -1,17 +1,21 @@
 const setupFocusAwareShortcuts = effect(() => {
   const handleKeyDown = (event: KeyboardEvent) => {
     const target = event.target as HTMLElement;
-    
+
     // Don't handle shortcuts if user is typing in an input
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.isContentEditable
+    ) {
       return;
     }
-    
+
     // Only handle shortcuts when the main app area is focused
     if (!target.closest('.app-main')) {
       return;
     }
-    
+
     // Now handle the shortcuts
     switch (event.key) {
       case 'j':

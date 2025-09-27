@@ -11,5 +11,5 @@ effect(() => {
 }, 'updateFullName');
 
 firstName.value = 'Jane'; // Logs: "Full name: Mr. Jane Doe"
-title.value = 'Ms.';       // Logs: "Full name: Ms. Jane Doe"
-lastName.value = 'Smith';  // Logs: "Full name: Ms. Jane Smith"
+title.value = 'Ms.'; // Logs: "Full name: Ms. Jane Doe"
+lastName.value = 'Smith'; // Logs: "Full name: Ms. Jane Smith"

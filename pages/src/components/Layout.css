@@ -3,9 +3,9 @@
   display: grid;
   grid-template-rows: auto 1fr;
   grid-template-columns: 280px 1fr;
-  grid-template-areas: 
-    "header header"
-    "sidebar main";
+  grid-template-areas:
+    'header header'
+    'sidebar main';
 }
 
 /* Header */
@@ -72,7 +72,6 @@
   align-items: center;
   gap: 1rem;
 }
-
 
 .theme-toggle,
 .github-link {
@@ -176,9 +175,9 @@
 @media (max-width: 1024px) {
   .layout {
     grid-template-columns: 1fr;
-    grid-template-areas: 
-      "header"
-      "main";
+    grid-template-areas:
+      'header'
+      'main';
   }
 
   .sidebar {
@@ -218,7 +217,6 @@
 }
 
 @media (max-width: 640px) {
-
   .header-content {
     padding: 0 1rem;
   }

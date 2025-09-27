@@ -28,4 +28,9 @@ globalThis.console.log('Synced code examples:', srcDir, '->', destDir);
 
 // Also copy devtools extension to docs public folder for easy unpacked loading
 copyDir(extSrcDir, extDestDir);
-globalThis.console.log('Synced devtools extension:', extSrcDir, '->', extDestDir);
+globalThis.console.log(
+  'Synced devtools extension:',
+  extSrcDir,
+  '->',
+  extDestDir,
+);

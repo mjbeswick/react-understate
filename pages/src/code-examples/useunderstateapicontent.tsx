@@ -11,13 +11,13 @@ const counterStore = {
   }, 'decrement'),
   reset: action(() => {
     counterStore.count.value = 0;
-  }, 'reset')
+  }, 'reset'),
 };
 
 function Counter() {
   // Extract current values and actions
   const { count, increment, decrement, reset } = useUnderstate(counterStore);
-  
+
   return (
     <div>
       <h2>Count: {count}</h2>

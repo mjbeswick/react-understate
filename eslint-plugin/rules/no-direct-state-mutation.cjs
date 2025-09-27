@@ -7,8 +7,7 @@ module.exports = {
   meta: {
     type: 'error',
     docs: {
-      description:
-        'Prevent direct mutation of state objects and arrays',
+      description: 'Prevent direct mutation of state objects and arrays',
       category: 'React Understate',
       recommended: true,
     },
@@ -40,7 +39,15 @@ module.exports = {
         node.callee.object.type === 'MemberExpression' &&
         isStateAccess(node.callee.object) &&
         node.callee.property.type === 'Identifier' &&
-        ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse'].includes(node.callee.property.name)
+        [
+          'push',
+          'pop',
+          'shift',
+          'unshift',
+          'splice',
+          'sort',
+          'reverse',
+        ].includes(node.callee.property.name)
       ) {
         return true;
       }
@@ -77,7 +84,11 @@ module.exports = {
       if (node.left && node.left.object && node.left.object.object) {
         return node.left.object.object.name;
       }
-      if (node.argument && node.argument.object && node.argument.object.object) {
+      if (
+        node.argument &&
+        node.argument.object &&
+        node.argument.object.object
+      ) {
         return node.argument.object.object.name;
       }
       return 'state';
@@ -85,11 +96,13 @@ module.exports = {
 
     function getFixSuggestion(node) {
       const stateName = getStateName(node);
-      
+
       if (node.type === 'CallExpression') {
         const method = node.callee.property.name;
-        const args = node.arguments.map(arg => context.getSourceCode().getText(arg)).join(', ');
-        
+        const args = node.arguments
+          .map(arg => context.getSourceCode().getText(arg))
+          .join(', ');
+
         switch (method) {
           case 'push':
             return `${stateName}.value = [...${stateName}.value, ${args}];`;
@@ -109,18 +122,18 @@ module.exports = {
             return null;
         }
       }
-      
+
       if (node.type === 'AssignmentExpression') {
         const property = node.left.property.name;
         const value = context.getSourceCode().getText(node.right);
         return `${stateName}.value = { ...${stateName}.value, ${property}: ${value} };`;
       }
-      
+
       if (node.type === 'UnaryExpression' && node.operator === 'delete') {
         const property = node.argument.property.name;
         return `${stateName}.value = { ...${stateName}.value }; delete ${stateName}.value.${property};`;
       }
-      
+
       return null;
     }
 
@@ -131,7 +144,7 @@ module.exports = {
           context.report({
             node,
             messageId: 'noDirectStateMutation',
-            fix: fix ? (fixer) => fixer.replaceText(node, fix) : null,
+            fix: fix ? fixer => fixer.replaceText(node, fix) : null,
           });
         }
       },
@@ -142,7 +155,7 @@ module.exports = {
           context.report({
             node,
             messageId: 'noDirectStateMutation',
-            fix: fix ? (fixer) => fixer.replaceText(node, fix) : null,
+            fix: fix ? fixer => fixer.replaceText(node, fix) : null,
           });
         }
       },
@@ -153,7 +166,7 @@ module.exports = {
           context.report({
             node,
             messageId: 'noDirectStateMutation',
-            fix: fix ? (fixer) => fixer.replaceText(node, fix) : null,
+            fix: fix ? fixer => fixer.replaceText(node, fix) : null,
           });
         }
       },

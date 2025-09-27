@@ -1,10 +1,5 @@
 // todoStore.ts
-import {
-  state,
-  derived,
-  action,
-  persistLocalStorage,
-} from 'react-understate';
+import { state, derived, action, persistLocalStorage } from 'react-understate';
 
 // Types
 export type Todo = {
@@ -115,7 +110,7 @@ export const todoStore = {
   todos,
   filter,
   newTodo,
-  
+
   // Computed values
   filteredTodos,
   activeCount,
@@ -123,7 +118,7 @@ export const todoStore = {
   totalCount,
   hasCompletedTodos,
   allCompleted,
-  
+
   // Actions
   setNewTodo,
   setFilter,

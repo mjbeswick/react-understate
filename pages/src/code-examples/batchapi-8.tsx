@@ -18,7 +18,7 @@ const incrementWithMessage = action(() => {
 // ❌ May need manual batching in async contexts
 async function handleAsyncUpdate() {
   const result = await fetchData();
-  
+
   // These might not be automatically batched
   batch(() => {
     count.value = result.count;

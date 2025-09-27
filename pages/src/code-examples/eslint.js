@@ -1,8 +1,8 @@
 // eslint.config.js
-import js from '@eslint/js'
-import ts from 'typescript-eslint'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactUnderstate from 'eslint-plugin-react-understate'
+import js from '@eslint/js';
+import ts from 'typescript-eslint';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactUnderstate from 'eslint-plugin-react-understate';
 
 export default [
   js.configs.recommended,
@@ -17,4 +17,4 @@ export default [
       ...reactUnderstate.configs.recommended.rules,
     },
   },
-]
+];

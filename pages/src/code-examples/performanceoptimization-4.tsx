@@ -7,18 +7,21 @@ const validOrders = derived(() => {
 
 const ordersByMonth = derived(() => {
   const valid = validOrders.value;
-  
-  return valid.reduce((acc, order) => {
-    const month = order.date.getMonth();
-    if (!acc[month]) acc[month] = [];
-    acc[month].push(order);
-    return acc;
-  }, {} as Record<number, Order[]>);
+
+  return valid.reduce(
+    (acc, order) => {
+      const month = order.date.getMonth();
+      if (!acc[month]) acc[month] = [];
+      acc[month].push(order);
+      return acc;
+    },
+    {} as Record<number, Order[]>,
+  );
 });
 
 const monthlyRevenue = derived(() => {
   const byMonth = ordersByMonth.value;
-  
+
   return Object.entries(byMonth).map(([month, orders]) => ({
     month: parseInt(month),
     revenue: orders.reduce((sum, order) => sum + order.total, 0),

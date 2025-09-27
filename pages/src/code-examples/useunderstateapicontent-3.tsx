@@ -4,11 +4,11 @@ const appStore = {
   theme: state('light', 'theme'),
   notifications: state([], 'notifications'),
   settings: state({}, 'settings'),
-  
+
   // ... many more states and actions
   updateTheme: action((theme: string) => {
     appStore.theme.value = theme;
-  }, 'updateTheme')
+  }, 'updateTheme'),
 };
 
 // Component only subscribes to what it needs
@@ -16,9 +16,9 @@ function ThemeToggle() {
   // Only subscribes to theme and updateTheme - not other states
   const { theme, updateTheme } = useUnderstate({
     theme: appStore.theme,
-    updateTheme: appStore.updateTheme
+    updateTheme: appStore.updateTheme,
   });
-  
+
   return (
     <button onClick={() => updateTheme(theme === 'light' ? 'dark' : 'light')}>
       Current theme: {theme}
@@ -30,10 +30,10 @@ function ThemeToggle() {
 function UserProfile() {
   // Only subscribes to user state
   const { user } = useUnderstate({
-    user: appStore.user
+    user: appStore.user,
   });
-  
+
   if (!user) return <div>Please log in</div>;
-  
+
   return <div>Welcome, {user.name}!</div>;
 }

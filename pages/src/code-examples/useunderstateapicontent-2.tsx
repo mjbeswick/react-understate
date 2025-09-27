@@ -6,26 +6,29 @@ const todoStore = {
   todos: state<Todo[]>([], 'todos'),
   filter: state<'all' | 'active' | 'completed'>('all', 'filter'),
   newTodoText: state('', 'newTodoText'),
-  
+
   // Derived values
   filteredTodos: derived(() => {
     const todos = todoStore.todos.value;
     switch (todoStore.filter.value) {
-      case 'active': return todos.filter(todo => !todo.completed);
-      case 'completed': return todos.filter(todo => todo.completed);
-      default: return todos;
+      case 'active':
+        return todos.filter(todo => !todo.completed);
+      case 'completed':
+        return todos.filter(todo => todo.completed);
+      default:
+        return todos;
     }
   }, 'filteredTodos'),
-  
+
   todoStats: derived(() => {
     const todos = todoStore.todos.value;
     return {
       total: todos.length,
       completed: todos.filter(todo => todo.completed).length,
-      active: todos.filter(todo => !todo.completed).length
+      active: todos.filter(todo => !todo.completed).length,
     };
   }, 'todoStats'),
-  
+
   // Actions
   addTodo: action(() => {
     if (todoStore.newTodoText.value.trim()) {
@@ -34,22 +37,22 @@ const todoStore = {
         {
           id: Date.now(),
           text: todoStore.newTodoText.value.trim(),
-          completed: false
-        }
+          completed: false,
+        },
       ];
       todoStore.newTodoText.value = '';
     }
   }, 'addTodo'),
-  
+
   toggleTodo: action((id: number) => {
     todoStore.todos.value = todoStore.todos.value.map(todo =>
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo,
     );
   }, 'toggleTodo'),
-  
+
   setFilter: action((newFilter: typeof todoStore.filter.value) => {
     todoStore.filter.value = newFilter;
-  }, 'setFilter')
+  }, 'setFilter'),
 };
 
 function TodoApp() {
@@ -61,48 +64,50 @@ function TodoApp() {
     addTodo,
     toggleTodo,
     setFilter,
-    filter
+    filter,
   } = useUnderstate(todoStore);
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     addTodo();
   };
-  
+
   return (
     <div>
-      <h1>Todos ({todoStats.active} active, {todoStats.completed} completed)</h1>
-      
+      <h1>
+        Todos ({todoStats.active} active, {todoStats.completed} completed)
+      </h1>
+
       <form onSubmit={handleSubmit}>
         <input
           value={newTodoText}
-          onChange={(e) => todoStore.newTodoText.value = e.target.value}
+          onChange={e => (todoStore.newTodoText.value = e.target.value)}
           placeholder="What needs to be done?"
         />
         <button type="submit">Add</button>
       </form>
-      
+
       <div>
-        <button 
+        <button
           onClick={() => setFilter('all')}
           style={{ fontWeight: filter === 'all' ? 'bold' : 'normal' }}
         >
           All
         </button>
-        <button 
+        <button
           onClick={() => setFilter('active')}
           style={{ fontWeight: filter === 'active' ? 'bold' : 'normal' }}
         >
           Active
         </button>
-        <button 
+        <button
           onClick={() => setFilter('completed')}
           style={{ fontWeight: filter === 'completed' ? 'bold' : 'normal' }}
         >
           Completed
         </button>
       </div>
-      
+
       <ul>
         {filteredTodos.map(todo => (
           <li key={todo.id}>
@@ -111,9 +116,11 @@ function TodoApp() {
               checked={todo.completed}
               onChange={() => toggleTodo(todo.id)}
             />
-            <span style={{
-              textDecoration: todo.completed ? 'line-through' : 'none'
-            }}>
+            <span
+              style={{
+                textDecoration: todo.completed ? 'line-through' : 'none',
+              }}
+            >
               {todo.text}
             </span>
           </li>

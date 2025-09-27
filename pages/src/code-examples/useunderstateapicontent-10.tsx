@@ -20,53 +20,53 @@ const appStore = {
   user: state<User | null>(null, 'user'),
   theme: state<AppState['theme']>('light', 'theme'),
   language: state<AppState['language']>('en', 'language'),
-  
+
   // Derived values with inferred types
   isAdmin: derived(() => {
     return appStore.user.value?.role === 'admin';
   }, 'isAdmin'),
-  
+
   userDisplayName: derived(() => {
     const user = appStore.user.value;
     return user ? `${user.name} (${user.email})` : 'Guest';
   }, 'userDisplayName'),
-  
+
   // Type-safe actions
   setUser: action((user: User) => {
     appStore.user.value = user;
   }, 'setUser'),
-  
+
   logout: action(() => {
     appStore.user.value = null;
   }, 'logout'),
-  
+
   updateTheme: action((theme: AppState['theme']) => {
     appStore.theme.value = theme;
-  }, 'updateTheme')
+  }, 'updateTheme'),
 } as const; // 'as const' for better type inference
 
 // Type-safe component
 function UserProfile() {
   // TypeScript infers all types automatically
-  const { 
-    user,           // User | null
-    isAdmin,        // boolean
+  const {
+    user, // User | null
+    isAdmin, // boolean
     userDisplayName, // string
-    theme,          // 'light' | 'dark'
-    setUser,        // (user: User) => void
-    logout,         // () => void
-    updateTheme     // (theme: 'light' | 'dark') => void
+    theme, // 'light' | 'dark'
+    setUser, // (user: User) => void
+    logout, // () => void
+    updateTheme, // (theme: 'light' | 'dark') => void
   } = useUnderstate(appStore);
-  
+
   const handleLogin = () => {
     setUser({
       id: 1,
       name: 'John Doe',
       email: 'john@example.com',
-      role: 'user'
+      role: 'user',
     });
   };
-  
+
   return (
     <div>
       <h1>{userDisplayName}</h1>
@@ -79,10 +79,10 @@ function UserProfile() {
       ) : (
         <button onClick={handleLogin}>Login</button>
       )}
-      
-      <select 
-        value={theme} 
-        onChange={(e) => updateTheme(e.target.value as AppState['theme'])}
+
+      <select
+        value={theme}
+        onChange={e => updateTheme(e.target.value as AppState['theme'])}
       >
         <option value="light">Light</option>
         <option value="dark">Dark</option>
@@ -96,21 +96,21 @@ function createEntityStore<T extends { id: string | number }>() {
   return {
     entities: state<T[]>([], 'entities'),
     selectedId: state<T['id'] | null>(null, 'selectedId'),
-    
+
     selectedEntity: derived(() => {
       const entities = createEntityStore<T>().entities.value;
       const id = createEntityStore<T>().selectedId.value;
       return entities.find(entity => entity.id === id) || null;
     }),
-    
+
     addEntity: action((entity: T) => {
       const store = createEntityStore<T>();
       store.entities.value = [...store.entities.value, entity];
     }),
-    
+
     selectEntity: action((id: T['id']) => {
       const store = createEntityStore<T>();
       store.selectedId.value = id;
-    })
+    }),
   };
 }

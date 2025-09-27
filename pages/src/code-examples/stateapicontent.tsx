@@ -7,16 +7,12 @@ const isLoggedIn = state(false);
 
 function Counter() {
   const [currentCount] = useUnderstate(count);
-  
+
   return (
     <div>
       <h2>Count: {currentCount}</h2>
-      <button onClick={() => count.value++}>
-        Increment
-      </button>
-      <button onClick={() => count.value = 0}>
-        Reset
-      </button>
+      <button onClick={() => count.value++}>Increment</button>
+      <button onClick={() => (count.value = 0)}>Reset</button>
     </div>
   );
 }

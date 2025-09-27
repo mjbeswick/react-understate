@@ -33,7 +33,7 @@ function TodoApp() {
             type="text"
             placeholder="What needs to be done?"
             value={newTodo}
-            onChange={(e) => setNewTodo(e.target.value)}
+            onChange={e => setNewTodo(e.target.value)}
           />
         </form>
       </header>
@@ -62,7 +62,7 @@ function TodoApp() {
 
       <footer>
         <span>{activeCount} items left</span>
-        
+
         <div className="filters">
           {(['all', 'active', 'completed'] as const).map(filterType => (
             <button
@@ -76,9 +76,7 @@ function TodoApp() {
         </div>
 
         {hasCompletedTodos && (
-          <button onClick={clearCompleted}>
-            Clear completed
-          </button>
+          <button onClick={clearCompleted}>Clear completed</button>
         )}
       </footer>
     </div>

@@ -17,5 +17,5 @@ const result = derived(() => {
 
 // This derived will only recalculate when:
 // - mode changes, OR
-// - mode is 'simple' AND simpleValue changes, OR  
+// - mode is 'simple' AND simpleValue changes, OR
 // - mode is 'complex' AND complexValue changes

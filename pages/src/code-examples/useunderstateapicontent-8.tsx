@@ -5,16 +5,16 @@ const todoStore = {
   todos: state<Todo[]>([], 'todos'),
   toggleTodo: action((id: number) => {
     todoStore.todos.value = todoStore.todos.value.map(todo =>
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo,
     );
-  }, 'toggleTodo')
+  }, 'toggleTodo'),
 };
 
 // Memoized todo item component
 const TodoItem = memo<{ todo: Todo; onToggle: (id: number) => void }>(
   ({ todo, onToggle }) => {
     console.log(`Rendering todo: ${todo.text}`);
-    
+
     return (
       <li>
         <input
@@ -22,33 +22,34 @@ const TodoItem = memo<{ todo: Todo; onToggle: (id: number) => void }>(
           checked={todo.completed}
           onChange={() => onToggle(todo.id)}
         />
-        <span style={{
-          textDecoration: todo.completed ? 'line-through' : 'none'
-        }}>
+        <span
+          style={{
+            textDecoration: todo.completed ? 'line-through' : 'none',
+          }}
+        >
           {todo.text}
         </span>
       </li>
     );
-  }
+  },
 );
 
 function TodoList() {
   const { todos, toggleTodo } = useUnderstate(todoStore);
-  
+
   // Actions are stable references, so useCallback is not needed
   // But you can use it for consistency with other React patterns
-  const handleToggle = useCallback((id: number) => {
-    toggleTodo(id);
-  }, [toggleTodo]);
-  
+  const handleToggle = useCallback(
+    (id: number) => {
+      toggleTodo(id);
+    },
+    [toggleTodo],
+  );
+
   return (
     <ul>
       {todos.map(todo => (
-        <TodoItem 
-          key={todo.id} 
-          todo={todo} 
-          onToggle={handleToggle} 
-        />
+        <TodoItem key={todo.id} todo={todo} onToggle={handleToggle} />
       ))}
     </ul>
   );

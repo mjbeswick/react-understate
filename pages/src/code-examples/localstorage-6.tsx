@@ -25,16 +25,18 @@ function SettingsPanel() {
   return (
     <div className={darkMode ? 'dark-theme' : 'light-theme'}>
       <h2>Settings</h2>
-      
+
       {/* Theme Toggle */}
       <div>
         <label>
           Theme:
           <select
             value={settings.theme}
-            onChange={(e) => updateUserSettings({ 
-              theme: e.target.value as 'light' | 'dark' | 'auto' 
-            })}
+            onChange={e =>
+              updateUserSettings({
+                theme: e.target.value as 'light' | 'dark' | 'auto',
+              })
+            }
           >
             <option value="light">Light</option>
             <option value="dark">Dark</option>
@@ -50,7 +52,7 @@ function SettingsPanel() {
           Language:
           <select
             value={settings.language}
-            onChange={(e) => updateUserSettings({ language: e.target.value })}
+            onChange={e => updateUserSettings({ language: e.target.value })}
           >
             <option value="en">English</option>
             <option value="es">Spanish</option>
@@ -66,12 +68,14 @@ function SettingsPanel() {
           <input
             type="checkbox"
             checked={settings.notifications.email}
-            onChange={(e) => updateUserSettings({
-              notifications: {
-                ...settings.notifications,
-                email: e.target.checked,
-              },
-            })}
+            onChange={e =>
+              updateUserSettings({
+                notifications: {
+                  ...settings.notifications,
+                  email: e.target.checked,
+                },
+              })
+            }
           />
           Email notifications
         </label>
@@ -79,12 +83,14 @@ function SettingsPanel() {
           <input
             type="checkbox"
             checked={settings.notifications.push}
-            onChange={(e) => updateUserSettings({
-              notifications: {
-                ...settings.notifications,
-                push: e.target.checked,
-              },
-            })}
+            onChange={e =>
+              updateUserSettings({
+                notifications: {
+                  ...settings.notifications,
+                  push: e.target.checked,
+                },
+              })
+            }
           />
           Push notifications
         </label>
@@ -125,14 +131,17 @@ function useLocalStorageState<T>(key: string, defaultValue: T) {
     }
   });
 
-  const setStoredValue = React.useCallback((newValue: T) => {
-    try {
-      setValue(newValue);
-      localStorage.setItem(key, JSON.stringify(newValue));
-    } catch (error) {
-      console.error('Failed to save to localStorage:', error);
-    }
-  }, [key]);
+  const setStoredValue = React.useCallback(
+    (newValue: T) => {
+      try {
+        setValue(newValue);
+        localStorage.setItem(key, JSON.stringify(newValue));
+      } catch (error) {
+        console.error('Failed to save to localStorage:', error);
+      }
+    },
+    [key],
+  );
 
   return [value, setStoredValue] as const;
 }
@@ -140,7 +149,7 @@ function useLocalStorageState<T>(key: string, defaultValue: T) {
 // Component using the hook
 function SimplePersistedComponent() {
   const [count, setCount] = useLocalStorageState('simple-counter', 0);
-  
+
   return (
     <div>
       <p>Count: {count}</p>

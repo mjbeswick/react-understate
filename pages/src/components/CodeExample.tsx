@@ -8,10 +8,10 @@ interface CodeExampleProps {
   className?: string;
 }
 
-const CodeExample: React.FC<CodeExampleProps> = ({ 
-  filename, 
-  language = 'tsx', 
-  className = '' 
+const CodeExample: React.FC<CodeExampleProps> = ({
+  filename,
+  language = 'tsx',
+  className = '',
 }) => {
   const [code, setCode] = useState<string>('// Loading...');
   const [loading, setLoading] = useState(true);
@@ -35,20 +35,14 @@ const CodeExample: React.FC<CodeExampleProps> = ({
   if (loading) {
     return (
       <div className={className}>
-        <CodeBlock 
-          language={language} 
-          code="// Loading code example..." 
-        />
+        <CodeBlock language={language} code="// Loading code example..." />
       </div>
     );
   }
 
   return (
     <div className={className}>
-      <CodeBlock 
-        language={language} 
-        code={code} 
-      />
+      <CodeBlock language={language} code={code} />
     </div>
   );
 };

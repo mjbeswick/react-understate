@@ -9,17 +9,17 @@ const documentTitle = derived(() => {
   const page = currentPage.value;
   const unread = unreadNotifications.value;
   const user = userName.value;
-  
+
   let title = page;
-  
+
   if (unread > 0) {
     title = `(${unread}) ${title}`;
   }
-  
+
   if (user) {
     title += ` - ${user}`;
   }
-  
+
   return title;
 }, 'documentTitle');
 
@@ -31,5 +31,5 @@ effect(() => {
 
 // Usage
 currentPage.value = 'Dashboard'; // Title: "Dashboard"
-unreadNotifications.value = 3;   // Title: "(3) Dashboard"
-userName.value = 'John Doe';     // Title: "(3) Dashboard - John Doe"
+unreadNotifications.value = 3; // Title: "(3) Dashboard"
+userName.value = 'John Doe'; // Title: "(3) Dashboard - John Doe"

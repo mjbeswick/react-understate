@@ -26,10 +26,10 @@ export const counterStore = {
   // State access
   count,
   multiplier,
-  
+
   // Computed values
   result,
-  
+
   // Actions
   increment,
   setCount,

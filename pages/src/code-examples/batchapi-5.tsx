@@ -13,7 +13,7 @@ function navigateToProfile(userId: string) {
     error.value = null;
     data.value = null; // Clear previous data
   });
-  
+
   // Then load new data
   loadProfileData(userId);
 }

@@ -1,15 +1,17 @@
 import { state, derived } from 'react-understate';
 
-const largeDataset = state([/* thousands of items */]);
+const largeDataset = state([
+  /* thousands of items */
+]);
 const searchTerm = state('');
 const sortOrder = state('asc');
 
 // ❌ Inefficient - processes everything on every change
 const processedData = derived(() => {
-  const filtered = largeDataset.value.filter(item => 
-    item.name.toLowerCase().includes(searchTerm.value.toLowerCase())
+  const filtered = largeDataset.value.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.value.toLowerCase()),
   );
-  
+
   return filtered.sort((a, b) => {
     if (sortOrder.value === 'asc') {
       return a.name.localeCompare(b.name);
@@ -20,10 +22,10 @@ const processedData = derived(() => {
 });
 
 // ✅ More efficient - split into steps
-const filteredData = derived(() => 
-  largeDataset.value.filter(item => 
-    item.name.toLowerCase().includes(searchTerm.value.toLowerCase())
-  )
+const filteredData = derived(() =>
+  largeDataset.value.filter(item =>
+    item.name.toLowerCase().includes(searchTerm.value.toLowerCase()),
+  ),
 );
 
 const sortedData = derived(() => {

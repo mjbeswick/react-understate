@@ -7,23 +7,27 @@ const lastName = state('Doe');
 const fullName = derived(() => `${firstName.value} ${lastName.value}`);
 
 function UserDisplay() {
-  const { firstName: first, lastName: last, fullName: name } = useUnderstate({
+  const {
+    firstName: first,
+    lastName: last,
+    fullName: name,
+  } = useUnderstate({
     firstName,
     lastName,
-    fullName
+    fullName,
   });
-  
+
   return (
     <div>
       <p>Full Name: {name}</p>
-      <input 
+      <input
         value={first}
-        onChange={(e) => firstName.value = e.target.value}
+        onChange={e => (firstName.value = e.target.value)}
         placeholder="First Name"
       />
-      <input 
+      <input
         value={last}
-        onChange={(e) => lastName.value = e.target.value}
+        onChange={e => (lastName.value = e.target.value)}
         placeholder="Last Name"
       />
     </div>

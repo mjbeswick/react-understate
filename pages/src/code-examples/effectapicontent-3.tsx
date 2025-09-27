@@ -6,7 +6,7 @@ const data = state(null, 'pollingData');
 effect(() => {
   if (isPolling.value) {
     console.log('Starting to poll...');
-    
+
     const intervalId = setInterval(async () => {
       try {
         const response = await fetch('/api/data');
@@ -16,7 +16,7 @@ effect(() => {
         console.error('Polling failed:', error);
       }
     }, 1000);
-    
+
     // Return cleanup function
     return () => {
       console.log('Stopping polling');
@@ -25,5 +25,5 @@ effect(() => {
   }
 }, 'pollingEffect');
 
-isPolling.value = true;  // Starts polling
+isPolling.value = true; // Starts polling
 isPolling.value = false; // Stops polling (cleanup runs)

@@ -51,9 +51,10 @@ const ActionAPIContent: React.FC = () => {
             <div className={styles.parameterDescription}>
               Controls overlapping async calls for named actions.{' '}
               <code>'queue'</code> (default) queues subsequent calls.{' '}
-              <code>'drop'</code> uses switch-latest semantics: starting a new call
-              aborts the previous in-flight call and the previous call's Promise
-              rejects with <code>ConcurrentActionError</code> while the latest call runs.
+              <code>'drop'</code> uses switch-latest semantics: starting a new
+              call aborts the previous in-flight call and the previous call's
+              Promise rejects with <code>ConcurrentActionError</code> while the
+              latest call runs.
             </div>
           </div>
         </div>
@@ -124,8 +125,8 @@ const ActionAPIContent: React.FC = () => {
           current one completes.
         </li>
         <li>
-          <strong>'drop' (switch-latest)</strong>: Starting a new call aborts the
-          previous in-flight call. The previous call's Promise rejects with
+          <strong>'drop' (switch-latest)</strong>: Starting a new call aborts
+          the previous in-flight call. The previous call's Promise rejects with
           <code>ConcurrentActionError</code> and the latest call proceeds.
         </li>
       </ul>

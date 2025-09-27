@@ -7,6 +7,7 @@
 
 import { state, configureDebug, flushUpdates } from './core';
 import { derived } from './derived';
+import { effect } from './effects';
 
 describe('Derived Values', () => {
   describe('Basic Functionality', () => {
@@ -52,6 +53,153 @@ describe('Derived Values', () => {
       base.value = 5;
       // rawValue might be stale until value is accessed
       expect(doubled.value).toBe(10);
+    });
+
+    it('should update rawValue when derived value is recomputed', () => {
+      const base = state(10);
+      const doubled = derived(() => base.value * 2);
+
+      expect(doubled.rawValue).toBe(20);
+
+      base.value = 5;
+      expect(doubled.value).toBe(10);
+      expect(doubled.rawValue).toBe(10); // Should be updated after recomputation
+    });
+
+    it('should maintain rawValue consistency with value after recomputation', () => {
+      const base = state(10);
+      const doubled = derived(() => base.value * 2);
+
+      expect(doubled.rawValue).toBe(doubled.value);
+
+      base.value = 15;
+      expect(doubled.value).toBe(30);
+      expect(doubled.rawValue).toBe(30);
+      expect(doubled.rawValue).toBe(doubled.value);
+    });
+
+    it('should always have rawValue match value', () => {
+      const base = state(10);
+      const doubled = derived(() => base.value * 2);
+
+      // Initial state - both should match
+      expect(doubled.rawValue).toBe(20);
+      expect(doubled.value).toBe(20);
+      expect(doubled.rawValue).toBe(doubled.value);
+
+      // Change dependency - both should still match
+      base.value = 15;
+      expect(doubled.rawValue).toBe(30);
+      expect(doubled.value).toBe(30);
+      expect(doubled.rawValue).toBe(doubled.value);
+    });
+
+    it('should have rawValue match value with multiple dependency changes', () => {
+      const base1 = state(10);
+      const base2 = state(5);
+      const sum = derived(() => base1.value + base2.value);
+
+      // Initial state
+      expect(sum.rawValue).toBe(15);
+      expect(sum.value).toBe(15);
+      expect(sum.rawValue).toBe(sum.value);
+
+      // Change first dependency
+      base1.value = 20;
+      expect(sum.rawValue).toBe(25);
+      expect(sum.value).toBe(25);
+      expect(sum.rawValue).toBe(sum.value);
+
+      // Change second dependency
+      base2.value = 10;
+      expect(sum.rawValue).toBe(30);
+      expect(sum.value).toBe(30);
+      expect(sum.rawValue).toBe(sum.value);
+    });
+
+    it('should have rawValue match value with complex computations', () => {
+      const base = state(10);
+      const complex = derived(() => {
+        // Simulate expensive computation
+        let result = base.value;
+        for (let i = 0; i < 1000; i++) {
+          result = result * 1.001;
+        }
+        return Math.round(result);
+      });
+
+      expect(complex.rawValue).toBe(complex.value);
+
+      base.value = 20;
+      expect(complex.rawValue).toBe(complex.value);
+      expect(complex.value).toBeGreaterThan(20);
+      expect(complex.rawValue).toBe(complex.value);
+    });
+
+    it('should handle object values in rawValue', () => {
+      const base = state({ count: 5 });
+      const doubled = derived(() => ({ count: base.value.count * 2 }));
+
+      expect(doubled.rawValue).toEqual({ count: 10 });
+
+      base.value = { count: 3 };
+      expect(doubled.value).toEqual({ count: 6 });
+      expect(doubled.rawValue).toEqual({ count: 6 });
+    });
+
+    it('should handle array values in rawValue', () => {
+      const base = state([1, 2, 3]);
+      const doubled = derived(() => base.value.map(x => x * 2));
+
+      expect(doubled.rawValue).toEqual([2, 4, 6]);
+
+      base.value = [4, 5, 6];
+      expect(doubled.value).toEqual([8, 10, 12]);
+      expect(doubled.rawValue).toEqual([8, 10, 12]);
+    });
+
+    it('should handle null and undefined values in rawValue', () => {
+      const base = state(10);
+      const conditional = derived(() => (base.value > 5 ? 'valid' : null));
+
+      expect(conditional.rawValue).toBe('valid');
+
+      base.value = 3;
+      expect(conditional.value).toBe(null);
+      expect(conditional.rawValue).toBe(null);
+    });
+
+    it('should handle errors in rawValue', () => {
+      const base = state(10);
+      const errorDerived = derived(() => {
+        if (base.value === 10) {
+          throw new Error('Test error');
+        }
+        return base.value * 2;
+      });
+
+      // rawValue should throw when there's an error
+      expect(() => errorDerived.rawValue).toThrow('Test error');
+
+      base.value = 5;
+      expect(errorDerived.value).toBe(10);
+      expect(errorDerived.rawValue).toBe(10);
+    });
+
+    it('should work with multiple dependencies in rawValue', () => {
+      const a = state(2);
+      const b = state(3);
+      const sum = derived(() => a.value + b.value);
+
+      expect(sum.rawValue).toBe(5);
+
+      a.value = 4;
+      expect(sum.value).toBe(7);
+      expect(sum.rawValue).toBe(7);
+
+      b.value = 5;
+      expect(sum.value).toBe(9);
+      expect(sum.rawValue).toBe(9);
     });
   });
 
@@ -139,8 +287,8 @@ describe('Derived Values', () => {
         return base.value * 2;
       });
 
-      // Should not throw during creation, but store undefined
-      expect(errorDerived.rawValue).toBeUndefined();
+      // Should throw when accessing rawValue since base.value is 10
+      expect(() => errorDerived.rawValue).toThrow('Test error');
 
       // Should recompute when accessed and dependency changes
       base.value = 5;

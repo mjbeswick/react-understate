@@ -7,8 +7,7 @@ module.exports = {
   meta: {
     type: 'suggestion',
     docs: {
-      description:
-        'Prevent unused parameters in action functions',
+      description: 'Prevent unused parameters in action functions',
       category: 'React Understate',
       recommended: true,
     },
@@ -33,12 +32,19 @@ module.exports = {
     function isInsideActionFunction(node) {
       let parent = node.parent;
       while (parent) {
-        if (parent.type === 'ArrowFunctionExpression' || parent.type === 'FunctionExpression') {
+        if (
+          parent.type === 'ArrowFunctionExpression' ||
+          parent.type === 'FunctionExpression'
+        ) {
           // Check if this function is the first argument of an action call
           let grandParent = parent.parent;
-          if (grandParent && grandParent.type === 'CallExpression' && 
-              grandParent.callee && grandParent.callee.type === 'Identifier' && 
-              grandParent.callee.name === 'action') {
+          if (
+            grandParent &&
+            grandParent.type === 'CallExpression' &&
+            grandParent.callee &&
+            grandParent.callee.type === 'Identifier' &&
+            grandParent.callee.name === 'action'
+          ) {
             return true;
           }
         }
@@ -50,7 +56,11 @@ module.exports = {
     function getActionParameters(node) {
       if (isActionCall(node) && node.arguments.length > 0) {
         const func = node.arguments[0];
-        if (func && (func.type === 'ArrowFunctionExpression' || func.type === 'FunctionExpression')) {
+        if (
+          func &&
+          (func.type === 'ArrowFunctionExpression' ||
+            func.type === 'FunctionExpression')
+        ) {
           return func.params || [];
         }
       }
@@ -72,27 +82,36 @@ module.exports = {
         if (isActionCall(node)) {
           const params = getActionParameters(node);
           const func = node.arguments[0];
-          
-          if (func && (func.type === 'ArrowFunctionExpression' || func.type === 'FunctionExpression')) {
+
+          if (
+            func &&
+            (func.type === 'ArrowFunctionExpression' ||
+              func.type === 'FunctionExpression')
+          ) {
             // Check each parameter
             params.forEach(param => {
               if (param.type === 'Identifier' && !param.name.startsWith('_')) {
                 // Check if this parameter is used in the function body
                 let isUsed = false;
-                
+
                 // Simple check - look for identifier usage in the function body
                 function checkNode(n) {
                   if (!n || typeof n !== 'object') return;
-                  
+
                   // Skip parameter declarations
-                  if (n.type === 'Identifier' && n.name === param.name && n !== param) {
+                  if (
+                    n.type === 'Identifier' &&
+                    n.name === param.name &&
+                    n !== param
+                  ) {
                     isUsed = true;
                     return;
                   }
-                  
+
                   // Recursively check all properties
                   for (const key in n) {
-                    if (key === 'parent' || key === 'range' || key === 'loc') continue;
+                    if (key === 'parent' || key === 'range' || key === 'loc')
+                      continue;
                     const value = n[key];
                     if (Array.isArray(value)) {
                       value.forEach(checkNode);
@@ -101,9 +120,9 @@ module.exports = {
                     }
                   }
                 }
-                
+
                 checkNode(func);
-                
+
                 if (!isUsed) {
                   context.report({
                     node: param,

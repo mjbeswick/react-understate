@@ -7,7 +7,7 @@ if (process.env.NODE_ENV === 'development') {
     logStateChanges: true,
     logActionCalls: true,
     logDerivedUpdates: true,
-    filter: (name) => {
+    filter: name => {
       // Only log specific states/actions
       return name.includes('user') || name.includes('todo');
     },
@@ -15,18 +15,21 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Custom debug logging for specific states
-export const debuggedUser = state({ name: '', email: '' }, {
-  name: 'debuggedUser',
-  debug: {
-    logChanges: true,
-    beforeChange: (oldValue, newValue) => {
-      console.log('User changing from:', oldValue, 'to:', newValue);
-    },
-    afterChange: (newValue) => {
-      console.log('User changed to:', newValue);
+export const debuggedUser = state(
+  { name: '', email: '' },
+  {
+    name: 'debuggedUser',
+    debug: {
+      logChanges: true,
+      beforeChange: (oldValue, newValue) => {
+        console.log('User changing from:', oldValue, 'to:', newValue);
+      },
+      afterChange: newValue => {
+        console.log('User changed to:', newValue);
+      },
     },
   },
-});
+);
 
 // Debug utilities
 export const stateSnapshot = () => {
@@ -38,24 +41,31 @@ export const stateSnapshot = () => {
   };
 };
 
-export const logStateSnapshot = action(() => {
-  console.log('action: logging state snapshot');
-  console.table(stateSnapshot());
-}, { name: 'logStateSnapshot' });
+export const logStateSnapshot = action(
+  () => {
+    console.log('action: logging state snapshot');
+    console.table(stateSnapshot());
+  },
+  { name: 'logStateSnapshot' },
+);
 
 // Performance monitoring
-export const performanceMonitor = effect(() => {
-  const startTime = performance.now();
-  
-  // Track expensive derived value
-  const result = expensiveComputation();
-  
-  const endTime = performance.now();
-  const duration = endTime - startTime;
-  
-  if (duration > 16) { // Longer than one frame
-    console.warn(`Expensive computation took ${duration.toFixed(2)}ms`);
-  }
-  
-  return result;
-}, { name: 'performanceMonitor' });
+export const performanceMonitor = effect(
+  () => {
+    const startTime = performance.now();
+
+    // Track expensive derived value
+    const result = expensiveComputation();
+
+    const endTime = performance.now();
+    const duration = endTime - startTime;
+
+    if (duration > 16) {
+      // Longer than one frame
+      console.warn(`Expensive computation took ${duration.toFixed(2)}ms`);
+    }
+
+    return result;
+  },
+  { name: 'performanceMonitor' },
+);
