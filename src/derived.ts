@@ -123,7 +123,7 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
 
   const derivedState: State<T> = {
     get rawValue() {
-      return read(false, false);
+      return read(false);
     },
     async update(): Promise<void> {
       throw new Error('Cannot update derived values directly');
@@ -135,13 +135,13 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
       };
     },
     get value() {
-      return read(true, true);
+      return read(true);
     },
     set value(_next: T | ((prev: T) => T | Promise<T>)) {
       throw new Error('Cannot update derived values directly');
     },
     get requiredValue() {
-      const value = read(true, true);
+      const value = read(true);
       if (value === null || value === undefined) {
         const derivedName = validatedName ? ` '${validatedName}'` : '';
         throw new Error(
@@ -175,13 +175,17 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
 
     try {
       const nextValue = computeFn();
+      const changed =
+        !hasCachedValue ||
+        lastError !== undefined ||
+        !Object.is(nextValue, cachedValue);
 
       cachedValue = nextValue;
       hasCachedValue = true;
       dirty = false;
       lastError = undefined;
 
-      if (validatedName) {
+      if (changed && validatedName) {
         const debugConfig = configureDebug();
         logDebug(
           `derived: '${validatedName}' ${JSON.stringify(nextValue, null, 2)}`,
@@ -189,7 +193,9 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
         );
       }
 
-      notifySubscribers(nextValue);
+      if (changed) {
+        notifySubscribers(nextValue);
+      }
       if (previousEffect) {
         dependents.add(previousEffect);
       }
@@ -205,6 +211,7 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
       if (recomputeRequestedDuringCompute) {
         dirty = true;
         recomputeRequestedDuringCompute = false;
+        scheduleDependents();
       }
       if (hasPendingDependentFlush && !isBatching) {
         flushUpdates();
@@ -212,20 +219,13 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
     }
   };
 
-  const read = (trackDependency: boolean, allowError: boolean): T => {
-    try {
-      const value = compute();
-      if (trackDependency && activeEffect) {
-        addReadValue(derivedState);
-        dependents.add(activeEffect);
-      }
-      return value;
-    } catch (error) {
-      if (allowError) {
-        throw error;
-      }
-      return hasCachedValue ? cachedValue : (undefined as T);
+  const read = (trackDependency: boolean): T => {
+    const value = compute();
+    if (trackDependency && activeEffect) {
+      addReadValue(derivedState);
+      dependents.add(activeEffect);
     }
+    return value;
   };
 
   try {

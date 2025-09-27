@@ -78,7 +78,7 @@ describe('Derived Values', () => {
       expect(doubled.rawValue).toBe(doubled.value);
     });
 
-    it('should have rawValue match value after value access', () => {
+    it('should have rawValue match value', () => {
       const base = state(10);
       const doubled = derived(() => base.value * 2);
 
@@ -87,10 +87,10 @@ describe('Derived Values', () => {
       expect(doubled.value).toBe(20);
       expect(doubled.rawValue).toBe(doubled.value);
 
-      // Change dependency - rawValue might be stale until value is accessed
+      // Change dependency - rawValue should update just like value
       base.value = 15;
-      expect(doubled.value).toBe(30); // This triggers recomputation
-      expect(doubled.rawValue).toBe(30); // Now updated
+      expect(doubled.rawValue).toBe(30);
+      expect(doubled.value).toBe(30);
       expect(doubled.rawValue).toBe(doubled.value);
     });
 
@@ -104,16 +104,16 @@ describe('Derived Values', () => {
       expect(sum.value).toBe(15);
       expect(sum.rawValue).toBe(sum.value);
 
-      // Change first dependency
+      // Change first dependency - both accessors recompute
       base1.value = 20;
-      expect(sum.value).toBe(25); // This triggers recomputation
-      expect(sum.rawValue).toBe(25); // Now updated
+      expect(sum.rawValue).toBe(25);
+      expect(sum.value).toBe(25);
       expect(sum.rawValue).toBe(sum.value);
 
-      // Change second dependency
+      // Change second dependency - both accessors recompute
       base2.value = 10;
-      expect(sum.value).toBe(30); // This triggers recomputation
-      expect(sum.rawValue).toBe(30); // Now updated
+      expect(sum.rawValue).toBe(30);
+      expect(sum.value).toBe(30);
       expect(sum.rawValue).toBe(sum.value);
     });
 
@@ -131,8 +131,8 @@ describe('Derived Values', () => {
       expect(complex.rawValue).toBe(complex.value);
 
       base.value = 20;
-      expect(complex.value).toBeGreaterThan(20); // This triggers recomputation
-      expect(complex.rawValue).toBe(complex.value); // Now updated
+      expect(complex.rawValue).toBe(complex.value);
+      expect(complex.value).toBeGreaterThan(20);
     });
 
     it('should not establish dependencies when accessing rawValue', () => {
@@ -149,23 +149,6 @@ describe('Derived Values', () => {
 
       base.value = 15;
       expect(effectCount).toBe(1); // Should not re-run effect
-    });
-
-    it('should have rawValue always match value', () => {
-      const base = state(10);
-      const doubled = derived(() => base.value * 2);
-
-      // Initial state - both should match
-      expect(doubled.rawValue).toBe(20);
-      expect(doubled.value).toBe(20);
-
-      // Change dependency
-      base.value = 15;
-
-      // rawValue should always match value (both trigger recomputation)
-      expect(doubled.rawValue).toBe(30); // Triggers recomputation
-      expect(doubled.value).toBe(30); // Also triggers recomputation
-      expect(doubled.rawValue).toBe(doubled.value);
     });
 
     it('should handle object values in rawValue', () => {
@@ -210,8 +193,7 @@ describe('Derived Values', () => {
         return base.value * 2;
       });
 
-      // rawValue should return undefined so console-like access does not throw
-      expect(errorDerived.rawValue).toBeUndefined();
+      expect(() => errorDerived.rawValue).toThrow('Test error');
       expect(() => errorDerived.value).toThrow('Test error');
 
       base.value = 5;
@@ -320,8 +302,7 @@ describe('Derived Values', () => {
         return base.value * 2;
       });
 
-      // rawValue should return undefined to avoid throwing outside value access
-      expect(errorDerived.rawValue).toBeUndefined();
+      expect(() => errorDerived.rawValue).toThrow('Test error');
       expect(() => errorDerived.value).toThrow('Test error');
 
       // Should recompute when accessed and dependency changes
