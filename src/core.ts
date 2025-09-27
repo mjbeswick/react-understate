@@ -284,7 +284,7 @@ export interface State<T> {
    * unsubscribe();
    * ```
    */
-  subscribe(fn: () => void): () => void;
+  subscribe(fn: (value: T) => void): () => void;
 
   /**
    * The current value of the state.
@@ -861,7 +861,7 @@ export function state<T>(
     : undefined;
   // Store the initial value directly - TypeScript handles immutability
   let value = initialValue;
-  const subscribers = new Set<() => void>();
+  const subscribers = new Set<(value: T) => void>();
   const dependencies = new Set<() => void>();
 
   // Cache for proxied access when observeMutations is enabled
@@ -872,7 +872,7 @@ export function state<T>(
     // Notify all subscribers
     subscribers.forEach(sub => {
       if (sub !== activeEffect) {
-        sub();
+        sub(value);
       }
     });
 
@@ -1004,7 +1004,7 @@ export function state<T>(
     }
   };
 
-  const subscribe = (fn: () => void): (() => void) => {
+  const subscribe = (fn: (value: T) => void): (() => void) => {
     subscribers.add(fn);
     return () => subscribers.delete(fn);
   };
