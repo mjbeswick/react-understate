@@ -6,13 +6,21 @@
  */
 
 import {
-  setActiveEffect,
+  activeEffect,
+  addReadValue,
   configureDebug,
+  flushUpdates,
+  isBatching,
+  pendingUpdates,
+  registerDebugItem,
+  setActiveEffect,
   type State,
   validateStateName,
-  registerDebugItem,
 } from './core';
 import { logDebug } from './debug-utils';
+
+type DerivedSubscriber<T> = (value: T) => void;
+type DependentFn = () => void;
 
 /**
  * Creates a read-only signal that automatically updates when dependencies change.
@@ -68,120 +76,72 @@ import { logDebug } from './debug-utils';
  * ```
  */
 export function derived<T>(computeFn: () => T, name?: string): State<T> {
-  // Validate name if provided
   const validatedName = name ? validateStateName(name) : undefined;
-  let cachedValue: T | undefined;
+  const subscribers = new Set<DerivedSubscriber<T>>();
+  const dependents = new Set<DependentFn>();
+  let hasPendingDependentFlush = false;
+  let cachedValue!: T;
+  let hasCachedValue = false;
   let dirty = true;
-  let isComputing = false;
-  const subscribers = new Set<() => void>();
-  const dependencies = new Set<() => void>();
+  let computing = false;
+  let recomputeRequestedDuringCompute = false;
+  let lastError: unknown;
 
-  // Create a function to mark this derived value as dirty when dependencies change
+  const runDependents = () => {
+    hasPendingDependentFlush = false;
+    dependents.forEach(dep => {
+      dep();
+    });
+  };
+
+  const scheduleDependents = () => {
+    if (dependents.size === 0) return;
+    if (hasPendingDependentFlush) return;
+    hasPendingDependentFlush = true;
+    pendingUpdates.add(runDependents);
+    if (!isBatching && !computing) {
+      flushUpdates();
+    }
+  };
+
   const markDirty = () => {
-    dirty = true;
-    // Don't notify here - we'll notify only when the value actually changes in computeValue
+    if (computing) {
+      recomputeRequestedDuringCompute = true;
+    }
+    if (!dirty) {
+      dirty = true;
+      lastError = undefined;
+    }
+    scheduleDependents();
   };
 
-  const computeValue = (): T => {
-    if (dirty && !isComputing) {
-      isComputing = true;
-
-      // Track dependencies by running the compute function
-      const prevEffect = setActiveEffect(markDirty);
-
-      try {
-        const newValue = computeFn();
-        cachedValue = newValue;
-
-        // Notify subscribers and dependent effects
-        subscribers.forEach(sub => {
-          if (sub !== markDirty) {
-            sub();
-          }
-        });
-        dependencies.forEach(dep => {
-          if (dep !== markDirty) {
-            dep();
-          }
-        });
-
-        // Debug logging
-        if (validatedName) {
-          const debugConfig = configureDebug();
-          logDebug(
-            `derived: '${validatedName}' ${JSON.stringify(cachedValue, null, 2)}`,
-            debugConfig,
-          );
-        }
-      } catch (error) {
-        // If there's an error during recomputation, keep the previous value
-        // and mark as dirty so it can be retried later
-        dirty = true;
-        throw error; // Re-throw the error so callers can handle it
-      } finally {
-        setActiveEffect(prevEffect);
-        isComputing = false;
-      }
-
-      dirty = false;
-    }
-
-    // Track this derived value as a dependency if we're in an effect
-    const activeEffect = setActiveEffect(null);
-    if (activeEffect) {
-      dependencies.add(activeEffect);
-    }
-
-    return cachedValue!;
+  const notifySubscribers = (next: T) => {
+    subscribers.forEach(callback => {
+      callback(next);
+    });
   };
 
-  // Initialize the derived value immediately
-  try {
-    const prevEffect = setActiveEffect(markDirty);
-    try {
-      cachedValue = computeFn();
-      dirty = false;
-    } finally {
-      setActiveEffect(prevEffect);
-    }
-  } catch {
-    // If there's an error during initialization, set a default value
-    cachedValue = undefined as T;
-    dirty = true;
-  }
-
-  const subscribe = (fn: () => void): (() => void) => {
-    subscribers.add(fn);
-    return () => subscribers.delete(fn);
-  };
-
-  // Return a state-like object (read-only)
-  const derivedObj = {
+  const derivedState: State<T> = {
     get rawValue() {
-      return computeValue();
+      return read(false, false);
     },
-    update: () => {
+    async update(): Promise<void> {
       throw new Error('Cannot update derived values directly');
     },
-    subscribe,
-    get value() {
-      // Track this derived value as a dependency if we're in an effect
-      const activeEffect = setActiveEffect(null);
-      if (activeEffect) {
-        dependencies.add(activeEffect);
-      }
-      return computeValue();
+    subscribe(callback: DerivedSubscriber<T>) {
+      subscribers.add(callback);
+      return () => {
+        subscribers.delete(callback);
+      };
     },
-    set value(_newValue: T) {
+    get value() {
+      return read(true, true);
+    },
+    set value(_next: T | ((prev: T) => T | Promise<T>)) {
       throw new Error('Cannot update derived values directly');
     },
     get requiredValue() {
-      // Track this derived value as a dependency if we're in an effect
-      const activeEffect = setActiveEffect(null);
-      if (activeEffect) {
-        dependencies.add(activeEffect);
-      }
-      const value = computeValue();
+      const value = read(true, true);
       if (value === null || value === undefined) {
         const derivedName = validatedName ? ` '${validatedName}'` : '';
         throw new Error(
@@ -190,8 +150,7 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
       }
       return value as NonNullable<T>;
     },
-
-    set requiredValue(_newValue: NonNullable<T>) {
+    set requiredValue(_next: NonNullable<T>) {
       const derivedName = validatedName ? ` '${validatedName}'` : '';
       throw new Error(
         `Cannot set required value on derived value${derivedName} - they are computed from dependencies`,
@@ -199,12 +158,87 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
     },
   } as State<T>;
 
-  // Register named derived values for debugging
-  if (typeof window !== 'undefined') {
-    registerDebugItem('derived', validatedName, derivedObj);
+  const compute = (): T => {
+    if (!dirty && hasCachedValue && lastError === undefined) {
+      return cachedValue;
+    }
+    if (computing) {
+      if (lastError !== undefined) {
+        throw lastError;
+      }
+      return cachedValue;
+    }
+
+    const previousEffect = setActiveEffect(markDirty);
+    computing = true;
+    recomputeRequestedDuringCompute = false;
+
+    try {
+      const nextValue = computeFn();
+
+      cachedValue = nextValue;
+      hasCachedValue = true;
+      dirty = false;
+      lastError = undefined;
+
+      if (validatedName) {
+        const debugConfig = configureDebug();
+        logDebug(
+          `derived: '${validatedName}' ${JSON.stringify(nextValue, null, 2)}`,
+          debugConfig,
+        );
+      }
+
+      notifySubscribers(nextValue);
+      if (previousEffect) {
+        dependents.add(previousEffect);
+      }
+
+      return nextValue;
+    } catch (error) {
+      lastError = error;
+      dirty = true;
+      throw error;
+    } finally {
+      setActiveEffect(previousEffect);
+      computing = false;
+      if (recomputeRequestedDuringCompute) {
+        dirty = true;
+        recomputeRequestedDuringCompute = false;
+      }
+      if (hasPendingDependentFlush && !isBatching) {
+        flushUpdates();
+      }
+    }
+  };
+
+  const read = (trackDependency: boolean, allowError: boolean): T => {
+    try {
+      const value = compute();
+      if (trackDependency && activeEffect) {
+        addReadValue(derivedState);
+        dependents.add(activeEffect);
+      }
+      return value;
+    } catch (error) {
+      if (allowError) {
+        throw error;
+      }
+      return hasCachedValue ? cachedValue : (undefined as T);
+    }
+  };
+
+  try {
+    compute();
+  } catch {
+    // Defer error handling to the first consumer access
   }
 
-  return derivedObj;
+  if (typeof window !== 'undefined') {
+    registerDebugItem('derived', validatedName, derivedState);
+  }
+
+  return derivedState;
 }
 
 /**
@@ -231,169 +265,162 @@ export function asyncDerived<T>(
   computeFn: () => Promise<T>,
   name?: string,
 ): State<Promise<T>> {
-  // Validate name if provided
   const validatedName = name ? validateStateName(name) : undefined;
-  let cachedValue: Promise<T>;
+  const subscribers = new Set<DerivedSubscriber<Promise<T>>>();
+  const dependents = new Set<DependentFn>();
+  let hasPendingDependentFlush = false;
+  let cachedValue!: Promise<T>;
+  let hasCachedValue = false;
   let dirty = true;
-  const subscribers = new Set<() => void>();
-  const dependencies = new Set<() => void>();
+  let computing = false;
+  let recomputeRequestedDuringCompute = false;
+
+  const runDependents = () => {
+    hasPendingDependentFlush = false;
+    dependents.forEach(dep => {
+      dep();
+    });
+  };
+
+  const scheduleDependents = () => {
+    if (dependents.size === 0) return;
+    if (hasPendingDependentFlush) return;
+    hasPendingDependentFlush = true;
+    pendingUpdates.add(runDependents);
+    if (!isBatching && !computing) {
+      flushUpdates();
+    }
+  };
 
   const markDirty = () => {
+    if (computing) {
+      recomputeRequestedDuringCompute = true;
+    }
     if (!dirty) {
       dirty = true;
-      // Debug logging
-      if (validatedName) {
-        const debugConfig = configureDebug();
-        logDebug(`asyncDerived: '${validatedName}' marked dirty`, debugConfig);
-      }
-      // Notify subscribers only
-      subscribers.forEach(sub => {
-        if (sub !== markDirty) {
-          sub();
-        }
-      });
     }
-  };
-
-  const computeValue = async (): Promise<T> => {
-    if (dirty) {
-      dirty = false;
-
-      // Track dependencies by running the compute function
-      const prevEffect = setActiveEffect(markDirty);
-
-      try {
-        // Debug logging
-        if (validatedName) {
-          const debugConfig = configureDebug();
-          logDebug(`asyncDerived: '${validatedName}' computing`, debugConfig);
-        }
-
-        cachedValue = computeFn();
-        const result = await cachedValue;
-
-        // Log async resolution
-        if (validatedName) {
-          const debugConfig = configureDebug();
-          logDebug(
-            // eslint-disable-next-line no-magic-numbers
-            `asyncDerived: '${validatedName}' async resolved: ${JSON.stringify(result, null, 2)}`,
-            debugConfig,
-          );
-        }
-
-        return result;
-      } catch (error) {
-        // Log async rejection
-        if (validatedName) {
-          const debugConfig = configureDebug();
-          logDebug(
-            `asyncDerived: '${validatedName}' async rejected: ${error}`,
-            debugConfig,
-          );
-        }
-        // eslint-disable-next-line no-console
-        console.error('AsyncDerived computation failed:', error);
-        throw error;
-      } finally {
-        setActiveEffect(prevEffect);
-      }
-    }
-
-    return cachedValue;
-  };
-
-  // Initialize the derived value immediately
-  try {
-    const prevEffect = setActiveEffect(markDirty);
-    try {
-      // Track dependencies by running the compute function
-      cachedValue = computeFn();
-      dirty = false;
-
-      // Handle async errors during initialization
-      cachedValue.catch(error => {
-        // Log async rejection during initialization
-        if (validatedName) {
-          const debugConfig = configureDebug();
-          logDebug(
-            `asyncDerived: '${validatedName}' async rejected: ${error}`,
-            debugConfig,
-          );
-        }
-      });
-    } finally {
-      setActiveEffect(prevEffect);
-    }
-  } catch (error) {
-    // If there's a sync error during initialization, set a rejected promise
-    cachedValue = Promise.reject(error);
-    dirty = false;
-
-    // Log sync rejection during initialization
     if (validatedName) {
       const debugConfig = configureDebug();
-      logDebug(
-        `asyncDerived: '${validatedName}' async rejected: ${error}`,
-        debugConfig,
-      );
+      logDebug(`asyncDerived: '${validatedName}' marked dirty`, debugConfig);
     }
-  }
+    scheduleDependents();
+  };
 
-  const asyncDerivedObj: State<Promise<T>> = {
-    get rawValue() {
+  const compute = (): Promise<T> => {
+    if (!dirty && hasCachedValue) {
       return cachedValue;
-    },
+    }
+    if (computing) {
+      return cachedValue;
+    }
 
-    get value() {
-      // Track this state as a dependency if we're in an effect or computed
-      const activeEffect = setActiveEffect(null);
-      if (activeEffect) {
-        dependencies.add(activeEffect);
+    const previousEffect = setActiveEffect(markDirty);
+    computing = true;
+    recomputeRequestedDuringCompute = false;
+    dirty = false;
+
+    try {
+      if (validatedName) {
+        const debugConfig = configureDebug();
+        logDebug(`asyncDerived: '${validatedName}' computing`, debugConfig);
       }
 
-      // Trigger computation if dirty
-      if (dirty) {
-        computeValue().catch(error => {
+      const previousPromise = hasCachedValue ? cachedValue : undefined;
+      const nextPromise = computeFn();
+      const changed =
+        !hasCachedValue || !Object.is(nextPromise, previousPromise);
+
+      cachedValue = nextPromise;
+      hasCachedValue = true;
+
+      if (changed) {
+        subscribers.forEach(callback => {
+          callback(nextPromise);
+        });
+        scheduleDependents();
+      }
+
+      if (previousEffect) {
+        dependents.add(previousEffect);
+      }
+
+      nextPromise
+        .then(result => {
+          if (validatedName) {
+            const debugConfig = configureDebug();
+            logDebug(
+              `asyncDerived: '${validatedName}' async resolved: ${JSON.stringify(result, null, 2)}`,
+              debugConfig,
+            );
+          }
+          return result;
+        })
+        .catch(error => {
+          if (validatedName) {
+            const debugConfig = configureDebug();
+            logDebug(
+              `asyncDerived: '${validatedName}' async rejected: ${error}`,
+              debugConfig,
+            );
+          }
           // eslint-disable-next-line no-console
           console.error('AsyncDerived computation failed:', error);
+          throw error;
         });
+
+      return nextPromise;
+    } catch (error) {
+      dirty = true;
+      throw error;
+    } finally {
+      setActiveEffect(previousEffect);
+      computing = false;
+      if (recomputeRequestedDuringCompute) {
+        dirty = true;
+        recomputeRequestedDuringCompute = false;
       }
+      if (hasPendingDependentFlush && !isBatching) {
+        flushUpdates();
+      }
+    }
+  };
 
-      return cachedValue;
+  const asyncState: State<Promise<T>> = {
+    get rawValue() {
+      return compute();
     },
-
-    async update(
-      _fn: (prev: Promise<T>) => Promise<T> | Promise<T>,
-    ): Promise<void> {
-      // For async derived values, we can't really update them directly
-      // since they're computed from dependencies. This is a no-op.
+    async update(): Promise<void> {
       throw new Error(
         'Cannot update async derived values directly - they are computed from dependencies',
       );
     },
-
-    subscribe(callback: () => void) {
+    subscribe(callback: DerivedSubscriber<Promise<T>>) {
       subscribers.add(callback);
-      return () => subscribers.delete(callback);
+      return () => {
+        subscribers.delete(callback);
+      };
     },
-
-    get requiredValue(): Promise<NonNullable<T>> {
-      // Track this state as a dependency if we're in an effect or computed
-      const activeEffect = setActiveEffect(null);
+    get value() {
+      const promise = compute();
       if (activeEffect) {
-        dependencies.add(activeEffect);
+        addReadValue(asyncState);
+        dependents.add(activeEffect);
       }
-
-      // Trigger computation if dirty
-      if (dirty) {
-        computeValue().catch(error => {
-          // eslint-disable-next-line no-console
-          console.error('AsyncDerived computation failed:', error);
-        });
+      return promise;
+    },
+    set value(
+      _next: Promise<T> | ((prev: Promise<T>) => Promise<T> | Promise<T>),
+    ) {
+      throw new Error(
+        'Cannot update async derived values directly - they are computed from dependencies',
+      );
+    },
+    get requiredValue(): NonNullable<Promise<T>> {
+      if (activeEffect) {
+        addReadValue(asyncState);
+        dependents.add(activeEffect);
       }
-
-      return cachedValue.then(value => {
+      return compute().then(value => {
         if (value === null || value === undefined) {
           const asyncDerivedName = validatedName ? ` '${validatedName}'` : '';
           throw new Error(
@@ -401,21 +428,25 @@ export function asyncDerived<T>(
           );
         }
         return value as NonNullable<T>;
-      });
+      }) as unknown as NonNullable<Promise<T>>;
     },
-
-    set requiredValue(_newValue: NonNullable<T>) {
+    set requiredValue(_next: NonNullable<Promise<T>>) {
       const asyncDerivedName = validatedName ? ` '${validatedName}'` : '';
       throw new Error(
         `Cannot set required value on async derived value${asyncDerivedName} - they are computed from dependencies`,
       );
     },
-  };
+  } as State<Promise<T>>;
 
-  // Register named async derived values for debugging
-  if (typeof window !== 'undefined') {
-    registerDebugItem('derived', validatedName, asyncDerivedObj);
+  try {
+    compute();
+  } catch {
+    // Defer error handling to first consumer access
   }
 
-  return asyncDerivedObj;
+  if (typeof window !== 'undefined') {
+    registerDebugItem('derived', validatedName, asyncState);
+  }
+
+  return asyncState;
 }
