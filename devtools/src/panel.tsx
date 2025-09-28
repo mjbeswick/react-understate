@@ -23,9 +23,8 @@ function JsonViewer({
   level?: number;
   disableExpansion?: boolean;
 }) {
-  const [expanded, setExpanded] = useState(disableExpansion || level < 1);
+  const [expanded, setExpanded] = useState(level < 2); // Auto-expand first 2 levels
 
-  // When disableExpansion is true, always show expanded content
   const isExpanded = disableExpansion ? true : expanded;
   const isObject =
     typeof data === 'object' && data !== null && !Array.isArray(data);
@@ -50,31 +49,47 @@ function JsonViewer({
   if (isArray) {
     const array = data as JsonArray;
     if (!isExpanded) {
-      return <span className={styles.jsonCount}>Array({array.length})</span>;
+      return (
+        <span className={styles.jsonContainer}>
+          <button
+            className={styles.expandBtn}
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? '▼' : '▶'}
+          </button>
+          <span className={styles.jsonBracket}>[</span>
+          <span className={styles.jsonCount}>{array.length}</span>
+          <span className={styles.jsonBracket}>]</span>
+        </span>
+      );
     }
 
     return (
       <div>
-        {!disableExpansion && (
-          <span>
-            <button
-              className={styles.expandBtn}
-              onClick={() => setExpanded(!expanded)}
-            >
-              {expanded ? '▼' : '▶'}
-            </button>
-            [
-          </span>
-        )}
-        <div style={{ marginLeft: disableExpansion ? '0px' : '12px' }}>
+        <div className={styles.jsonContainer}>
+          <button
+            className={styles.expandBtn}
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? '▼' : '▶'}
+          </button>
+          <span className={styles.jsonBracket}>[</span>
+        </div>
+        <div
+          className={styles.jsonIndent}
+          style={{ marginLeft: `${level * 8 + 12}px` }}
+        >
           {array.map((item, index) => (
-            <div key={index} style={{ margin: '0' }}>
-              <span className={styles.jsonKey}>{index}:</span>
+            <div key={index} className={styles.jsonItem}>
+              <span className={styles.jsonKey}>{index}</span>
+              <span className={styles.jsonColon}>:</span>
               <JsonViewer data={item} level={level + 1} />
             </div>
           ))}
         </div>
-        {!disableExpansion && <span>]</span>}
+        <div className={styles.jsonContainer}>
+          <span className={styles.jsonBracket}>]</span>
+        </div>
       </div>
     );
   }
@@ -84,32 +99,48 @@ function JsonViewer({
     const keys = Object.keys(obj);
 
     if (!isExpanded) {
-      return <span className={styles.jsonCount}>Object</span>;
+      return (
+        <span className={styles.jsonContainer}>
+          <button
+            className={styles.expandBtn}
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? '▼' : '▶'}
+          </button>
+          <span className={styles.jsonBrace}>{'{'}</span>
+          <span className={styles.jsonCount}>{keys.length}</span>
+          <span className={styles.jsonBrace}>{'}'}</span>
+        </span>
+      );
     }
 
     return (
-      <div>
-        {!disableExpansion && (
-          <span>
-            <button
-              className={styles.expandBtn}
-              onClick={() => setExpanded(!expanded)}
-            >
-              {expanded ? '▼' : '▶'}
-            </button>
-            {'{'}
-          </span>
-        )}
-        <div style={{ marginLeft: disableExpansion ? '0px' : '12px' }}>
+      <span>
+        <span className={styles.jsonContainer}>
+          <button
+            className={styles.expandBtn}
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? '▼' : '▶'}
+          </button>
+          <span className={styles.jsonBrace}>{'{'}</span>
+        </span>
+        <div
+          className={styles.jsonIndent}
+          style={{ marginLeft: `${level * 8 + 12}px` }}
+        >
           {keys.map(key => (
-            <div key={key} style={{ margin: '0' }}>
-              <span className={styles.jsonKey}>{key}:</span>
+            <div key={key} className={styles.jsonItem}>
+              <span className={styles.jsonKey}>{key}</span>
+              <span className={styles.jsonColon}>:</span>
               <JsonViewer data={obj[key]} level={level + 1} />
             </div>
           ))}
         </div>
-        {!disableExpansion && <span>{'}'}</span>}
-      </div>
+        <div className={styles.jsonContainer}>
+          <span className={styles.jsonBrace}>{'}'}</span>
+        </div>
+      </span>
     );
   }
 
@@ -157,7 +188,7 @@ function StateItem({ name, value }: { name: string; value: JsonValue }) {
       </div>
       {expanded && isExpandable(value) && (
         <div className={styles.stateContent}>
-          <JsonViewer data={value} level={1} disableExpansion={true} />
+          <JsonViewer data={value} level={1} />
         </div>
       )}
     </div>

@@ -8,7 +8,6 @@
 import {
   activeEffect,
   addReadValue,
-  configureDebug,
   flushUpdates,
   isBatching,
   pendingUpdates,
@@ -17,7 +16,6 @@ import {
   type State,
   validateStateName,
 } from './core';
-import { logDebug } from './debug-utils';
 
 type DerivedSubscriber<T> = (value: T) => void;
 type DependentFn = () => void;
@@ -185,14 +183,6 @@ export function derived<T>(computeFn: () => T, name?: string): State<T> {
       dirty = false;
       lastError = undefined;
 
-      if (changed && validatedName) {
-        const debugConfig = configureDebug();
-        logDebug(
-          `derived: '${validatedName}' ${JSON.stringify(nextValue, null, 2)}`,
-          debugConfig,
-        );
-      }
-
       if (changed) {
         notifySubscribers(nextValue);
       }
@@ -299,10 +289,6 @@ export function asyncDerived<T>(
     if (!dirty) {
       dirty = true;
     }
-    if (validatedName) {
-      const debugConfig = configureDebug();
-      logDebug(`asyncDerived: '${validatedName}' marked dirty`, debugConfig);
-    }
     scheduleDependents();
   };
 
@@ -320,11 +306,6 @@ export function asyncDerived<T>(
     dirty = false;
 
     try {
-      if (validatedName) {
-        const debugConfig = configureDebug();
-        logDebug(`asyncDerived: '${validatedName}' computing`, debugConfig);
-      }
-
       const previousPromise = hasCachedValue ? cachedValue : undefined;
       const nextPromise = computeFn();
       const changed =
@@ -346,23 +327,9 @@ export function asyncDerived<T>(
 
       nextPromise
         .then(result => {
-          if (validatedName) {
-            const debugConfig = configureDebug();
-            logDebug(
-              `asyncDerived: '${validatedName}' async resolved: ${JSON.stringify(result, null, 2)}`,
-              debugConfig,
-            );
-          }
           return result;
         })
         .catch(error => {
-          if (validatedName) {
-            const debugConfig = configureDebug();
-            logDebug(
-              `asyncDerived: '${validatedName}' async rejected: ${error}`,
-              debugConfig,
-            );
-          }
           // eslint-disable-next-line no-console
           console.error('AsyncDerived computation failed:', error);
           throw error;

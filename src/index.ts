@@ -17,7 +17,6 @@
 export {
   state,
   action,
-  configureDebug,
   ConcurrentActionError,
   initializeWindowUnderstate,
 } from './core';
@@ -25,9 +24,6 @@ export type { State, ActionOptions, ActionConcurrency } from './core';
 
 // Array state exports
 // arrayState removed; use state<T>(initial, { observeMutations: true })
-
-// Debug utilities
-export * from './debug-utils';
 
 // Browser debugging types are automatically available
 

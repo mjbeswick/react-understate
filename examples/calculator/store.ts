@@ -1,6 +1,4 @@
-import { state, action, configureDebug } from 'react-understate';
-
-configureDebug({ enabled: true, showFile: true });
+import { state, action } from 'react-understate';
 
 /**
  * State containing the current display value shown on the calculator

@@ -10,7 +10,6 @@ import {
   setActiveEffectOptions,
   clearReadValues,
   setCurrentEffect,
-  configureDebug,
   validateStateName,
   batch,
   snapshotEffectReads,
@@ -19,7 +18,6 @@ import {
   enterEffectExecution,
   exitEffectExecution,
 } from './core';
-import { logDebug } from './debug-utils';
 
 type EffectSystemContext = { signal: AbortSignal };
 
@@ -291,12 +289,6 @@ export function effect(
 
     isExecuting = true;
 
-    // Debug logging
-    if (validatedName) {
-      const debugConfig = configureDebug();
-      logDebug(`effect: '${validatedName}' running`, debugConfig);
-    }
-
     // Call previous cleanup before re-running
     if (cleanup) {
       try {
@@ -366,24 +358,8 @@ export function effect(
         result
           .then(cleanupResult => {
             cleanup = cleanupResult;
-            // Log async resolution
-            if (validatedName) {
-              const debugConfig = configureDebug();
-              logDebug(
-                `effect: '${validatedName}' async resolved`,
-                debugConfig,
-              );
-            }
           })
           .catch(error => {
-            // Log async rejection
-            if (validatedName) {
-              const debugConfig = configureDebug();
-              logDebug(
-                `effect: '${validatedName}' async rejected: ${error}`,
-                debugConfig,
-              );
-            }
             // eslint-disable-next-line no-console
             console.error('Effect async function failed:', error);
           })

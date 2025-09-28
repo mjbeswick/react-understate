@@ -5,7 +5,7 @@
  * for derived.ts which currently has 68.88% coverage.
  */
 
-import { state, configureDebug, flushUpdates } from './core';
+import { state, flushUpdates } from './core';
 import { derived } from './derived';
 import { effect } from './effects';
 
@@ -472,75 +472,6 @@ describe('Derived Values', () => {
       expect(notifications2).toBe(2); // Should increase
 
       unsubscribe2();
-    });
-  });
-
-  describe('Debug Logging', () => {
-    beforeEach(() => {
-      // Reset debug config before each test
-      configureDebug({ enabled: false, logger: undefined });
-    });
-
-    it('should log derived value changes when debug is enabled', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      configureDebug({ enabled: true, logger: console.log });
-
-      const base = state(10, 'base');
-      const doubled = derived(() => base.value * 2, 'doubled');
-
-      // Access the value to trigger computation
-      expect(doubled.value).toBe(20);
-
-      // Change the dependency
-      base.value = 15;
-      expect(doubled.value).toBe(30);
-
-      expect(consoleSpy).toHaveBeenCalledWith("derived: 'doubled' 30");
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should not log derived value changes when debug is disabled', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      configureDebug({ enabled: false });
-
-      const base = state(10, 'base');
-      const doubled = derived(() => base.value * 2, 'doubled');
-
-      base.value = 15;
-      expect(doubled.value).toBe(30);
-
-      // Clear any state logs and check only derived logs
-      consoleSpy.mockClear();
-      doubled.value; // Access derived value to trigger logging
-      expect(consoleSpy).not.toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should not log derived value changes when no name is provided', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      configureDebug({ enabled: true, logger: console.log });
-
-      const base = state(10, 'base');
-      const doubled = derived(() => base.value * 2); // No name provided
-
-      // Clear any previous calls
-      consoleSpy.mockClear();
-
-      base.value = 15;
-      expect(doubled.value).toBe(30);
-
-      // Should not have any calls related to derived value changes
-      const derivedCalls = consoleSpy.mock.calls.filter(
-        call => call[0] && call[0].includes('derived:'),
-      );
-      expect(derivedCalls).toHaveLength(0);
-
-      consoleSpy.mockRestore();
     });
   });
 });

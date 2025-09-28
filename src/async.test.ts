@@ -2,17 +2,12 @@
  * @fileoverview Tests for async functionality
  */
 
-import { state, derived, asyncDerived, effect, configureDebug } from './index';
+import { state, derived, asyncDerived, effect } from './index';
 
 describe('Async Functionality', () => {
-  beforeEach(() => {
-    configureDebug({ enabled: false });
-  });
-
   describe('State with async setters', () => {
     it('should handle async setter functions', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      configureDebug({ enabled: true, logger: console.log });
 
       const count = state(0, 'count');
 
@@ -26,14 +21,12 @@ describe('Async Functionality', () => {
       await new Promise(resolve => setTimeout(resolve, 20));
 
       expect(count.value).toBe(1);
-      expect(consoleSpy).toHaveBeenCalledWith("state: 'count' 1");
 
       consoleSpy.mockRestore();
     });
 
     it('should handle async update function', async () => {
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-      configureDebug({ enabled: true, logger: console.log });
 
       const count = state(0, 'count');
 
@@ -44,7 +37,6 @@ describe('Async Functionality', () => {
       });
 
       expect(count.value).toBe(5);
-      expect(consoleSpy).toHaveBeenCalledWith("state: 'count' 5");
 
       consoleSpy.mockRestore();
     });
@@ -52,8 +44,6 @@ describe('Async Functionality', () => {
 
   describe('Effect with async functions', () => {
     it('should handle async effect functions', async () => {
-      configureDebug({ enabled: true, logger: console.log });
-
       const count = state(0, 'count');
       let effectRunCount = 0;
 
@@ -79,8 +69,6 @@ describe('Async Functionality', () => {
     });
 
     it('should handle async effect with cleanup', async () => {
-      configureDebug({ enabled: true, logger: console.log });
-
       const count = state(0, 'count');
       let cleanupCount = 0;
 
@@ -108,8 +96,6 @@ describe('Async Functionality', () => {
 
   describe('AsyncDerived', () => {
     it('should handle async derived values', async () => {
-      configureDebug({ enabled: true, logger: console.log });
-
       const userId = state(1, 'userId');
       const userData = asyncDerived(async () => {
         await new Promise(resolve => setTimeout(resolve, 10));
@@ -124,8 +110,6 @@ describe('Async Functionality', () => {
     });
 
     it('should recompute when dependencies change', async () => {
-      configureDebug({ enabled: true, logger: console.log });
-
       const userId = state(1, 'userId');
       const userData = asyncDerived(async () => {
         console.log('asyncDerived computing for userId:', userId.value);

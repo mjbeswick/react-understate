@@ -5,8 +5,6 @@
  * It provides the foundation for the reactive states system.
  */
 
-import { logDebug } from './debug-utils';
-
 /**
  * A valid state name that cannot contain dots (.) as they break the code.
  * State names are used for debugging and must be valid JavaScript identifiers.
@@ -139,17 +137,6 @@ const effectOptions = new WeakMap<
 >();
 
 // Debug configuration
-type DebugOptions = {
-  enabled?: boolean;
-  logger?: (message: string, ...args: unknown[]) => void;
-  showFile?: boolean;
-};
-
-let debugConfig: DebugOptions = {
-  enabled: false,
-  // eslint-disable-next-line no-console
-  logger: (...args: unknown[]) => console.log(...args),
-};
 
 // --- DevTools bridge helpers ---
 type DevtoolsBridge = { publish: (event: unknown) => void } | undefined;
@@ -360,43 +347,6 @@ export type StateOptions = {
 };
 
 /**
- * Configures debug logging for the reactive system.
- *
- * When called with no arguments, returns the current debug configuration.
- * When called with options, updates the debug configuration.
- *
- * @param options - Optional debug configuration options
- * @returns Current debug configuration
- *
- * @example
- * ```tsx
- * import { configureDebug } from 'react-understate';
- *
- * // Get current configuration
- * const config = configureDebug();
- * console.log('Debug enabled:', config.enabled);
- *
- * // Enable debug logging
- * configureDebug({ enabled: true });
- *
- * // Custom logger
- * configureDebug({
- *   enabled: true,
- *   logger: (msg, ...args) => console.info(`[DEBUG] ${msg}`, ...args)
- * });
- *
- * // Disable debug logging
- * configureDebug({ enabled: false });
- * ```
- */
-export function configureDebug(options?: DebugOptions): Readonly<DebugOptions> {
-  if (options !== undefined) {
-    debugConfig = { ...debugConfig, ...options };
-  }
-  return { ...debugConfig };
-}
-
-/**
  * Creates an action function that automatically batches updates and logs execution.
  *
  * Actions are useful for grouping related state updates and provide better debugging
@@ -538,9 +488,8 @@ export function action<T extends (...args: any[]) => any>(
   >();
 
   return ((...args: StripSystemFromParams<Parameters<T>>) => {
-    // Debug logging
+    // DevTools event publishing
     if (validatedName) {
-      logDebug(`action: '${validatedName}'`, debugConfig);
       publishDevtoolsEvent('action:call', {
         name: validatedName,
         argsLength: args.length,
@@ -905,31 +854,12 @@ export function state<T>(
   ): Promise<void> => {
     try {
       let resolvedValue: T;
-      const debugConfig = configureDebug();
 
       if (typeof newValue === 'function') {
         // Handle function (sync or async)
         const result = (newValue as (prev: T) => T | Promise<T>)(value);
         if (result instanceof Promise) {
-          try {
-            resolvedValue = await result;
-            // Log async resolution
-            if (validatedName) {
-              logDebug(
-                `state: '${validatedName}' async resolved: ${JSON.stringify(resolvedValue, null, 2)}`,
-                debugConfig,
-              );
-            }
-          } catch (error) {
-            // Log async rejection
-            if (validatedName) {
-              logDebug(
-                `state: '${validatedName}' async rejected: ${error}`,
-                debugConfig,
-              );
-            }
-            throw error;
-          }
+          resolvedValue = await result;
         } else {
           resolvedValue = result;
         }
@@ -939,12 +869,8 @@ export function state<T>(
       }
 
       if (!Object.is(value, resolvedValue)) {
-        // Debug logging
+        // DevTools event publishing
         if (validatedName) {
-          logDebug(
-            `state: '${validatedName}' ${JSON.stringify(resolvedValue, null, 2)}`,
-            debugConfig,
-          );
           publishDevtoolsEvent('state:update', {
             name: validatedName,
             value: resolvedValue,
@@ -971,29 +897,9 @@ export function state<T>(
     try {
       const result = fn(value); // value is the previous value
       if (result instanceof Promise) {
-        try {
-          const newValue = await result;
-          // Log async resolution
-          if (validatedName) {
-            const debugConfig = configureDebug();
-            logDebug(
-              `state: '${validatedName}' update async resolved: ${JSON.stringify(newValue, null, 2)}`,
-              debugConfig,
-            );
-          }
-          // Update the state with the resolved value
-          setValue(newValue);
-        } catch (error) {
-          // Log async rejection
-          if (validatedName) {
-            const debugConfig = configureDebug();
-            logDebug(
-              `state: '${validatedName}' update async rejected: ${error}`,
-              debugConfig,
-            );
-          }
-          throw error;
-        }
+        const newValue = await result;
+        // Update the state with the resolved value
+        setValue(newValue);
       } else {
         // Update the state with the sync value
         setValue(result);
@@ -1420,15 +1326,7 @@ export function setIsBatching(batching: boolean): boolean {
  * }, 'updateUserInfo');
  * ```
  */
-export function batch(fn: () => void, name?: string): void {
-  // Validate name if provided
-  const validatedName = name ? validateStateName(name) : undefined;
-
-  // Debug logging
-  if (validatedName) {
-    logDebug(`batch: '${validatedName}'`, debugConfig);
-  }
-
+export function batch(fn: () => void, _name?: string): void {
   // Warn if called within an effect; effects are already batched
   if (activeEffect) {
     // eslint-disable-next-line no-console
@@ -1459,13 +1357,12 @@ export function batch(fn: () => void, name?: string): void {
     flushUpdates();
   }
 }
-// Expose debug API and states on window for browser debugging
+// Expose states on window for devtools debugging
 // Use lazy initialization to avoid issues with React hooks
 let windowUnderstateInitialized = false;
 export function initializeWindowUnderstate() {
   if (typeof window !== 'undefined' && !windowUnderstateInitialized) {
     (window as any).reactUnderstate = {
-      configureDebug,
       states: {},
       actions: {},
       effects: {},

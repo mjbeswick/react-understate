@@ -23,11 +23,12 @@ body {
   
   /* Syntax Highlighting */
   --syntax-key: #8B0000;
-  --syntax-string: #006400;
-  --syntax-number: #0000FF;
-  --syntax-boolean: #0000FF;
+  --syntax-string: #C41A16;
+  --syntax-number: #1C00CF;
+  --syntax-boolean: #1C00CF;
   --syntax-null: #666666;
   --syntax-bracket: #000000;
+  --syntax-prototype: #999999;
   
   /* Spacing */
   --spacing-xs: 1px;
@@ -38,7 +39,7 @@ body {
   --spacing-xxl: 16px;
   
   /* Typography */
-  --font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  --font-family: system-ui, sans-serif;
   --font-size-xs: 8px;
   --font-size-sm: 10px;
   --font-size-md: 11px;
@@ -60,7 +61,7 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-lg);
   line-height: var(--line-height-tight);
 }
 
@@ -77,7 +78,7 @@ body {
   border: none;
   background: none;
   cursor: pointer;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-lg);
   color: var(--text-secondary);
   border-bottom: 2px solid transparent;
   transition: all 0.15s ease;
@@ -132,27 +133,30 @@ body {
   font-size: var(--font-size-xs);
   color: var(--text-primary);
   padding: 0;
-  margin: 0;
-  width: var(--spacing-lg);
-  height: var(--spacing-lg);
+  margin: 0 2px 0 0;
+  width: 10px;
+  height: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 1px;
+  transition: background-color 0.1s ease;
+  flex-shrink: 0;
 }
 
 .expandBtn:hover {
-  background: none;
+  background: var(--bg-hover);
 }
 
 .stateName {
   font-weight: bold;
   color: var(--syntax-key);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-lg);
 }
 
 .stateType {
   color: var(--text-secondary);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-lg);
   margin-left: var(--spacing-sm);
   font-style: normal;
 }
@@ -160,19 +164,15 @@ body {
 .stateContent {
   padding: 0 0 0 var(--spacing-xl);
   font-family: var(--font-family);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-lg);
   background: var(--bg-primary);
-  display: none;
   line-height: var(--line-height-tight);
-}
-
-.stateContent.expanded {
-  display: block;
 }
 
 .jsonKey {
   color: var(--syntax-key);
   font-weight: bold;
+  flex-shrink: 0;
 }
 
 .jsonString {
@@ -203,6 +203,45 @@ body {
 .jsonCount {
   color: var(--text-secondary);
   font-style: italic;
+}
+
+.jsonContainer {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: top;
+}
+
+.jsonIndent {
+  display: block;
+}
+
+.jsonItem {
+  display: flex;
+  align-items: flex-start;
+  margin: 0;
+  line-height: 1.1;
+  padding-left: 0;
+}
+
+.jsonColon {
+  color: var(--text-primary);
+  margin: 0 4px 0 2px;
+  font-weight: normal;
+}
+
+.jsonComma {
+  color: var(--text-primary);
+  margin-left: 2px;
+}
+
+.jsonBracket {
+  color: var(--syntax-bracket);
+  font-weight: bold;
+}
+
+.jsonBrace {
+  color: var(--syntax-bracket);
+  font-weight: bold;
 }
 
 .emptyState {
@@ -240,10 +279,11 @@ body {
   --accent-secondary: #29b6f6;
   
   /* Dark Syntax Highlighting */
-  --syntax-key: #80A0FF;
-  --syntax-string: #ff8c00;
-  --syntax-number: #4fc3f7;
-  --syntax-boolean: #c792ea;
-  --syntax-null: #999999;
-  --syntax-bracket: #cccccc;
+  --syntax-key: #C586C0;
+  --syntax-string: #CE9178;
+  --syntax-number: #B5CEA8;
+  --syntax-boolean: #569CD6;
+  --syntax-null: #808080;
+  --syntax-bracket: #D4D4D4;
+  --syntax-prototype: #808080;
 }
