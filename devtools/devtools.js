@@ -3,7 +3,7 @@ chrome.devtools.panels.create(
   'Understate',
   'icon.png',
   'panel.html',
-  function (_panel) {
+  function(panel) {
     console.log('Understate devtools panel created');
-  },
+  }
 );
