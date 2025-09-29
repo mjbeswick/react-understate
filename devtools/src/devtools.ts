@@ -1,8 +1,8 @@
 // Create the devtools panel
 chrome.devtools.panels.create(
   'Understate',
-  'icon.png',
-  'panel.html',
+  '',
+  'dist/panel.html',
   function (_panel) {
     console.log('Understate devtools panel created');
   },

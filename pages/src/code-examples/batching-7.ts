@@ -78,11 +78,9 @@ const badEffectBatching = effect(
   { name: 'badEffectBatching' },
 );
 
-// ✅ DO: Use descriptive batch names for debugging
+// ✅ DO: Use descriptive batch names
 const descriptiveBatching = action(
   () => {
-    console.log('action: updating user profile');
-
     batch(() => {
       // Clear what this batch does
       userProfile(profile);

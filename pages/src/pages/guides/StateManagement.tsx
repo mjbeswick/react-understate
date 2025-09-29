@@ -46,7 +46,6 @@ const StateManagement: React.FC = () => {
           <li>State composition patterns</li>
           <li>Managing complex state structures</li>
           <li>Performance optimization techniques</li>
-          <li>Debugging and development tools</li>
           <li>Common patterns and anti-patterns</li>
         </ul>
       </div>
@@ -165,10 +164,6 @@ incrementCount();`}
       </p>
       <ul>
         <li>
-          <strong>Debugging:</strong> Actions appear in debug logs with clear
-          names
-        </li>
-        <li>
           <strong>Performance:</strong> Actions can be batched and optimized
         </li>
         <li>
@@ -218,77 +213,6 @@ incrementCount();`}
       </p>
 
       <CodeExample filename="state-management-performance.ts" language="ts" />
-
-      <h2>Debugging State</h2>
-      <p>
-        React Understate provides excellent debugging capabilities to help you
-        understand state changes and track down issues.
-      </p>
-
-      <CodeBlock
-        language="typescript"
-        code={`import { configureDebug } from 'react-understate';
-
-// Enable debug logging in development
-if (process.env.NODE_ENV === 'development') {
-  configureDebug({
-    enabled: true,
-    logStateChanges: true,
-    logActionCalls: true,
-    logDerivedUpdates: true,
-    filter: (name) => {
-      // Only log specific states/actions
-      return name.includes('user') || name.includes('todo');
-    },
-  });
-}
-
-// Custom debug logging for specific states
-export const debuggedUser = state({ name: '', email: '' }, {
-  name: 'debuggedUser',
-  debug: {
-    logChanges: true,
-    beforeChange: (oldValue, newValue) => {
-      console.log('User changing from:', oldValue, 'to:', newValue);
-    },
-    afterChange: (newValue) => {
-      console.log('User changed to:', newValue);
-    },
-  },
-});
-
-// Debug utilities
-export const stateSnapshot = () => {
-  return {
-    user: user(),
-    todos: todos(),
-    ui: uiSettings(),
-    timestamp: new Date().toISOString(),
-  };
-};
-
-export const logStateSnapshot = action(() => {
-  console.log('action: logging state snapshot');
-  console.table(stateSnapshot());
-}, { name: 'logStateSnapshot' });
-
-// Performance monitoring
-export const performanceMonitor = effect(() => {
-  const startTime = performance.now();
-  
-  // Track expensive derived value
-  const result = expensiveComputation();
-  
-  const endTime = performance.now();
-  const duration = endTime - startTime;
-  
-  if (duration > 16) { // Longer than one frame
-    console.warn(\`Expensive computation took \${duration.toFixed(2)}ms\`);
-  }
-  
-  return result;
-}, { name: 'performanceMonitor' });`}
-      />
 
       <h2>Common Patterns</h2>
       <p>
@@ -366,7 +290,6 @@ export const createModalState = () => {
   const data = state<any>(null, { name: 'modalData' });
   
   const open = action((modalData?: any) => {
-    console.log('action: opening modal');
     isOpen(true);
     if (modalData !== undefined) {
       data(modalData);
@@ -374,13 +297,11 @@ export const createModalState = () => {
   }, { name: 'openModal' });
   
   const close = action(() => {
-    console.log('action: closing modal');
     isOpen(false);
     data(null);
   }, { name: 'closeModal' });
   
   const toggle = action(() => {
-    console.log('action: toggling modal');
     isOpen(prev => !prev);
   }, { name: 'toggleModal' });
   

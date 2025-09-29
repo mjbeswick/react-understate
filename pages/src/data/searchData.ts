@@ -111,7 +111,7 @@ export const searchDocuments: SearchDocument[] = [
     objectID: '8',
     title: 'action()',
     content:
-      'Create named, debuggable functions that modify state. Actions provide enhanced debugging, performance tracking, and better development experience.',
+      'Create named functions that modify state. Actions provide enhanced performance tracking and better development experience.',
     path: '/api/action',
     section: 'API Reference',
     hierarchy: {

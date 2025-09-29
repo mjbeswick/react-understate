@@ -45,7 +45,7 @@ const Effects: React.FC = () => {
           <li>Dependency tracking and cleanup</li>
           <li>Common effect patterns</li>
           <li>Performance optimization</li>
-          <li>Error handling and debugging</li>
+          <li>Error handling</li>
           <li>Best practices and anti-patterns</li>
         </ul>
       </div>
@@ -433,10 +433,6 @@ effect(() => {
         <strong>Why use actions for state updates?</strong>
       </p>
       <ul>
-        <li>
-          <strong>Better debugging:</strong> Actions show up in debug logs with
-          clear names
-        </li>
         <li>
           <strong>Consistent patterns:</strong> All state updates go through the
           same mechanism

@@ -94,7 +94,6 @@ export const createModalState = () => {
 
   const open = action(
     (modalData?: any) => {
-      console.log('action: opening modal');
       isOpen(true);
       if (modalData !== undefined) {
         data(modalData);
@@ -105,7 +104,6 @@ export const createModalState = () => {
 
   const close = action(
     () => {
-      console.log('action: closing modal');
       isOpen(false);
       data(null);
     },
@@ -114,7 +112,6 @@ export const createModalState = () => {
 
   const toggle = action(
     () => {
-      console.log('action: toggling modal');
       isOpen(prev => !prev);
     },
     { name: 'toggleModal' },

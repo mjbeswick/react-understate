@@ -3,11 +3,12 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  base: './',
   build: {
     outDir: 'dist',
     rollupOptions: {
       input: {
-        devtools: 'src/devtools.ts',
+        devtools: 'devtools.html',
         panel: 'panel.html',
       },
     },

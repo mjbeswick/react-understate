@@ -14,7 +14,6 @@ describe('States', () => {
     // Clear window.reactUnderstate for clean test state
     if (typeof global !== 'undefined' && (global as any).window) {
       (global as any).window.reactUnderstate = {
-        configureDebug: () => ({}),
         states: {},
         actions: {},
       };
@@ -296,97 +295,6 @@ describe('States', () => {
     });
   });
 
-  describe('Debug Configuration', () => {
-    beforeEach(() => {
-      // Reset debug config before each test
-      configureDebug({ enabled: false, logger: undefined });
-    });
-
-    it('should configure debug options', () => {
-      const customLogger = jest.fn();
-
-      configureDebug({ enabled: true, logger: customLogger });
-
-      const config = configureDebug();
-      expect(config.enabled).toBe(true);
-      expect(config.logger).toBe(customLogger);
-    });
-
-    it('should merge debug options with existing config', () => {
-      const customLogger = jest.fn();
-
-      // Set initial config
-      configureDebug({ enabled: true, logger: customLogger });
-
-      // Update only enabled flag
-      configureDebug({ enabled: false });
-
-      const config = configureDebug();
-      expect(config.enabled).toBe(false);
-      expect(config.logger).toBe(customLogger); // Should preserve existing logger
-    });
-
-    it('should enable/disable debug with configureDebug', () => {
-      configureDebug({ enabled: true });
-      expect(configureDebug().enabled).toBe(true);
-
-      configureDebug({ enabled: false });
-      expect(configureDebug().enabled).toBe(false);
-    });
-
-    it('should return readonly config object', () => {
-      configureDebug({ enabled: true });
-      const config = configureDebug();
-
-      // The returned object should be a copy, not the original
-      expect(config.enabled).toBe(true);
-      expect(config.logger).toBeUndefined();
-
-      // Modifying the returned object should not affect the internal config
-      (config as any).enabled = false;
-      expect(configureDebug().enabled).toBe(true); // Internal config unchanged
-    });
-
-    it('should log state changes when debug is enabled', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      configureDebug({ enabled: true, logger: console.log });
-
-      const testState = state(0, 'testState');
-      testState.value = 5;
-
-      expect(consoleSpy).toHaveBeenCalledWith("state: 'testState' 5");
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should not log state changes when debug is disabled', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      configureDebug({ enabled: false });
-
-      const testState = state(0, 'debugDisabledState');
-      testState.value = 5;
-
-      expect(consoleSpy).not.toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should not log state changes when no name is provided', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      configureDebug({ enabled: true, logger: console.log });
-
-      const testState = state(0); // No name provided
-      testState.value = 5;
-
-      expect(consoleSpy).not.toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
-    });
-  });
-
   describe('Actions', () => {
     it('should create action that batches updates automatically', () => {
       const testState = state(0);
@@ -405,60 +313,6 @@ describe('States', () => {
 
       expect(testState.value).toBe(6);
       expect(notificationCount).toBe(1); // Only one notification for batched updates
-    });
-
-    it('should log action execution when debug is enabled', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      // Reset debug config and enable debug
-      configureDebug({ enabled: false });
-      configureDebug({ enabled: true, logger: console.log });
-
-      const testState = state(0, 'actionDebugState');
-      const increment = action((amount: number) => {
-        testState.value = testState.value + amount;
-      }, 'increment');
-
-      increment(5);
-
-      expect(consoleSpy).toHaveBeenCalledWith("action: 'increment'");
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should not log action execution when debug is disabled', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      // Disable debug
-      configureDebug({ enabled: false });
-
-      const testState = state(0, 'actionDisabledState');
-      const increment = action((amount: number) => {
-        testState.value = testState.value + amount;
-      }, 'increment');
-
-      increment(5);
-
-      expect(consoleSpy).not.toHaveBeenCalledWith("action: 'increment'");
-
-      consoleSpy.mockRestore();
-    });
-
-    it('should not log action execution when no name is provided', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-      configureDebug({ enabled: true, logger: console.log });
-
-      const testState = state(0, 'actionNoNameState');
-      const increment = action((amount: number) => {
-        testState.value = testState.value + amount;
-      }); // No name provided
-
-      increment(5);
-
-      expect(consoleSpy).not.toHaveBeenCalledWith("action: 'increment'");
-
-      consoleSpy.mockRestore();
     });
 
     it('should preserve function signature and return type', () => {
@@ -632,15 +486,6 @@ describe('States', () => {
 
       // The state should still exist but not be registered
       expect(unnamedState.value).toBe(42);
-    });
-
-    it('should expose configureDebug on window.reactUnderstate', () => {
-      expect(
-        (global as any).window.reactUnderstate.configureDebug,
-      ).toBeDefined();
-      expect(typeof (global as any).window.reactUnderstate.configureDebug).toBe(
-        'function',
-      );
     });
 
     it('should register named actions on window.reactUnderstate.actions', () => {

@@ -36,8 +36,8 @@ const DerivedAPIContent: React.FC = () => {
             <span className={styles.parameterName}>debugName</span>
             <span className={styles.parameterType}>string (optional)</span>
             <div className={styles.parameterDescription}>
-              A name for debugging purposes. Shows up in dev tools and debug
-              logs when debugging is enabled.
+              A name for the derived value. If not provided, the function name
+              will be used.
             </div>
           </div>
         </div>
@@ -558,33 +558,6 @@ function Calculator() {
     </div>
   );
 }`}
-      />
-
-      <h2>Debugging Derived Values</h2>
-      <CodeBlock
-        language="tsx"
-        code={`import { state, derived, configureDebug } from 'react-understate';
-
-// Enable debugging
-configureDebug({ enabled: true, showFile: true });
-
-const price = state(100, 'itemPrice');
-const quantity = state(2, 'itemQuantity');
-const taxRate = state(0.08, 'taxRate');
-
-// Named derived values for better debugging
-const subtotal = derived(() => {
-  console.log('Calculating subtotal');
-  return price.value * quantity.value;
-}, 'subtotal');
-
-const total = derived(() => {
-  console.log('Calculating total');
-  return subtotal.value * (1 + taxRate.value);
-}, 'total');
-
-// Changes will be logged with names:
-price.value = 150; // Logs subtotal and total recalculations`}
       />
 
       <div className={styles.navigation}>

@@ -9,7 +9,7 @@ const ActionAPIContent: React.FC = () => {
       <header className={styles.header}>
         <h1>action()</h1>
         <p className={styles.subtitle}>
-          Create named, debuggable functions that modify state
+          Create named functions that modify state
         </p>
       </header>
 
@@ -38,9 +38,8 @@ const ActionAPIContent: React.FC = () => {
             <span className={styles.parameterName}>debugName</span>
             <span className={styles.parameterType}>string (optional)</span>
             <div className={styles.parameterDescription}>
-              A name for debugging purposes. Shows up in dev tools and debug
-              logs when debugging is enabled. If not provided, the function name
-              will be used.
+              A name for the function. If not provided, the function name will
+              be used.
             </div>
           </div>
           <div className={styles.parameter}>
@@ -69,13 +68,6 @@ const ActionAPIContent: React.FC = () => {
       </p>
 
       <div className={styles.featureGrid}>
-        <div className={styles.featureCard}>
-          <div className={styles.featureTitle}>🐛 Enhanced Debugging</div>
-          <div className={styles.featureDescription}>
-            Action calls are logged with their names, parameters, and execution
-            time in debug mode.
-          </div>
-        </div>
         <div className={styles.featureCard}>
           <div className={styles.featureTitle}>📊 Performance Tracking</div>
           <div className={styles.featureDescription}>
@@ -151,9 +143,6 @@ const ActionAPIContent: React.FC = () => {
 
       <h2>Error Handling Patterns</h2>
       <CodeExample filename="action-error-handling" language="tsx" />
-
-      <h2>Debugging Actions</h2>
-      <CodeExample filename="action-debugging" language="tsx" />
 
       <div className={styles.navigation}>
         <div className={styles.navItem}>

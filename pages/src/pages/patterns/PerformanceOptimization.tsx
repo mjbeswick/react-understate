@@ -325,24 +325,6 @@ const processLargeItem = (item) => {
 
       <h2>Performance Monitoring</h2>
 
-      <h3>Enable Debug Mode in Development</h3>
-      <p>Use debug mode to monitor performance and identify bottlenecks:</p>
-
-      <CodeBlock
-        language="tsx"
-        code={`import { configureDebug } from 'react-understate';
-
-// Enable debugging in development
-if (process.env.NODE_ENV === 'development') {
-  configureDebug({
-    enabled: true,
-    showFile: true,
-    showTimestamp: true,
-    performanceThreshold: 16, // Log slow operations
-  });
-}`}
-      />
-
       <h3>Custom Performance Monitoring</h3>
       <p>Add custom performance monitoring for critical operations:</p>
 

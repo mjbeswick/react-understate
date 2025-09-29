@@ -1,9 +1,4 @@
-import {
-  state,
-  derived,
-  action,
-  persistLocalStorage,
-} from 'react-understate';
+import { state, derived, action, persistLocalStorage } from 'react-understate';
 
 // Define the Todo type
 export type Todo = {

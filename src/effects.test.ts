@@ -17,7 +17,7 @@ async function waitUntil(
     if (Date.now() - start > timeoutMs) return;
   }
 }
-import { state, action, configureDebug } from './core';
+import { state, action } from './core';
 import { derived } from './derived';
 
 describe('Effects', () => {

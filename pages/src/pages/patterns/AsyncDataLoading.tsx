@@ -680,10 +680,6 @@ export const deleteUserOptimistic = action(async (userId: number) => {
           <strong>Use optimistic updates:</strong> Update UI immediately for
           better UX
         </li>
-        <li>
-          <strong>Log actions:</strong> Use consistent logging for debugging
-          [[memory:8328508]]
-        </li>
       </ul>
 
       <h2>Related Patterns</h2>

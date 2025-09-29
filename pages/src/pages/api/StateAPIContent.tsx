@@ -32,7 +32,7 @@ const StateAPIContent: React.FC = () => {
             <span className={styles.parameterName}>options</span>
             <span className={styles.parameterType}>{'{ name?: string; observeMutations?: boolean }'} (optional)</span>
             <div className={styles.parameterDescription}>
-              <strong>name</strong>: debug name for tools and logs. <strong>observeMutations</strong>: when true, arrays and plain objects returned from <code>.value</code> are proxied so in-place mutations (e.g., array <code>push</code>, object property set/delete) commit immutably and notify subscribers.
+              <strong>name</strong>: name for tools and logs. <strong>observeMutations</strong>: when true, arrays and plain objects returned from <code>.value</code> are proxied so in-place mutations (e.g., array <code>push</code>, object property set/delete) commit immutably and notify subscribers.
             </div>
           </div>
         </div>
@@ -287,32 +287,6 @@ const cleanup = () => {
         related state and actions together. This provides better separation of
         concerns and makes your code more maintainable.
       </p>
-
-      <h2>Debugging</h2>
-      <p>Use debug names to identify state in development tools and logs.</p>
-
-      <CodeBlock
-        language="tsx"
-        code={`import { state, configureDebug } from 'react-understate';
-
-// Enable debugging globally
-configureDebug({ enabled: true, showFile: true });
-
-// Create state with debug names
-const userCount = state(0, 'userCount');
-const activeUsers = state([], 'activeUsersList');
-const appSettings = state({
-  theme: 'light',
-  notifications: true
-}, 'appSettings');
-
-// Changes will now be logged with names:
-userCount.value = 42; 
-// Logs: "[userCount] State changed from 0 to 42"
-
-activeUsers.value = [{ id: 1, name: 'John' }];
-// Logs: "[activeUsersList] State changed from [] to [{ id: 1, name: 'John' }]"`}
-      />
 
       <h2>Performance & Patterns</h2>
       <p>For performance optimization techniques and advanced patterns, see:</p>

@@ -23,7 +23,6 @@ The state management library that's so lightweight, it makes Redux feel like you
   - [Actions](#actions)
   - [Async Concurrency Modes](#async-concurrency-modes)
   - [Abort Signals](#abort-signals)
-  - [Debugging](#debugging)
   - [Batching Updates](#batching-updates)
 - [React Integration](#react-integration)
   - [useUnderstate Hook](#useunderstate-hook)
@@ -65,7 +64,6 @@ The state management library that's so lightweight, it makes Redux feel like you
 - ⚙️ **Batching support** - Optimize performance with batched updates
 - 🧊 **TypeScript immutability** - Deep readonly types prevent mutations at compile time
 - 🎭 **Named reactive elements** - Give names to states, derived values, and effects for better debugging
-- 🐛 **Debug logging** - Built-in debug system with configurable logging
 - ⚡ **Action functions** - Automatic batching and debug logging for state updates
 - 🔧 **ESLint integration** - Built-in ESLint rules for best practices and state name validation
 
@@ -700,58 +698,6 @@ fetchData(3); // Aborts previous request, starts new one
 - **Fetch Integration**: Works seamlessly with fetch API and other abortable operations
 - **Error Handling**: AbortError is automatically handled for cancelled requests
 
-### Debugging
-
-Enable debug logging to track state changes, derived value updates, effect runs, and action executions:
-
-```tsx
-import {
-  configureDebug,
-  state,
-  derived,
-  effect,
-  action,
-} from 'react-understate';
-
-// Enable debug logging with file location links
-configureDebug({ enabled: true, showFile: true });
-
-// Create named reactive elements for better debugging
-const count = state(0, 'counter');
-const doubled = derived(() => count.value * 2, 'doubled');
-const dispose = effect(() => {
-  console.log(`Count is: ${count.value}`);
-}, 'logCount');
-
-const increment = action((amount: number) => {
-  count.value = count.value + amount;
-}, 'increment');
-
-count.value = 5; // Logs: "state: 'counter' 5 /path/to/file.ts:123:45"
-// Logs: "derived: 'doubled' 10 /path/to/file.ts:124:46"
-// Logs: "effect: 'logCount' running /path/to/file.ts:125:47"
-
-increment(3); // Logs: "action: 'increment' /path/to/file.ts:126:48"
-// Logs: "state: 'counter' 8 /path/to/file.ts:127:49"
-// Logs: "derived: 'doubled' 16 /path/to/file.ts:128:50"
-// Logs: "effect: 'logCount' running /path/to/file.ts:129:51"
-```
-
-**Debug Options:**
-
-- `enabled: boolean` - Enable/disable debug logging
-- `logger: function` - Custom logger function (defaults to `console.log`)
-- `showFile: boolean` - Show clickable file location links (defaults to `false`)
-
-When `showFile: false` or omitted, logs show just the function names:
-
-```tsx
-configureDebug({ enabled: true });
-// Logs: "action: 'increment'"
-// Logs: "state: 'counter' 8"
-// Logs: "derived: 'doubled' 16"
-```
-
 ### Batching Updates
 
 Group multiple updates for better performance:
@@ -1231,38 +1177,6 @@ This pattern is used in both the [Calculator](examples/calculator/) and [Todo Ap
 - `persistSessionStorage<T>(state: State<T>, key: string, options?: PersistOptions): () => void`
 - `persistStates<T>(states: T, keyPrefix: string, storage?: Storage): () => void`
 
-### Debug Configuration
-
-- `configureDebug(options?: { enabled?: boolean; logger?: (message: string) => void; showFile?: boolean }): { enabled: boolean; logger?: (message: string) => void; showFile: boolean }` - Configure debug logging or get current configuration
-
-### Browser Debugging
-
-In development, you can access the debug API and all named states through the browser console:
-
-```tsx
-// Access debug configuration
-window.reactUnderstate.configureDebug({ enabled: true, showFile: true });
-
-// Access all named states
-console.log(window.reactUnderstate.states);
-// { count: State<number>, user: State<User>, ... }
-
-// Inspect a specific state
-console.log(window.reactUnderstate.states.count.value);
-// 42
-
-// Update a state from the console
-window.reactUnderstate.states.count.value = 100;
-
-// Access all named actions
-console.log(window.reactUnderstate.actions);
-// { increment: Function, addTodo: Function, ... }
-
-// Call an action from the console
-window.reactUnderstate.actions.increment(5);
-window.reactUnderstate.actions.addTodo('Debug from console');
-```
-
 ### Types
 
 ```tsx
@@ -1309,7 +1223,7 @@ type PersistOptions = {
 
 ## Coming Soon
 
-- Chrome DevTools integration is in active development to provide first-class debugging for Understate stores.
+- Enhanced Chrome DevTools integration for comprehensive debugging and state inspection.
 
 ## License
 
